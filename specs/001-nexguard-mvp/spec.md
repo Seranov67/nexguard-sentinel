@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/spec.md
 # NexGuard Edge Resilience — MVP Specification
 
-**Version**: 1.0.0  
-**Status**: DRAFT — awaiting review  
-**Stage**: 0 (Analysis & SSD)  
+**Version**: 1.0.1
+**Status**: APPROVED — owner approval recorded 2026-07-14
+**Stage**: 1 (Implementation)
 
 ---
 
@@ -20,10 +20,11 @@ monitors its health, and autonomously restores service using a known-good backup
 
 ## 2. Functional Requirements
 
-### FR-001 — Gateway Simulator: `/health` endpoint
+### FR-001 — Gateway Simulator: HTTP endpoints
 - The gateway simulator **must** expose a `/health` HTTP endpoint.
 - Response body: `{"status": "healthy"}` with HTTP 200 when healthy.
 - Response body: `{"status": "unhealthy", "reason": "<string>"}` with HTTP 503 when unhealthy.
+- The simulator **must** expose `/metrics` in Prometheus text format.
 
 ### FR-002 — Gateway Simulator: YAML configuration
 - The simulator **must** read a YAML configuration file from a path specified by the
@@ -52,6 +53,9 @@ monitors its health, and autonomously restores service using a known-good backup
   - The gateway's `/health` returns 200 OK, **and**
   - The current config YAML passes schema validation.
 - Backups are **never** created from an unhealthy or unknown state.
+- The first verified healthy check **must** create an initial backup when no valid backup
+  exists. Later healthy checks refresh the backup no more often than
+  `BACKUP_INTERVAL_SECONDS` (default: 60 seconds).
 
 ### FR-007 — Atomic backup with SHA-256
 - Backup **must** be written atomically: write to a `.tmp` file in the same directory,
@@ -69,6 +73,9 @@ monitors its health, and autonomously restores service using a known-good backup
 
 ### FR-009 — Controlled container restart
 - After config restoration, the controller **must** restart the gateway container.
+- When an incident is caused by an unavailable or stopped container while the current
+  config remains valid, recovery **must** skip config restoration and perform a guarded
+  restart directly.
 - The controller **must only** restart a container that satisfies **both** conditions:
   1. Container name is in `NEXGUARD_ALLOWED_CONTAINERS` (comma-separated env var).
   2. Container has the Docker label `io.nexguard.managed=true`.
@@ -163,6 +170,7 @@ monitors its health, and autonomously restores service using a known-good backup
 | `FAILURE_THRESHOLD`             | `3`            | No       |
 | `CONFIG_PATH`                   | `/data/gateway/gateway.yaml` | No |
 | `BACKUP_DIR`                    | `/data/backups` | No      |
+| `BACKUP_INTERVAL_SECONDS`       | `60`           | No       |
 | `NEXGUARD_ALLOWED_CONTAINERS`   | `gateway-simulator` | No  |
 | `DOCKER_SOCKET`                 | `/var/run/docker.sock` | No |
 | `RECOVERY_COOLDOWN_SECONDS`     | `60`           | No       |
@@ -199,17 +207,13 @@ See `docs/ssd/CONSTITUTION.md` § 3.2 for the complete exclusion list.
 
 ---
 
-## 9. Open Questions (to be resolved before implementation)
+## 9. Resolved Design Decisions
 
-| ID    | Question                                                                 | Impact              |
-|-------|--------------------------------------------------------------------------|---------------------|
-| OQ-01 | Should config reload in the simulator be on every request or on an interval? | Affects FR-002 implementation |
-| OQ-02 | Should the backup include the full YAML or a diff?                       | Affects FR-007, FR-008 |
-| OQ-03 | What is the exact Grafana dashboard UID (needed for provisioning)?        | Affects FR-012      |
-| OQ-04 | Should structured logs go only to stdout, or also to a file?             | Affects FR-014, NFR-04 |
+| ID    | Decision                                                               |
+|-------|------------------------------------------------------------------------|
+| OQ-01 | Reload on every `/health` request.                                      |
+| OQ-02 | Store a full YAML copy, not a diff.                                     |
+| OQ-03 | Use Grafana dashboard UID `nexguard-main`.                              |
+| OQ-04 | Write structured application logs to stdout only.                       |
 
-> **Recommended answers** (proceed with these unless overridden):
-> - OQ-01: Reload on every `/health` request (simplest, avoids threading complexity).
-> - OQ-02: Full YAML copy (not diff) — simpler to restore atomically.
-> - OQ-03: Use UID `nexguard-main` provisioned via JSON file.
-> - OQ-04: Stdout only (Docker captures it; avoids volume permission issues).
+These decisions were accepted with the specification on 2026-07-14.

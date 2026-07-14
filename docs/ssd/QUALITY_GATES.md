@@ -3,6 +3,11 @@
 > The IDE **does not proceed** to the next stage until every gate in the current
 > stage is green. A failed gate must be fixed before moving forward.
 
+**Docker-free development profile**: when explicitly approved by the owner, gates that
+require a Docker runtime are marked `DEFERRED`, not `PASS`. Non-Docker stages and gates may
+continue. Every deferred gate must pass in CI or on a Docker-capable target host before the
+MVP can satisfy its Definition of Done.
+
 ---
 
 ## Stage 0 — Analysis & SSD Documents
@@ -21,7 +26,7 @@
 |-------|------------------------------------------------------------|-------------------------------|
 | QG-0A | All SSD documents exist and are non-empty                  | `ls -la docs/ssd/ specs/001-nexguard-mvp/` |
 | QG-0B | No contradictions found in spec (cross-reference FR IDs)   | Manual review                 |
-| QG-0C | All acceptance criteria in `acceptance.md` map to FR-IDs   | Manual review                 |
+| QG-0C | All acceptance criteria map to an FR, NFR, ARCH, SEC, or System requirement | Manual review |
 | QG-0D | No production code was written during this stage           | `git diff --name-only HEAD`   |
 
 ---
@@ -85,6 +90,7 @@
 | QG-3C | Incident is logged as structured JSON to stdout                    | Unit test `test_incident_json_log`                    |
 | QG-3D | `nexguard_consecutive_health_failures` metric increments correctly | Unit test `test_metric_consecutive_failures`          |
 | QG-3E | `nexguard_incidents_total` increments on each incident             | Unit test `test_metric_incidents_total`               |
+| QG-3F | Health loop cadence stays within ±1 s of the configured interval    | Unit test `test_health_loop_cadence`                  |
 
 ---
 
@@ -188,10 +194,16 @@
 
 ## Global Non-Regression Gates (run before every commit)
 
+Run every gate that is applicable to the files available at the current stage. The
+`mypy services` gate becomes mandatory once T002 creates Python sources. The
+`docker compose config --quiet` gate becomes mandatory once T004 creates `compose.yaml`.
+
 ```bash
 ruff check .
 mypy services
 pytest
 docker compose config --quiet
-grep -rI "ghp_\|xoxb-\|AKIA" . && echo "SECRET FOUND" || echo "Clean"
+grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
+  --exclude-dir=.git --exclude-dir=.venv \
+  && echo "SECRET FOUND" || echo "Clean"
 ```

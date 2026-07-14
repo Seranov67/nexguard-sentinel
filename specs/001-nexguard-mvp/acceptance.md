@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/acceptance.md
 # NexGuard MVP — Acceptance Criteria
 
-**Version**: 1.0.0  
+**Version**: 1.0.1
 **Linked spec**: `specs/001-nexguard-mvp/spec.md`  
-**Status**: DRAFT  
+**Status**: APPROVED — owner approval recorded 2026-07-14
 
 > Each acceptance criterion maps to one or more Functional Requirements (FR-xxx)
 > from `spec.md`. All criteria must pass before the MVP is considered complete.
@@ -74,7 +74,7 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health)
 **When** `GET http://localhost:8080/health` is called  
 **Then** response is HTTP 503 with `"status": "unhealthy"`
 
-**Verification**: Unit test `test_config.py::test_missing_required_key_unhealthy`
+**Verification**: Unit test `test_config.py::test_reject_missing_required_keys`
 
 ---
 
@@ -121,16 +121,21 @@ docker compose logs nexguard-controller | grep -c "incident_opened" | awk '{if (
 
 ## AC-009 — Backup created from healthy state only (FR-006)
 
-**Given** the controller is running and gateway is healthy  
-**When** the backup interval triggers  
-**Then** a backup file appears in `data/backups/`
+**Given** the controller is running, the gateway is healthy, and no valid backup exists
+**When** the first verified healthy check completes
+**Then** an initial backup file appears in `data/backups/`
+
+**Given** a valid backup already exists and the gateway remains healthy
+**When** `BACKUP_INTERVAL_SECONDS` elapses
+**Then** a new timestamped backup is created
 
 **Given** the gateway is unhealthy  
 **When** the backup interval triggers  
 **Then** no new backup file is created
 
-**Verification**: Unit tests `test_backup.py::test_backup_only_when_healthy` and
-`test_backup.py::test_no_backup_when_unhealthy`
+**Verification**: Unit tests `test_backup.py::test_backup_only_when_healthy`,
+`test_backup.py::test_no_backup_when_unhealthy`, and an integration test for initial and
+interval-triggered backup creation.
 
 ---
 
@@ -226,7 +231,9 @@ done
 
 **Verification**:
 ```bash
-curl -sf -u admin:admin http://localhost:3000/api/dashboards/uid/nexguard-main | grep -q "nexguard" && echo "AC-015: PASS"
+curl -sf -u "${GF_SECURITY_ADMIN_USER}:${GF_SECURITY_ADMIN_PASSWORD}" \
+  http://localhost:3000/api/dashboards/uid/nexguard-main \
+  | grep -q "nexguard" && echo "AC-015: PASS"
 ```
 
 ---
@@ -299,6 +306,7 @@ print('AC-017: PASS')
 
 **Expected outcomes**:
 - Controller logs show: `health_check FAIL` × 3, then `incident_opened`, then `container_restarted`
+- No config restoration is attempted while the current YAML remains valid
 - `nexguard_recoveries_total` counter = 1
 - Gateway `/health` returns 200 OK
 - Grafana shows recovery event
@@ -332,8 +340,20 @@ print('AC-017: PASS')
 
 **Verification**:
 ```bash
-grep -rI "ghp_\|xoxb-\|AKIA\|bot[0-9]\{8,\}:" . --exclude-dir=.git && echo "SECRET FOUND — FAIL" || echo "AC-022: PASS"
+grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
+  --exclude-dir=.git --exclude-dir=.venv \
+  && echo "SECRET FOUND — FAIL" || echo "AC-022: PASS"
 ```
+
+---
+
+## AC-023 — Health-check loop cadence (NFR-02)
+
+**Given** a configured health-check interval
+**When** the controller health loop executes multiple checks
+**Then** each check begins within ±1 second of its scheduled deadline without cumulative drift
+
+**Verification**: Unit test `test_health_monitor.py::test_health_loop_cadence`
 
 ---
 
@@ -363,3 +383,4 @@ grep -rI "ghp_\|xoxb-\|AKIA\|bot[0-9]\{8,\}:" . --exclude-dir=.git && echo "SECR
 | AC-020 | System     | E2E           | `[ ]`  |
 | AC-021 | System     | E2E           | `[ ]`  |
 | AC-022 | SEC-1/2    | CI/Static     | `[ ]`  |
+| AC-023 | NFR-02     | Unit          | `[ ]`  |

@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/plan.md
 # NexGuard MVP — Implementation Plan
 
-**Version**: 1.0.0  
+**Version**: 1.0.1
 **Spec reference**: `specs/001-nexguard-mvp/spec.md`  
-**Status**: DRAFT  
+**Status**: APPROVED — owner approval recorded 2026-07-14
 
 ---
 
@@ -19,7 +19,7 @@ Each arrow represents a quality gate that must pass before proceeding.
 
 ---
 
-## Stage 0 — Analysis & SSD Documents (Current Stage)
+## Stage 0 — Analysis & SSD Documents (Completed)
 
 **Goal**: Lock the specification before writing any code.
 
@@ -28,8 +28,8 @@ Each arrow represents a quality gate that must pass before proceeding.
 - `docs/ssd/QUALITY_GATES.md` ✓
 - `specs/001-nexguard-mvp/spec.md` ✓
 - `specs/001-nexguard-mvp/plan.md` ✓ (this file)
-- `specs/001-nexguard-mvp/tasks.md`
-- `specs/001-nexguard-mvp/acceptance.md`
+- `specs/001-nexguard-mvp/tasks.md` ✓
+- `specs/001-nexguard-mvp/acceptance.md` ✓
 
 **Risks identified**:
 - Docker socket access is high-privilege — mitigated by allowlist + label guard.
@@ -38,9 +38,9 @@ Each arrow represents a quality gate that must pass before proceeding.
 - Grafana auto-provisioning requires exact JSON structure — mitigated by testing
   provisioning on first `docker compose up`.
 
-**Open questions**: See `spec.md` § 9.
+**Resolved decisions**: See `spec.md` § 9.
 
-**Exit criterion**: Owner reviews and approves spec; no contradictions remain.
+**Exit criterion**: Met on 2026-07-14. Owner approved implementation to proceed.
 
 ---
 
@@ -51,10 +51,11 @@ Each arrow represents a quality gate that must pass before proceeding.
 **Components**:
 
 ### `compose.yaml`
-- Services: `gateway-simulator`, `nexguard-controller`, `prometheus`, `grafana`
-- Networks: `nexguard-net` (bridge)
-- Volumes: `gateway-data`, `backup-data`, `prometheus-data`, `grafana-data`
-- Health checks defined for gateway-simulator and nexguard-controller
+- Stage 1 service: `gateway-simulator` only
+- Bind mount: `./data/gateway:/data/gateway:ro`
+- Managed label: `io.nexguard.managed=true`
+- Health check defined for `gateway-simulator`
+- Controller is added in Stage 4; Prometheus and Grafana are added in Stage 5
 
 ### `services/gateway-simulator/`
 
@@ -69,8 +70,8 @@ Each arrow represents a quality gate that must pass before proceeding.
 - Use `uvicorn` with `--reload` disabled in production mode
 - `/health` reloads config on every call (FR-002, OQ-01 decision)
 - `/metrics` uses `prometheus-client` `generate_latest()`
-- Simulator exposes its own simple metrics: `gateway_simulator_config_reload_total`,
-  `gateway_simulator_uptime_seconds`
+- Simulator exposes `gateway_simulator_config_valid`; the seven required `nexguard_*`
+  metrics remain the responsibility of the controller.
 
 ---
 
@@ -83,7 +84,7 @@ Each arrow represents a quality gate that must pass before proceeding.
 | Function / Class | Responsibility |
 |-----------------|----------------|
 | `BackupManager` | Manages backup creation and listing |
-| `create_backup(config_path, backup_dir)` | Atomic write + SHA-256 file |
+| `create_backup(config_path, backup_dir, gateway_healthy)` | Reject unhealthy state; validate config; atomic write + SHA-256 file |
 | `list_backups(backup_dir)` | Sorted list of available backups |
 | `get_latest_backup(backup_dir)` | Returns path to most recent backup |
 | `verify_backup(backup_path)` | Reads `.sha256` and validates checksum |
@@ -95,6 +96,9 @@ Each arrow represents a quality gate that must pass before proceeding.
 | `is_valid_yaml(path)` | Returns `(valid: bool, reason: str)` |
 | `validate_schema(data)` | Validates against gateway YAML schema |
 | `check_config(path)` | Combines YAML parsing + schema validation |
+
+The controller creates an initial backup on the first verified healthy check, then refreshes
+it after `BACKUP_INTERVAL_SECONDS` (default 60 s) while the gateway remains healthy.
 
 ---
 
@@ -129,7 +133,7 @@ Each arrow represents a quality gate that must pass before proceeding.
 | Class | Responsibility |
 |-------|----------------|
 | `RecoveryManager` | Orchestrates restore → restart → verify |
-| `attempt_recovery()` | Main entry: cooldown check → restore → restart → health-check |
+| `attempt_recovery()` | Main entry: safety checks → select recovery branch → health-check |
 | `_check_cooldown()` | Enforces 60 s minimum between attempts |
 | `_check_rate_limit()` | Enforces max 3 per 10 min sliding window |
 
@@ -140,6 +144,10 @@ Each arrow represents a quality gate that must pass before proceeding.
 | `DockerManager` | Wraps Docker SDK with allowlist enforcement |
 | `restart_container(name)` | Validates label + allowlist, then restarts |
 | `wait_for_running(name, timeout)` | Polls until container is running |
+
+Recovery has two explicit branches:
+1. Valid config + unavailable container: guarded restart → health-check.
+2. Invalid config: verify backup → atomic restore → guarded restart → health-check.
 
 ---
 
@@ -201,7 +209,7 @@ jobs:
   lint: ruff check . && mypy services
   test: pytest --tb=short
   compose-check: docker compose config --quiet
-  secret-scan: grep -rI "ghp_\|AKIA" . && exit 1 || exit 0
+  secret-scan: grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . --exclude-dir=.git --exclude-dir=.venv && exit 1 || exit 0
 ```
 
 ---
@@ -263,3 +271,12 @@ Stage 2 (Backup + Config Check)
 | R-04 | Telegram API timeout blocks recovery              | Low         | High   | Non-blocking thread (FR-013, ARCH-6)          |
 | R-05 | Grafana provisioning fails silently               | Low         | Medium | QG-5C verifies dashboard on first start       |
 | R-06 | Stage 4 demo fails because container name mismatch | Medium    | Medium | `NEXGUARD_ALLOWED_CONTAINERS` env var default matches `compose.yaml` |
+
+---
+
+## Change Log
+
+| Date       | Change |
+|------------|--------|
+| 2026-07-14 | Approved plan; aligned stage boundaries, backup trigger, bind mounts, metrics, and recovery branches. |
+| 2026-07-14 | Owner designated the current host Docker-free; Docker gates are deferred to CI/target-host verification. |

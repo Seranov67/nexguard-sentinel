@@ -101,6 +101,10 @@ ANALYZE → SPECIFY → REVIEW → IMPLEMENT (stage-by-stage) → VERIFY → COM
   and **waits for specification approval** before writing production code.
 - Each implementation stage has a **quality gate**; only after passing it does the
   IDE proceed to the next stage.
+- When the owner explicitly designates a development host as Docker-free, Docker-only
+  gates may be recorded as **deferred** and verified later in CI or on the target host.
+  Non-Docker work may continue, but deferred gates remain mandatory for the MVP
+  Definition of Done and all Docker security rules remain in force.
 - Every task in `tasks.md` has: unique ID · files · dependencies · acceptance criteria ·
   verification command.
 
@@ -143,3 +147,4 @@ Changes to this Constitution require:
 | Date       | Author    | Change                  |
 |------------|-----------|-------------------------|
 | 2026-07-14 | bootstrap | Initial version created |
+| 2026-07-14 | owner-approved amendment | Allow Docker-only gates to be deferred on an explicitly Docker-free development host |

@@ -3,7 +3,7 @@
 
 **Format**: Each task has a unique ID, files, dependencies, acceptance criterion, and
 verification command.  
-**Status legend**: `[ ]` todo · `[/]` in-progress · `[x]` done
+**Status legend**: `[ ]` todo · `[/]` in-progress · `[x]` done · `[d]` Docker gate deferred
 
 ---
 
@@ -32,7 +32,7 @@ specs/001-nexguard-mvp/acceptance.md
 ## Stage 1 — Docker Compose + Gateway Simulator
 
 ### T001 — Project tooling config (`pyproject.toml`, `.env.example`, `.gitignore`)
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 pyproject.toml
@@ -41,12 +41,12 @@ pyproject.toml
 ```
 **Dependencies**: T000  
 **Acceptance criterion**: `ruff check .` and `mypy services` are runnable; no secrets in `.env.example`.  
-**Verification**: `ruff check . && mypy services --ignore-missing-imports`
+**Verification**: `ruff check . && mypy --version`
 
 ---
 
 ### T002 — Gateway Simulator: FastAPI app
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/gateway-simulator/app/__init__.py
@@ -72,7 +72,7 @@ kill %1
 ---
 
 ### T003 — Gateway Simulator: Dockerfile
-**Status**: `[ ]`  
+**Status**: `[d]` — implementation complete; Docker verification deferred to CI/target host
 **Files**:
 ```
 services/gateway-simulator/Dockerfile
@@ -85,7 +85,7 @@ services/gateway-simulator/requirements.txt
 ---
 
 ### T004 — Docker Compose skeleton
-**Status**: `[ ]`  
+**Status**: `[d]` — implementation complete; Docker verification deferred to CI/target host
 **Files**:
 ```
 compose.yaml
@@ -103,7 +103,7 @@ curl -sf http://localhost:8080/health
 ---
 
 ### T005 — Gateway Simulator unit tests
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/gateway-simulator/tests/__init__.py
@@ -125,8 +125,10 @@ services/gateway-simulator/tests/test_config.py
 services/nexguard-controller/app/__init__.py
 services/nexguard-controller/app/backup.py
 ```
-**Dependencies**: T001  
+**Dependencies**: T007
 **Acceptance criterion**:
+- `create_backup()` refuses unhealthy or unknown gateway state.
+- The source YAML is schema-valid before it can become a backup.
 - `create_backup()` writes atomically.
 - SHA-256 file is created alongside backup.
 - `verify_backup()` detects tampered files.
@@ -210,6 +212,7 @@ services/nexguard-controller/tests/test_incident.py
 ```
 **Dependencies**: T009, T010  
 **Acceptance criterion**: Tests cover all state transitions; use `pytest-asyncio` for async code.  
+Tests also verify that loop scheduling stays within ±1 second of the configured interval.
 **Verification**: `pytest services/nexguard-controller/tests/test_health_monitor.py services/nexguard-controller/tests/test_incident.py -v`
 
 ---
@@ -240,7 +243,8 @@ services/nexguard-controller/app/recovery.py
 ```
 **Dependencies**: T006, T007, T012  
 **Acceptance criterion**:
-- Recovery pipeline: verify backup SHA → restore config → restart container → health-check.
+- Valid config + unavailable container: guarded restart → health-check.
+- Invalid config: verify backup SHA → restore config → guarded restart → health-check.
 - Cooldown of 60 s enforced.
 - Rate limit of 3 per 10 min enforced.
 - `manual_intervention_required` status after limit exceeded.
@@ -263,6 +267,8 @@ services/nexguard-controller/app/metrics.py
 - `/health` returns controller health.
 - `/metrics` returns Prometheus metrics.
 - Background task runs health-check loop.
+- The first verified healthy check creates an initial backup; later backups respect
+  `BACKUP_INTERVAL_SECONDS` (default 60 s).
 
 **Verification**:
 ```bash
@@ -449,8 +455,7 @@ T000
  └─ T001
      ├─ T002 ──► T003 ──► T004
      │    └─ T005
-     ├─ T006 ──► T008
-     │    T007 ──► T008
+     ├─ T007 ──► T006 ──► T008
      ├─ T009 ──► T010 ──► T011
      ├─ T012 ──► T017
      └─ T013 ──► T017
