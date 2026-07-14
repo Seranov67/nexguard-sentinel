@@ -131,7 +131,16 @@ class RecoveryManager:
         self._log("recovery_started", "INFO", "Recovery attempt started")
 
         if not config_valid:
-            backup_path = get_latest_backup(self.backup_dir)
+            try:
+                backup_path = get_latest_backup(self.backup_dir)
+            except OSError as exc:
+                self._log(
+                    "recovery_failed",
+                    "ERROR",
+                    "Backup directory could not be read",
+                    reason=str(exc),
+                )
+                return RecoveryResult(False, "restore_failed")
             if backup_path is None:
                 self._log("recovery_failed", "ERROR", "No valid backup is available")
                 return RecoveryResult(False, "backup_not_found")
@@ -149,17 +158,38 @@ class RecoveryManager:
             )
             self._log("config_restored", "INFO", "Gateway config restored atomically")
 
-        self.docker_manager.restart_container(self.container_name)
+        try:
+            self.docker_manager.restart_container(self.container_name)
+        except Exception as exc:
+            self._log(
+                "recovery_failed",
+                "ERROR",
+                "Container restart failed",
+                error_type=type(exc).__name__,
+                reason=str(exc),
+            )
+            return RecoveryResult(False, "docker_operation_failed", restored)
         self._log(
             "container_restarted",
             "INFO",
             "Managed container restart requested",
             container=self.container_name,
         )
-        if not self.docker_manager.wait_for_running(
-            self.container_name,
-            timeout=self.restart_wait_seconds,
-        ):
+        try:
+            running = self.docker_manager.wait_for_running(
+                self.container_name,
+                timeout=self.restart_wait_seconds,
+            )
+        except Exception as exc:
+            self._log(
+                "recovery_failed",
+                "ERROR",
+                "Container state polling failed",
+                error_type=type(exc).__name__,
+                reason=str(exc),
+            )
+            return RecoveryResult(False, "docker_operation_failed", restored)
+        if not running:
             self._log("recovery_failed", "ERROR", "Container did not reach running state")
             return RecoveryResult(False, "container_not_running", restored)
 

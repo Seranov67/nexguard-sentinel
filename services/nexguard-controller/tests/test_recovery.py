@@ -52,13 +52,16 @@ gateway:
 
 
 class FakeDockerManager:
-    def __init__(self, *, running: bool = True) -> None:
+    def __init__(self, *, running: bool = True, restart_error: Exception | None = None) -> None:
         self.running = running
+        self.restart_error = restart_error
         self.restart_calls = 0
         self.wait_calls = 0
 
     def restart_container(self, _name: str) -> None:
         self.restart_calls += 1
+        if self.restart_error is not None:
+            raise self.restart_error
 
     def wait_for_running(self, _name: str, *, timeout: float) -> bool:
         self.wait_calls += 1
@@ -198,3 +201,35 @@ async def test_post_recovery_health_check(tmp_path: Path) -> None:
     assert health_calls == 1
     assert docker_manager.restart_calls == 1
     assert docker_manager.wait_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_docker_failure_does_not_escape_recovery(tmp_path: Path) -> None:
+    docker_manager = FakeDockerManager(restart_error=RuntimeError("daemon unavailable"))
+    manager = _manager(tmp_path, docker_manager, [0.0])
+
+    result = await manager.attempt_recovery(config_valid=True)
+
+    assert not result.success
+    assert result.reason == "docker_operation_failed"
+    assert docker_manager.restart_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_backup_listing_error_does_not_escape_recovery(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    docker_manager = FakeDockerManager()
+    manager = _manager(tmp_path, docker_manager, [0.0])
+
+    def failed_listing(_backup_dir: Path) -> Path | None:
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(recovery_module, "get_latest_backup", failed_listing)
+
+    result = await manager.attempt_recovery(config_valid=False)
+
+    assert not result.success
+    assert result.reason == "restore_failed"
+    assert docker_manager.restart_calls == 0

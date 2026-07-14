@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.docker_manager import DockerClientProtocol
     from app.main import ControllerRuntime, Settings
     from app.models import HealthResult
+    from app.recovery import RecoveryResult
 else:
     package_name = "nexguard_controller_app"
     app_dir = Path(__file__).resolve().parents[1] / "app"
@@ -31,9 +32,11 @@ else:
         package_spec.loader.exec_module(package)
     main_module = importlib.import_module(f"{package_name}.main")
     models_module = importlib.import_module(f"{package_name}.models")
+    recovery_module = importlib.import_module(f"{package_name}.recovery")
     ControllerRuntime = main_module.ControllerRuntime
     Settings = main_module.Settings
     HealthResult = models_module.HealthResult
+    RecoveryResult = recovery_module.RecoveryResult
 
 VALID_CONFIG = """\
 gateway:
@@ -57,6 +60,23 @@ class UnusedDockerClient:
     @property
     def containers(self) -> UnusedContainers:
         return UnusedContainers()
+
+
+def _settings(tmp_path: Path, *, backup_dir: Path | None = None) -> Settings:
+    return Settings(
+        gateway_health_url="http://gateway/health",
+        health_interval=10,
+        failure_threshold=3,
+        config_path=tmp_path / "gateway.yaml",
+        backup_dir=backup_dir or tmp_path / "backups",
+        backup_interval=60,
+        allowed_containers={"gateway-simulator"},
+        container_name="gateway-simulator",
+        recovery_cooldown=60,
+        max_recoveries=3,
+        recovery_window=600,
+        restart_wait=30,
+    )
 
 
 @pytest.mark.asyncio
@@ -84,20 +104,7 @@ async def test_controller_http_endpoints_export_all_metrics() -> None:
 async def test_initial_healthy_check_creates_backup(tmp_path: Path) -> None:
     config_path = tmp_path / "gateway.yaml"
     config_path.write_text(VALID_CONFIG, encoding="utf-8")
-    settings = Settings(
-        gateway_health_url="http://gateway/health",
-        health_interval=10,
-        failure_threshold=3,
-        config_path=config_path,
-        backup_dir=tmp_path / "backups",
-        backup_interval=60,
-        allowed_containers={"gateway-simulator"},
-        container_name="gateway-simulator",
-        recovery_cooldown=60,
-        max_recoveries=3,
-        recovery_window=600,
-        restart_wait=30,
-    )
+    settings = _settings(tmp_path)
     runtime = ControllerRuntime(settings, cast("DockerClientProtocol", UnusedDockerClient()))
     result = HealthResult(
         ok=True,
@@ -111,3 +118,52 @@ async def test_initial_healthy_check_creates_backup(tmp_path: Path) -> None:
     backups = runtime.backups.list_backups()
     assert len(backups) == 1
     assert runtime.backups.verify_backup(backups[0])
+
+
+@pytest.mark.asyncio
+async def test_open_incident_retries_recovery(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "gateway.yaml"
+    config_path.write_text(VALID_CONFIG, encoding="utf-8")
+    runtime = ControllerRuntime(
+        _settings(tmp_path),
+        cast("DockerClientProtocol", UnusedDockerClient()),
+    )
+    attempts = 0
+
+    async def failed_recovery(*, config_valid: bool) -> RecoveryResult:
+        nonlocal attempts
+        assert config_valid
+        attempts += 1
+        return RecoveryResult(False, "post_recovery_health_failed")
+
+    monkeypatch.setattr(runtime.recovery, "attempt_recovery", failed_recovery)
+    failure = HealthResult(ok=False, reason="network_error", checked_at=datetime.now(UTC))
+
+    for _check in range(4):
+        await runtime.handle_health_result(failure)
+
+    assert attempts == 2
+    assert runtime.incidents.current_incident is not None
+
+
+@pytest.mark.asyncio
+async def test_backup_io_error_does_not_escape_loop(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path = tmp_path / "gateway.yaml"
+    config_path.write_text(VALID_CONFIG, encoding="utf-8")
+    invalid_backup_dir = tmp_path / "not-a-directory"
+    invalid_backup_dir.write_text("occupied", encoding="utf-8")
+    runtime = ControllerRuntime(
+        _settings(tmp_path, backup_dir=invalid_backup_dir),
+        cast("DockerClientProtocol", UnusedDockerClient()),
+    )
+    result = HealthResult(ok=True, reason="ok", checked_at=datetime.now(UTC))
+
+    await runtime.handle_health_result(result)
+
+    assert "backup_failed" in capsys.readouterr().out

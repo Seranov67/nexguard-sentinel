@@ -16,7 +16,7 @@ import docker
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
-from .backup import BackupManager, BackupValidationError
+from .backup import BackupError, BackupManager
 from .config_checker import check_config
 from .docker_manager import DockerClientProtocol, DockerManager
 from .health_monitor import HealthMonitor
@@ -133,7 +133,7 @@ class ControllerRuntime:
             if config_valid and backup_due:
                 try:
                     backup_path = self.backups.create_backup(gateway_healthy=True)
-                except BackupValidationError as exc:
+                except (BackupError, OSError) as exc:
                     _log_event("backup_failed", "ERROR", "Config backup failed", reason=str(exc))
                 else:
                     self.last_backup_monotonic = now
@@ -146,15 +146,21 @@ class ControllerRuntime:
                     )
             return
 
-        incident = self.incidents.record_failure(result.reason)
-        if incident is None:
+        new_incident = self.incidents.record_failure(result.reason)
+        if new_incident is not None:
+            self.notifier.send_async(f"NexGuard incident opened: {new_incident.reason}")
+        if self.incidents.current_incident is None:
             return
-        self.notifier.send_async(f"NexGuard incident opened: {incident.reason}")
+        if self.recovery.status == "manual_intervention_required":
+            return
         started = time.monotonic()
         recovery_result = await self.recovery.attempt_recovery(config_valid=config_valid)
         METRICS.recovery_duration_seconds.observe(max(0.0, time.monotonic() - started))
         if recovery_result.success:
             METRICS.recoveries_total.inc()
+            METRICS.gateway_up.set(1)
+            METRICS.config_integrity.set(1)
+            self.incidents.record_success()
             self.notifier.send_async("NexGuard recovery completed successfully")
         else:
             self.notifier.send_async(f"NexGuard recovery failed: {recovery_result.reason}")
