@@ -168,7 +168,7 @@ services/nexguard-controller/tests/test_config_checker.py
 ## Stage 3 — Incident Detection
 
 ### T009 — Health monitor
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/health_monitor.py
@@ -185,7 +185,7 @@ services/nexguard-controller/app/models.py
 ---
 
 ### T010 — Incident manager
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/incident.py
@@ -202,7 +202,7 @@ services/nexguard-controller/app/incident.py
 ---
 
 ### T011 — Incident + health monitor tests
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/tests/test_health_monitor.py
