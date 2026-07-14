@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install development dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+      - name: Ruff
+        run: ruff check .
+      - name: MyPy gateway simulator
+        run: mypy services/gateway-simulator
+      - name: MyPy controller
+        run: mypy services/nexguard-controller
+      - name: Tests without Telegram credentials
+        env:
+          TELEGRAM_BOT_TOKEN: ""
+          TELEGRAM_CHAT_ID: ""
+        run: pytest --tb=short
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Secret signatures
+        run: |
+          if grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
+            --exclude-dir=.git --exclude-dir=.venv; then
+            echo "Secret signature found"
+            exit 1
+          fi

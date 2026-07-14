@@ -393,7 +393,7 @@ services/nexguard-controller/tests/test_notifier.py
 ## Stage 7 — Tests & CI
 
 ### T022 — Full test suite
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/gateway-simulator/tests/
@@ -406,7 +406,7 @@ services/nexguard-controller/tests/
 ---
 
 ### T023 — CI pipeline
-**Status**: `[ ]`  
+**Status**: `[/]` — workflow implemented; remote GitHub run pending
 **Files**:
 ```
 .github/workflows/ci.yml
