@@ -1,0 +1,28 @@
+name: nexguard
+
+services:
+  gateway-simulator:
+    build:
+      context: ./services/gateway-simulator
+    container_name: gateway-simulator
+    environment:
+      GATEWAY_CONFIG_PATH: /data/gateway/gateway.yaml
+      PORT: "8080"
+    labels:
+      io.nexguard.managed: "true"
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      - ./data/gateway:/data/gateway:ro
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8080/health', timeout=3)
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

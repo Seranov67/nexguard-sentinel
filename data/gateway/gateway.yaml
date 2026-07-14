@@ -1,0 +1,9 @@
+gateway:
+  id: gateway-001
+  name: NexGuard Demo Gateway
+  location: Kyiv
+  sensors:
+    - id: temperature-001
+      type: temperature
+      unit: celsius
+  reporting_interval_seconds: 10

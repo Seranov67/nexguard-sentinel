@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexguard"
@@ -9,8 +9,15 @@ description = "NexGuard Edge Resilience — IoT gateway supervisor (hackathon MV
 requires-python = ">=3.12"
 dependencies = []
 
+[tool.setuptools]
+packages = []
+
 [project.optional-dependencies]
 dev = [
+    "fastapi>=0.115",
+    "prometheus-client>=0.21",
+    "pydantic>=2.10",
+    "PyYAML>=6.0",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "pytest-httpx>=0.30",
@@ -19,6 +26,7 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML>=6.0",
     "types-requests>=2.31",
+    "uvicorn>=0.32",
 ]
 
 [tool.pytest.ini_options]
@@ -47,13 +55,11 @@ select = [
     "RUF",  # ruff-specific
 ]
 ignore = [
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
     "S101",    # use of assert (needed in tests)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["ANN", "S"]
+"**/tests/**/*.py" = ["ANN", "S"]
 
 [tool.mypy]
 python_version = "3.12"
