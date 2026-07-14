@@ -141,9 +141,21 @@ class RecoveryManager:
                 self._log("recovery_failed", "ERROR", "Config restoration failed", reason=str(exc))
                 return RecoveryResult(False, "restore_failed")
             restored = True
+            self._log(
+                "backup_verified",
+                "INFO",
+                "Backup checksum verified",
+                backup=str(backup_path),
+            )
             self._log("config_restored", "INFO", "Gateway config restored atomically")
 
         self.docker_manager.restart_container(self.container_name)
+        self._log(
+            "container_restarted",
+            "INFO",
+            "Managed container restart requested",
+            container=self.container_name,
+        )
         if not self.docker_manager.wait_for_running(
             self.container_name,
             timeout=self.restart_wait_seconds,
