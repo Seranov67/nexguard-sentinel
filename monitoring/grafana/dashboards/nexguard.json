@@ -1,0 +1,66 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Gateway Status",
+      "type": "stat",
+      "targets": [{"expr": "nexguard_gateway_up", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"options": {"0": {"text": "DOWN"}, "1": {"text": "UP"}}, "type": "value"}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}, "overrides": []},
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0}
+    },
+    {
+      "id": 2,
+      "title": "Config Integrity",
+      "type": "stat",
+      "targets": [{"expr": "nexguard_config_integrity", "refId": "A"}],
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0}
+    },
+    {
+      "id": 3,
+      "title": "Incidents Total",
+      "type": "stat",
+      "targets": [{"expr": "nexguard_incidents_total", "refId": "A"}],
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0}
+    },
+    {
+      "id": 4,
+      "title": "Recoveries Total",
+      "type": "stat",
+      "targets": [{"expr": "nexguard_recoveries_total", "refId": "A"}],
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0}
+    },
+    {
+      "id": 5,
+      "title": "Recovery Duration (p95)",
+      "type": "timeseries",
+      "targets": [{"expr": "histogram_quantile(0.95, sum(rate(nexguard_recovery_duration_seconds_bucket[5m])) by (le))", "refId": "A"}],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+    },
+    {
+      "id": 6,
+      "title": "Consecutive Failures",
+      "type": "timeseries",
+      "targets": [{"expr": "nexguard_consecutive_health_failures", "refId": "A"}],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+    },
+    {
+      "id": 7,
+      "title": "Last Backup Time",
+      "type": "stat",
+      "targets": [{"expr": "nexguard_last_backup_timestamp_seconds", "refId": "A"}],
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 14}
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["nexguard", "edge-resilience"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "timezone": "browser",
+  "title": "NexGuard Edge Resilience",
+  "uid": "nexguard-main",
+  "version": 1
+}
