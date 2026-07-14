@@ -23,6 +23,7 @@ from .health_monitor import HealthMonitor
 from .incident import IncidentManager
 from .metrics import METRICS, render_metrics
 from .models import HealthResult
+from .notifier import TelegramNotifier
 from .recovery import RecoveryManager
 
 
@@ -101,6 +102,7 @@ class ControllerRuntime:
             metrics=METRICS.incidents,
         )
         self.backups = BackupManager(settings.config_path, settings.backup_dir)
+        self.notifier = TelegramNotifier.from_env()
         docker_manager = DockerManager(docker_client, settings.allowed_containers)
         self.recovery = RecoveryManager(
             config_path=settings.config_path,
@@ -147,12 +149,15 @@ class ControllerRuntime:
         incident = self.incidents.record_failure(result.reason)
         if incident is None:
             return
+        self.notifier.send_async(f"NexGuard incident opened: {incident.reason}")
         started = time.monotonic()
         recovery_result = await self.recovery.attempt_recovery(config_valid=config_valid)
         METRICS.recovery_duration_seconds.observe(max(0.0, time.monotonic() - started))
         if recovery_result.success:
             METRICS.recoveries_total.inc()
+            self.notifier.send_async("NexGuard recovery completed successfully")
         else:
+            self.notifier.send_async(f"NexGuard recovery failed: {recovery_result.reason}")
             _log_event(
                 "recovery_failed",
                 "ERROR",

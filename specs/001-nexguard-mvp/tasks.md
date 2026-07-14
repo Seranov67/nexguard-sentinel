@@ -374,7 +374,7 @@ compose.yaml   ← add prometheus, grafana services
 ## Stage 6 — Telegram (Optional)
 
 ### T021 — Telegram notifier
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/notifier.py
