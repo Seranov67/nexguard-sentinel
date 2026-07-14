@@ -26,3 +26,43 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
+
+  nexguard-controller:
+    build:
+      context: ./services/nexguard-controller
+    container_name: nexguard-controller
+    depends_on:
+      gateway-simulator:
+        condition: service_healthy
+    environment:
+      BACKUP_DIR: /data/backups
+      BACKUP_INTERVAL_SECONDS: "${BACKUP_INTERVAL_SECONDS:-60}"
+      CONFIG_PATH: /data/gateway/gateway.yaml
+      FAILURE_THRESHOLD: "${FAILURE_THRESHOLD:-3}"
+      GATEWAY_HEALTH_URL: http://gateway-simulator:8080/health
+      HEALTH_CHECK_INTERVAL_SECONDS: "${HEALTH_CHECK_INTERVAL_SECONDS:-10}"
+      MAX_RECOVERIES_PER_WINDOW: "${MAX_RECOVERIES_PER_WINDOW:-3}"
+      NEXGUARD_ALLOWED_CONTAINERS: "${NEXGUARD_ALLOWED_CONTAINERS:-gateway-simulator}"
+      RECOVERY_COOLDOWN_SECONDS: "${RECOVERY_COOLDOWN_SECONDS:-60}"
+      RECOVERY_WINDOW_SECONDS: "${RECOVERY_WINDOW_SECONDS:-600}"
+      RESTART_WAIT_SECONDS: "${RESTART_WAIT_SECONDS:-30}"
+    group_add:
+      - "${DOCKER_GID:-0}"
+    ports:
+      - "${METRICS_PORT:-8081}:8081"
+    volumes:
+      - ./data/backups:/data/backups
+      - ./data/gateway:/data/gateway
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://localhost:8081/health', timeout=3)
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

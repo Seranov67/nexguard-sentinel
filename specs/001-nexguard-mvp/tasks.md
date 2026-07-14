@@ -218,7 +218,7 @@ Tests also verify that loop scheduling stays within ±1 second of the configured
 ## Stage 4 — Restore & Docker Restart
 
 ### T012 — Docker manager
-**Status**: `[ ]`  
+**Status**: `[x]` — mock-tested; no local Docker daemon used
 **Files**:
 ```
 services/nexguard-controller/app/docker_manager.py
@@ -234,7 +234,7 @@ services/nexguard-controller/app/docker_manager.py
 ---
 
 ### T013 — Recovery manager
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/recovery.py
@@ -253,7 +253,7 @@ services/nexguard-controller/app/recovery.py
 ---
 
 ### T014 — Controller main loop
-**Status**: `[ ]`  
+**Status**: `[d]` — implementation and non-Docker checks pass; container check deferred
 **Files**:
 ```
 services/nexguard-controller/app/main.py
@@ -278,7 +278,7 @@ curl -sf http://localhost:8081/metrics | grep nexguard_gateway_up
 ---
 
 ### T015 — Controller Dockerfile
-**Status**: `[ ]`  
+**Status**: `[d]` — implementation complete; build deferred to CI/target host
 **Files**:
 ```
 services/nexguard-controller/Dockerfile
@@ -291,7 +291,7 @@ services/nexguard-controller/requirements.txt
 ---
 
 ### T016 — Demo scripts: Scenario A & B
-**Status**: `[ ]`  
+**Status**: `[d]` — scripts pass syntax checks; execution deferred to target host
 **Files**:
 ```
 scripts/demo-stop.sh
@@ -319,7 +319,7 @@ sleep 45
 ---
 
 ### T017 — Recovery, Docker manager tests
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/tests/test_recovery.py
