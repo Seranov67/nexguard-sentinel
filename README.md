@@ -1,7 +1,8 @@
 # NexGuard Edge Resilience
 
 > **Hackathon MVP** — Specification-Driven Development  
-> Status: Stage 0 complete, awaiting spec approval before implementation.
+> Status: Stages 1–8 implemented; Docker runtime verification is deferred to CI or a
+> Docker-capable target host.
 
 ---
 
@@ -20,7 +21,9 @@ and limited access to technical personnel.
 
 ```bash
 # Prerequisites: Docker + Docker Compose v2, Python 3.12 (for tests)
-cp .env.example .env          # edit if you want Telegram notifications
+cp .env.example .env
+# Set a local GF_SECURITY_ADMIN_PASSWORD in .env.
+# Telegram variables may remain empty.
 docker compose up -d --build  # starts all 4 containers
 
 # Verify everything is healthy
@@ -29,7 +32,13 @@ curl http://localhost:8080/health    # gateway simulator
 curl http://localhost:8081/health    # nexguard controller
 ```
 
-Open Grafana at http://localhost:3000 (admin / admin).
+Open Grafana at [http://localhost:3000](http://localhost:3000) using
+`GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` from `.env`.
+
+All published ports bind to `127.0.0.1` only.
+
+> The current development host is intentionally Docker-free. The Compose commands are
+> verified by CI/target-host gates rather than executed on this machine.
 
 ---
 
@@ -44,6 +53,7 @@ sleep 45
 
 ### Scenario B — Config corruption
 ```bash
+./scripts/reset-demo.sh  # waits for the initial healthy backup
 ./scripts/demo-corrupt-config.sh
 sleep 45
 ./scripts/verify-demo.sh
@@ -125,11 +135,6 @@ nexguard-edge/
 pip install -e ".[dev]"
 pytest
 ruff check .
-mypy services
+mypy services/gateway-simulator
+mypy services/nexguard-controller
 ```
-
----
-
-## License
-
-MIT

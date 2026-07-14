@@ -30,13 +30,16 @@ docker compose logs -f nexguard-controller
 ### Expected Log Sequence
 
 ```
-{"event_type":"health_check","level":"WARNING","status":"fail","consecutive":1}
-{"event_type":"health_check","level":"WARNING","status":"fail","consecutive":2}
-{"event_type":"health_check","level":"WARNING","status":"fail","consecutive":3}
-{"event_type":"incident_opened","level":"ERROR","reason":"consecutive_failures"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"network_error"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"network_error"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"network_error"}
+{"event_type":"incident_opened","level":"ERROR","reason":"network_error"}
+{"event_type":"recovery_started","level":"INFO"}
 {"event_type":"container_restarted","level":"INFO","container":"gateway-simulator"}
-{"event_type":"recovery_verified","level":"INFO","status":"healthy"}
+{"event_type":"recovery_verified","level":"INFO","ok":true,"reason":"ok"}
 ```
+
+Every real event also includes `timestamp` and `message`; fields are abbreviated above.
 
 ### Expected Metrics Changes
 
@@ -73,15 +76,15 @@ docker compose logs -f nexguard-controller
 ### Expected Log Sequence
 
 ```
-{"event_type":"health_check","level":"WARNING","status":"fail","reason":"config_invalid","consecutive":1}
-{"event_type":"health_check","level":"WARNING","status":"fail","consecutive":2}
-{"event_type":"health_check","level":"WARNING","status":"fail","consecutive":3}
-{"event_type":"incident_opened","level":"ERROR","reason":"consecutive_failures"}
-{"event_type":"config_invalid","level":"WARNING","reason":"yaml_parse_error"}
-{"event_type":"backup_verified","level":"INFO","sha256":"<hash>"}
-{"event_type":"config_restored","level":"INFO","backup":"<filename>"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"config_invalid"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"config_invalid"}
+{"event_type":"health_check","level":"WARNING","ok":false,"reason":"config_invalid"}
+{"event_type":"incident_opened","level":"ERROR","reason":"config_invalid"}
+{"event_type":"recovery_started","level":"INFO"}
+{"event_type":"backup_verified","level":"INFO","backup":"<filename>"}
+{"event_type":"config_restored","level":"INFO"}
 {"event_type":"container_restarted","level":"INFO","container":"gateway-simulator"}
-{"event_type":"recovery_verified","level":"INFO","status":"healthy"}
+{"event_type":"recovery_verified","level":"INFO","ok":true,"reason":"ok"}
 ```
 
 ### Expected Metrics Changes
@@ -100,11 +103,8 @@ docker compose logs -f nexguard-controller
 A successful `./scripts/verify-demo.sh` prints:
 
 ```
-[✓] Gateway /health → 200 OK ({"status": "healthy"})
-[✓] nexguard_gateway_up == 1
-[✓] nexguard_recoveries_total increased
-[✓] Recovery event present in controller logs
-[✓] All checks passed
+NexGuard demo verification: PASS
+<last 100 nexguard-controller log lines>
 ```
 
 ---
@@ -118,5 +118,5 @@ A successful `./scripts/verify-demo.sh` prints:
 This command:
 1. Stops all containers: `docker compose down`
 2. Restores `data/gateway/gateway.yaml` from the bundled known-good copy
-3. Restarts the stack: `docker compose up -d`
-4. Waits for all containers to become healthy
+3. Restarts and rebuilds the stack
+4. Waits for gateway health and the initial verified backup

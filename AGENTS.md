@@ -38,6 +38,10 @@ Cursor, etc.) working on **NexGuard Edge Resilience**.
 7. Ask for approval before proceeding to the next stage.
 ```
 
+When the owner explicitly designates a host as Docker-free, Docker-only gates are marked
+`DEFERRED` and verified later in CI or on a Docker-capable target. Non-Docker gates may
+continue; deferred gates remain mandatory for the MVP Definition of Done.
+
 ---
 
 ## Hard Rules

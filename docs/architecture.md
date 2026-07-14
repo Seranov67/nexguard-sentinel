@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Docker Compose Network (nexguard-net)         │
+│                    Default Docker Compose Network                │
 │                                                                 │
 │  ┌──────────────────────┐     health check / 10s               │
 │  │  nexguard-controller │ ─────────────────────────────────►   │
@@ -74,11 +74,12 @@ Optional (out-of-band):
           └────────┬────────────┘                           │
                    │ YES                                    │
           ┌────────▼────────────┐                           │
-          │  RECOVERY           │                           │
-          │  1. Verify SHA-256  │                           │
-          │  2. Restore config  │                           │
-          │  3. Restart ctner   │                           │
-          │  4. Wait for run    │───────────────────────────┘
+          │  RECOVERY BRANCH    │                           │
+          │  config invalid:    │                           │
+          │  verify + restore   │                           │
+          │  config valid:      │                           │
+          │  skip restore       │                           │
+          │  restart + verify   │───────────────────────────┘
           └────────┬────────────┘
                    │ if 3 attempts in 10 min exceeded
           ┌────────▼────────────┐
@@ -132,6 +133,9 @@ nexguard_recoveries_total++ , recovery_verified logged
 Telegram notification sent (if configured)
 ```
 
+Scenario A follows the same incident and safety checks but skips backup restoration when
+the current YAML remains valid; it performs only the guarded restart and post-recovery check.
+
 ---
 
 ## Port Reference
@@ -152,7 +156,7 @@ The Docker socket bind gives the controller root-equivalent host access.
 **Mitigations in the MVP**:
 1. **Allowlist**: `NEXGUARD_ALLOWED_CONTAINERS` env var (default: `gateway-simulator`)
 2. **Label guard**: `io.nexguard.managed=true` required on every restartable container
-3. **Minimal Docker SDK usage**: only `container.start()` / `container.restart()` called
+3. **Minimal Docker SDK usage**: only `container.restart()` is called
 
 **For production**: Replace with Docker Socket Proxy or a host-agent with a narrow API.
 See `docs/security.md` for details.

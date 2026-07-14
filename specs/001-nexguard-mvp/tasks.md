@@ -420,7 +420,7 @@ services/nexguard-controller/tests/
 ## Stage 8 — Documentation & Demo
 
 ### T024 — README
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 README.md
@@ -432,7 +432,7 @@ README.md
 ---
 
 ### T025 — Supporting documentation
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 AGENTS.md

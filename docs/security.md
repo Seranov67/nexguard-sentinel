@@ -18,7 +18,7 @@ This is a **local hackathon demo**, running on a single developer machine:
 |------------|----------------|
 | Container allowlist | `NEXGUARD_ALLOWED_CONTAINERS` env var (comma-separated names) |
 | Docker label guard | `io.nexguard.managed=true` must be present on the container |
-| Minimal SDK calls | Only `container.start()` / `container.restart()` are used |
+| Minimal SDK calls | Only `container.restart()` is used |
 | Security block logging | All blocked restart attempts are logged as `SECURITY_BLOCK` events |
 
 ### Recommended production mitigations
@@ -69,8 +69,8 @@ Docker API directly.
 
 ## Network Isolation
 
-All services communicate over the `nexguard-net` Docker bridge network.
-No ports are exposed to external interfaces beyond localhost.
+Services communicate over the default project-scoped Docker Compose network.
+Published ports are explicitly bound to `127.0.0.1` and are not exposed on other host interfaces.
 
 ---
 
@@ -86,6 +86,6 @@ No ports are exposed to external interfaces beyond localhost.
 
 ## Dependency Security
 
-- All Python dependencies are pinned in `requirements.txt` per service.
+- Python dependencies use bounded major-version ranges in each service `requirements.txt`.
 - `ruff` security rules (`S` prefix) are enabled and enforce safe practices.
 - `mypy` strict mode prevents type confusion bugs.
