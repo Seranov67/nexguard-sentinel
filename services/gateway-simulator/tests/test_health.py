@@ -6,7 +6,17 @@ import httpx
 import pytest
 from app.main import app
 
-from tests.test_config import VALID_CONFIG
+VALID_CONFIG = """\
+gateway:
+  id: gateway-001
+  name: Test Gateway
+  location: Kyiv
+  sensors:
+    - id: temperature-001
+      type: temperature
+      unit: celsius
+  reporting_interval_seconds: 10
+"""
 
 
 @pytest.mark.asyncio

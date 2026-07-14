@@ -40,7 +40,7 @@ pyproject.toml
 .gitignore
 ```
 **Dependencies**: T000  
-**Acceptance criterion**: `ruff check .` and `mypy services` are runnable; no secrets in `.env.example`.  
+**Acceptance criterion**: `ruff check .` and strict MyPy checks per service are runnable; no secrets in `.env.example`.
 **Verification**: `ruff check . && mypy --version`
 
 ---
@@ -106,7 +106,6 @@ curl -sf http://localhost:8080/health
 **Status**: `[x]`
 **Files**:
 ```
-services/gateway-simulator/tests/__init__.py
 services/gateway-simulator/tests/test_health.py
 services/gateway-simulator/tests/test_config.py
 ```
@@ -119,7 +118,7 @@ services/gateway-simulator/tests/test_config.py
 ## Stage 2 — Backup & Config Integrity
 
 ### T006 — Backup manager
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/__init__.py
@@ -138,7 +137,7 @@ services/nexguard-controller/app/backup.py
 ---
 
 ### T007 — Config checker
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
 services/nexguard-controller/app/config_checker.py
@@ -154,10 +153,9 @@ services/nexguard-controller/app/config_checker.py
 ---
 
 ### T008 — Backup and config checker tests
-**Status**: `[ ]`  
+**Status**: `[x]`
 **Files**:
 ```
-services/nexguard-controller/tests/__init__.py
 services/nexguard-controller/tests/test_backup.py
 services/nexguard-controller/tests/test_config_checker.py
 ```

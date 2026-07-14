@@ -31,6 +31,8 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+addopts = "--import-mode=importlib"
+pythonpath = ["services/gateway-simulator"]
 testpaths = [
     "services/gateway-simulator/tests",
     "services/nexguard-controller/tests",

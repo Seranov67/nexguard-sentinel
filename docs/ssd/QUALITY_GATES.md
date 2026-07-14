@@ -66,7 +66,7 @@ MVP can satisfy its Definition of Done.
 | ID    | Check                                                          | Command                                           |
 |-------|----------------------------------------------------------------|---------------------------------------------------|
 | QG-2A | Backup is written atomically (temp → replace)                  | Code review: `os.replace` used                    |
-| QG-2B | SHA-256 checksum file exists alongside backup                  | `ls data/backups/`                                |
+| QG-2B | SHA-256 checksum file exists alongside backup                  | Unit test `test_atomic_write_and_sha256`          |
 | QG-2C | Backup is created only from verified healthy state             | Unit test `test_backup_only_when_healthy`         |
 | QG-2D | Config checker detects corrupt YAML                            | Unit test `test_detect_corrupt_yaml`              |
 | QG-2E | Config checker validates SHA-256 of backup                     | Unit test `test_sha256_validation`                |
@@ -162,7 +162,7 @@ MVP can satisfy its Definition of Done.
 |-------|--------------------------------------------------------------------|-------------------------------------------------------|
 | QG-7A | All unit tests pass                                                | `pytest`                                              |
 | QG-7B | Ruff finds no errors                                               | `ruff check .`                                        |
-| QG-7C | MyPy finds no errors                                               | `mypy services`                                       |
+| QG-7C | MyPy finds no errors                                               | Run strict MyPy once per service source root          |
 | QG-7D | Compose config is valid                                            | `docker compose config --quiet`                       |
 | QG-7E | CI pipeline passes on push to `main`                               | GitHub Actions green                                  |
 
@@ -195,12 +195,13 @@ MVP can satisfy its Definition of Done.
 ## Global Non-Regression Gates (run before every commit)
 
 Run every gate that is applicable to the files available at the current stage. The
-`mypy services` gate becomes mandatory once T002 creates Python sources. The
+Per-service strict MyPy gates become mandatory once T002 creates Python sources. The
 `docker compose config --quiet` gate becomes mandatory once T004 creates `compose.yaml`.
 
 ```bash
 ruff check .
-mypy services
+mypy services/gateway-simulator
+mypy services/nexguard-controller
 pytest
 docker compose config --quiet
 grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \

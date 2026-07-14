@@ -206,7 +206,7 @@ services/
 ### CI pipeline (`.github/workflows/ci.yml`)
 ```yaml
 jobs:
-  lint: ruff check . && mypy services
+  lint: ruff check . && mypy services/gateway-simulator && mypy services/nexguard-controller
   test: pytest --tb=short
   compose-check: docker compose config --quiet
   secret-scan: grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . --exclude-dir=.git --exclude-dir=.venv && exit 1 || exit 0
