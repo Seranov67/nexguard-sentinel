@@ -112,6 +112,10 @@ def test_atomic_write_and_sha256(
     assert backup_path.read_text(encoding="utf-8") == VALID_CONFIG
     assert checksum_path.is_file()
     assert verify_backup(backup_path)
+    assert backup_path.stat().st_mode & 0o777 == 0o640
+    assert checksum_path.stat().st_mode & 0o777 == 0o640
+    assert backup_path.stat().st_gid == backup_dir.stat().st_gid
+    assert checksum_path.stat().st_gid == backup_dir.stat().st_gid
     assert replace_targets == [checksum_path, backup_path]
     assert not list(backup_dir.glob("*.tmp"))
 

@@ -253,7 +253,7 @@ services/nexguard-controller/app/recovery.py
 ---
 
 ### T014 — Controller main loop
-**Status**: `[d]` — implementation and non-Docker checks pass; container check deferred
+**Status**: `[x]` — controller startup, health, metrics, and initial backup verified locally
 **Files**:
 ```
 services/nexguard-controller/app/main.py
@@ -278,7 +278,7 @@ curl -sf http://localhost:8081/metrics | grep nexguard_gateway_up
 ---
 
 ### T015 — Controller Dockerfile
-**Status**: `[d]` — implementation complete; build deferred to CI/target host
+**Status**: `[x]` — image build and Docker socket access verified locally
 **Files**:
 ```
 services/nexguard-controller/Dockerfile
@@ -291,7 +291,7 @@ services/nexguard-controller/requirements.txt
 ---
 
 ### T016 — Demo scripts: Scenario A & B
-**Status**: `[d]` — scripts pass syntax checks; execution deferred to target host
+**Status**: `[x]` — Scenario A and Scenario B passed locally on 2026-07-15
 **Files**:
 ```
 scripts/demo-stop.sh

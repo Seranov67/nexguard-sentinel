@@ -48,6 +48,7 @@ services:
       RESTART_WAIT_SECONDS: "${RESTART_WAIT_SECONDS:-30}"
     group_add:
       - "${DOCKER_GID:-0}"
+      - "${NEXGUARD_DATA_GID:-1000}"
     ports:
       - "127.0.0.1:${METRICS_PORT:-8081}:8081"
     volumes:

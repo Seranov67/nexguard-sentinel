@@ -1,7 +1,9 @@
 """Rate-limited recovery orchestration and atomic config restoration."""
 
+import asyncio
 import json
 import os
+import stat
 import tempfile
 import time
 from collections import deque
@@ -40,6 +42,13 @@ def restore_backup(backup_path: Path, config_path: Path) -> None:
         raise ValueError("backup_checksum_invalid")
     contents = backup_path.read_bytes()
     config_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        target_stat = config_path.stat()
+        target_mode = stat.S_IMODE(target_stat.st_mode)
+        target_gid = target_stat.st_gid
+    except FileNotFoundError:
+        target_mode = 0o664
+        target_gid = config_path.parent.stat().st_gid
     descriptor, temp_name = tempfile.mkstemp(
         dir=config_path.parent,
         prefix=f".{config_path.name}.",
@@ -51,6 +60,8 @@ def restore_backup(backup_path: Path, config_path: Path) -> None:
             temp_file.write(contents)
             temp_file.flush()
             os.fsync(temp_file.fileno())
+        os.chmod(temp_path, target_mode)
+        os.chown(temp_path, -1, target_gid)
         _atomic_replace(temp_path, config_path)
     except BaseException:
         temp_path.unlink(missing_ok=True)
@@ -175,6 +186,7 @@ class RecoveryManager:
             "Managed container restart requested",
             container=self.container_name,
         )
+        readiness_deadline = asyncio.get_running_loop().time() + self.restart_wait_seconds
         try:
             running = self.docker_manager.wait_for_running(
                 self.container_name,
@@ -194,6 +206,12 @@ class RecoveryManager:
             return RecoveryResult(False, "container_not_running", restored)
 
         health_result = await self.health_check()
+        while not health_result.ok:
+            remaining = readiness_deadline - asyncio.get_running_loop().time()
+            if remaining <= 0:
+                break
+            await asyncio.sleep(min(0.5, remaining))
+            health_result = await self.health_check()
         self._log(
             "recovery_verified",
             "INFO" if health_result.ok else "ERROR",

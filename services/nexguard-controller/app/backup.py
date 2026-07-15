@@ -41,6 +41,8 @@ def _write_temp_file(target: Path, contents: bytes) -> Path:
             temp_file.write(contents)
             temp_file.flush()
             os.fsync(temp_file.fileno())
+            os.fchmod(temp_file.fileno(), 0o640)
+            os.fchown(temp_file.fileno(), -1, target.parent.stat().st_gid)
     except BaseException:
         temp_path.unlink(missing_ok=True)
         raise

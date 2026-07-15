@@ -121,6 +121,25 @@ def test_restore_atomic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None
     assert replace_targets == [config_path]
 
 
+def test_restore_preserves_config_permissions(tmp_path: Path) -> None:
+    config_path = tmp_path / "gateway.yaml"
+    config_path.write_text(VALID_CONFIG, encoding="utf-8")
+    config_path.chmod(0o664)
+    original_gid = config_path.stat().st_gid
+    backup_path = create_backup(
+        config_path,
+        tmp_path / "backups",
+        gateway_healthy=True,
+        now=FIXED_TIME,
+    )
+    config_path.write_text("corrupt", encoding="utf-8")
+
+    restore_backup(backup_path, config_path)
+
+    assert config_path.stat().st_mode & 0o777 == 0o664
+    assert config_path.stat().st_gid == original_gid
+
+
 @pytest.mark.asyncio
 async def test_cooldown_enforcement(tmp_path: Path) -> None:
     current_time = [0.0]
@@ -199,6 +218,31 @@ async def test_post_recovery_health_check(tmp_path: Path) -> None:
 
     assert result.success
     assert health_calls == 1
+    assert docker_manager.restart_calls == 1
+    assert docker_manager.wait_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_post_recovery_health_check_retries_until_ready(tmp_path: Path) -> None:
+    health_results = iter([_health_result(False), _health_result()])
+    docker_manager = FakeDockerManager()
+
+    async def health_check() -> HealthResult:
+        return next(health_results)
+
+    manager = RecoveryManager(
+        config_path=tmp_path / "gateway.yaml",
+        backup_dir=tmp_path / "backups",
+        container_name="gateway-simulator",
+        docker_manager=docker_manager,
+        health_check=health_check,
+        restart_wait_seconds=0.01,
+        logger=lambda _event: None,
+    )
+
+    result = await manager.attempt_recovery(config_valid=True)
+
+    assert result.success
     assert docker_manager.restart_calls == 1
     assert docker_manager.wait_calls == 1
 
