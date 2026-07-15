@@ -406,7 +406,7 @@ services/nexguard-controller/tests/
 ---
 
 ### T023 — CI pipeline
-**Status**: `[/]` — workflow implemented; remote GitHub run pending
+**Status**: `[x]` — GitHub Actions run 29397434060 passed on 2026-07-15
 **Files**:
 ```
 .github/workflows/ci.yml
