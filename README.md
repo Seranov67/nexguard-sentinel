@@ -1,151 +1,200 @@
 # NexGuard Edge Resilience
 
-> **Hackathon MVP** — Specification-Driven Development  
-> Status: Stages 1–8 implemented; local Docker runtime gates and GitHub Actions pass.
+[![CI](https://github.com/Seranov67/nexguard-edge-resilience/actions/workflows/ci.yml/badge.svg)](https://github.com/Seranov67/nexguard-edge-resilience/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-0b7285)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-d97706.svg)](LICENSE)
 
----
+Automated monitoring, configuration backup, and self-recovery for remote IoT gateways
+and smart-city infrastructure.
 
-## What is NexGuard?
+[Architecture](docs/architecture.png) | [Demo Runbook](docs/demo-scenario.md) |
+[Video Script](docs/video-script.md) | [Security Model](docs/security.md)
 
-NexGuard is a lightweight supervisor that monitors an IoT gateway simulator,
-automatically detects failures, restores last-known-good configuration, and
-restarts supervised containers — all without human intervention.
+> Hackathon MVP status: implementation and automated recovery are complete. A public
+> demo-video URL and DoraHacks submission URL must be added after those external assets
+> are created.
 
-**Business scenario**: reduce IoT gateway downtime in regions with unstable power
-and limited access to technical personnel.
+## Problem
 
----
+Remote IoT gateways support environmental monitoring, traffic management, utilities,
+and other smart-city services. When a container stops or its configuration becomes
+corrupted, limited access to on-site technicians can turn a small fault into prolonged
+downtime and expensive manual recovery.
 
-## Quick Start (< 10 minutes)
+## Solution
+
+NexGuard runs beside an IoT gateway and checks its health every 10 seconds. It validates
+the gateway configuration, creates SHA-256-protected last-known-good backups, opens an
+incident after three consecutive failures, restores a valid configuration when needed,
+restarts only an explicitly managed container, and verifies that service is healthy again.
+
+## Key Features
+
+- Dockerized IoT gateway simulator with `/health` and `/metrics` endpoints
+- Automatic failure detection after exactly three consecutive failed checks
+- Atomic configuration backup and restore using `os.replace`
+- SHA-256 verification, atomic manifest, and configurable retention of 10 backups
+- Label and allowlist guards for every Docker restart
+- Recovery cooldown and sliding-window rate limit
+- Seven Prometheus metrics and an auto-provisioned Grafana dashboard
+- Structured JSON incident and recovery logs
+- Optional, non-blocking Telegram incident and recovery notifications
+- Automated unit, type, lint, Compose, and end-to-end CI checks
+
+## Architecture
+
+![NexGuard architecture](docs/architecture.png)
+
+The controller polls the gateway, manages verified backups, and performs guarded Docker
+restarts. Prometheus scrapes both application services, Grafana visualizes the controller
+metrics, and Telegram notifications run out-of-band so messaging failures cannot block
+recovery. See [the detailed architecture notes](docs/architecture.md).
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Python 3.12, FastAPI, uvicorn |
+| Containers | Docker, Docker Compose V2 |
+| Configuration | YAML, Pydantic |
+| Integrity | SHA-256, atomic filesystem replacement |
+| Recovery | Docker SDK for Python |
+| Monitoring | Prometheus, Grafana |
+| Notifications | Telegram Bot API via async HTTP |
+| Quality | Pytest, Ruff, strict MyPy, GitHub Actions |
+
+## Demo Scenario
+
+The demo starts with a healthy gateway and a verified backup. A presenter then stops the
+gateway container or corrupts its YAML configuration. NexGuard records three failed health
+checks, opens an incident, selects the safe recovery path, restarts the gateway, performs a
+post-recovery health check, and updates metrics and logs.
+
+The complete presenter flow is in [docs/demo-scenario.md](docs/demo-scenario.md), and the
+2–3 minute recording outline is in [docs/video-script.md](docs/video-script.md).
+
+## Quick Start
+
+Prerequisites: Docker with Compose V2. Python 3.12 is needed only for local test commands.
 
 ```bash
-# Prerequisites: Docker + Docker Compose v2, Python 3.12 (for tests)
+git clone https://github.com/Seranov67/nexguard-edge-resilience.git
+cd nexguard-edge-resilience
 cp .env.example .env
-# Set a local GF_SECURITY_ADMIN_PASSWORD in .env.
-# Telegram variables may remain empty.
+```
 
-# Linux: grant the non-root controller access to the Docker socket and bind-mounted data.
+Set a local `GF_SECURITY_ADMIN_PASSWORD` in `.env`. Telegram values may remain empty.
+On Linux, expose the host group IDs needed by the non-root controller:
+
+```bash
 export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
 export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
 chmod g+w data/backups data/gateway
-
-# Optional when host port 3000 is already occupied:
-# export GRAFANA_PORT=3002
-
-docker compose up -d --build  # starts all 4 containers
-
-# Verify everything is healthy
-docker compose ps
-curl http://localhost:8080/health    # gateway simulator
-curl http://localhost:8081/health    # nexguard controller
 ```
 
-Open Grafana at [http://localhost:3000](http://localhost:3000), or at the port selected
-with `GRAFANA_PORT`, using `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD`
-from `.env`.
+Start and verify the complete stack:
 
+```bash
+docker compose up -d --build --wait
+docker compose ps
+curl http://localhost:8080/health
+curl http://localhost:8081/health
+```
+
+Open Grafana at [http://localhost:3000](http://localhost:3000) and Prometheus at
+[http://localhost:9090](http://localhost:9090). Set `GRAFANA_PORT` when port 3000 is in use.
 All published ports bind to `127.0.0.1` only.
 
----
+## Failure Simulation
 
-## Demo Scenarios
+Scenario A stops the gateway and demonstrates restart-only recovery:
 
-### Scenario A — Container stop
 ```bash
 ./scripts/demo-stop.sh
 sleep 45
 ./scripts/verify-demo.sh
 ```
 
-### Scenario B — Config corruption
+Scenario B corrupts the live config and demonstrates verified restore plus restart:
+
 ```bash
-./scripts/reset-demo.sh  # waits for the initial healthy backup
+./scripts/reset-demo.sh
 ./scripts/demo-corrupt-config.sh
 sleep 45
 ./scripts/verify-demo.sh
 ```
 
-### Reset
-```bash
-./scripts/reset-demo.sh
+Return to a clean state at any time with `./scripts/reset-demo.sh`.
+
+## Monitoring
+
+Prometheus scrapes the gateway and controller. The provisioned Grafana dashboard shows
+gateway status, configuration integrity, incident and recovery counts, p95 recovery
+duration, consecutive failures, and last backup time.
+
+![Grafana dashboard](docs/screenshots/grafana-dashboard.png)
+
+![Prometheus targets](docs/screenshots/prometheus-targets.png)
+
+The exported dashboard is committed at
+[monitoring/grafana/dashboards/nexguard.json](monitoring/grafana/dashboards/nexguard.json).
+
+## Telegram Notifications
+
+Telegram is optional and disabled when either value is empty. To enable it, set these only
+in the ignored `.env` file:
+
+```dotenv
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
 ```
 
----
+The controller schedules notifications without awaiting Telegram. Network or API failures
+are logged as `notification_failed` and never interrupt recovery. No real token or chat ID
+belongs in this repository.
 
-## Architecture
+## Security Considerations
 
-See [docs/architecture.md](docs/architecture.md) for the full diagram.
+The MVP mounts `/var/run/docker.sock`, which grants root-equivalent host privileges. Every
+restart is restricted by both `NEXGUARD_ALLOWED_CONTAINERS` and the
+`io.nexguard.managed=true` label, but production deployments should replace direct socket
+access with a Docker Socket Proxy or a narrow host-agent API. Read
+[docs/security.md](docs/security.md) before deployment.
 
----
+## Project Impact
 
-## ⚠️ Security Warning: Docker Socket
+NexGuard reduces gateway downtime, limits the need for on-site intervention, and makes
+failure handling observable and repeatable. The MVP demonstrates a practical resilience
+pattern for distributed infrastructure where connectivity, power, and technician access
+cannot be assumed.
 
-The controller mounts `/var/run/docker.sock` to manage containers.
-This grants **root-equivalent privileges** on the host.
+## Future Development
 
-For this hackathon demo this is acceptable because:
-- Access is restricted to the explicitly named allowlist (`NEXGUARD_ALLOWED_CONTAINERS`)
-- Only containers with label `io.nexguard.managed=true` can be restarted
-- Everything runs on a local development machine
+- Replace direct Docker socket access with a least-privilege host agent
+- Add signed backup metadata and configurable off-device backup replication
+- Integrate a log backend for dashboard-visible incident history
+- Add support for multiple gateways through isolated controller instances
+- Package deployment profiles for additional edge Linux distributions
 
-**For production**, replace the Docker socket bind mount with:
-- A dedicated **Docker Socket Proxy** (e.g. [Tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)) exposing only container start/stop, or
-- A separate **host-agent** with a minimal privileged API that the controller calls over HTTP.
+These are post-MVP directions; Kubernetes, cloud infrastructure, databases, authentication,
+and AI/ML remain outside this repository's current scope.
 
----
+## Team
 
-## Repository Layout
-
-```
-nexguard-edge/
-├── AGENTS.md                        # IDE agent instructions
-├── README.md                        # This file
-├── LICENSE                          # MIT license
-├── compose.yaml                     # Docker Compose stack
-├── .env.example                     # Environment variable template
-├── pyproject.toml                   # Python tooling config
-│
-├── docs/
-│   ├── architecture.md
-│   ├── demo-scenario.md
-│   ├── security.md
-│   └── ssd/
-│       ├── CONSTITUTION.md          # Inviolable rules
-│       └── QUALITY_GATES.md         # Per-stage pass/fail criteria
-│
-├── specs/001-nexguard-mvp/
-│   ├── spec.md                      # Functional requirements
-│   ├── plan.md                      # Stage-by-stage implementation plan
-│   ├── tasks.md                     # Task breakdown with acceptance criteria
-│   └── acceptance.md                # Acceptance criteria (AC-xxx)
-│
-├── services/
-│   ├── gateway-simulator/           # FastAPI IoT gateway simulator
-│   └── nexguard-controller/         # FastAPI resilience controller
-│
-├── monitoring/
-│   ├── prometheus.yml
-│   └── grafana/
-│
-├── data/
-│   ├── gateway/                     # Live gateway config
-│   └── backups/                     # Automatic config backups
-│
-└── scripts/                         # Demo and verification scripts
-```
-
----
+Maintained by [Seranov67](https://github.com/Seranov67). The final DoraHacks team roster
+should be added here before submission.
 
 ## Running Tests
 
 ```bash
-pip install -e ".[dev]"
-pytest
+python -m pip install -e ".[dev]"
 ruff check .
 mypy services/gateway-simulator
 mypy services/nexguard-controller
+pytest
+docker compose config --quiet
 ```
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE).

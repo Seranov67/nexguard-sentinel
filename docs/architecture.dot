@@ -1,0 +1,96 @@
+digraph nexguard {
+  graph [
+    bgcolor="#f7f3ea",
+    fontname="DejaVu Sans",
+    fontsize=24,
+    label="NexGuard Edge Resilience",
+    labelloc=t,
+    margin=0.25,
+    newrank=true,
+    nodesep=0.55,
+    pad=0.35,
+    ranksep=0.8,
+    splines=polyline
+  ];
+  node [
+    color="#17324d",
+    fillcolor="#ffffff",
+    fontcolor="#17324d",
+    fontname="DejaVu Sans",
+    fontsize=13,
+    margin="0.20,0.14",
+    penwidth=1.8,
+    shape=box,
+    style="rounded,filled"
+  ];
+  edge [
+    arrowsize=0.8,
+    color="#50697f",
+    fontcolor="#334e68",
+    fontname="DejaVu Sans",
+    fontsize=10,
+    penwidth=1.6
+  ];
+
+  subgraph cluster_edge {
+    color="#d6c9ae";
+    fillcolor="#fffaf0";
+    fontcolor="#17324d";
+    fontname="DejaVu Sans Bold";
+    fontsize=16;
+    label="Edge Host / Docker Compose";
+    margin=22;
+    style="rounded,filled";
+
+    controller [
+      fillcolor="#17324d",
+      fontcolor="#ffffff",
+      label="NexGuard Controller\n\nHealth monitor | Incident manager\nBackup manager | Recovery manager\nDocker guard | Telegram notifier"
+    ];
+    gateway [
+      fillcolor="#dff3ef",
+      label="IoT Gateway Simulator\n\n:8080 /health | /metrics\nReads gateway.yaml"
+    ];
+    config [
+      fillcolor="#fff0d5",
+      label="Live Configuration\n\ngateway.yaml"
+    ];
+    backups [
+      fillcolor="#fff0d5",
+      label="Backup Storage\n\nTimestamped YAML + SHA-256\nAtomic manifest | Retain 10"
+    ];
+    docker [
+      fillcolor="#f9ddd8",
+      label="Docker Engine\n\nAllowlist + managed label"
+    ];
+
+    { rank=same; backups; gateway; docker; }
+
+    controller -> gateway [label=" health check / 10 s "];
+    gateway -> config [label=" read-only "];
+    controller -> config [label=" validate / restore "];
+    controller -> backups [label=" backup / verify "];
+    controller -> docker [label=" guarded restart "];
+    docker -> gateway [label=" restart "];
+  }
+
+  prometheus [
+    fillcolor="#ffe3d5",
+    label="Prometheus\n\n:9090 | Metric collection"
+  ];
+  grafana [
+    fillcolor="#e2eadf",
+    label="Grafana\n\n:3000 | Provisioned dashboard"
+  ];
+  telegram [
+    fillcolor="#dcebf7",
+    label="Telegram Bot API\n\nOptional and non-blocking"
+  ];
+
+  { rank=same; grafana; prometheus; }
+
+  prometheus -> controller [label=" scrape "];
+  prometheus -> gateway [label=" scrape "];
+  grafana -> prometheus [label=" queries "];
+  controller -> telegram [label=" incident / recovery alert ", style=dashed];
+}

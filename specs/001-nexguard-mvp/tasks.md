@@ -473,7 +473,7 @@ docker compose config --quiet
 ```
 
 ### T027 — Public presentation assets and repository publication
-**Status**: `[ ]`
+**Status**: `[/]` — presentation assets verified; GitHub publication in progress
 **Files**:
 ```
 README.md
