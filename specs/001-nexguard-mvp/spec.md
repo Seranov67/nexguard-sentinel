@@ -2,8 +2,8 @@
 # NexGuard Edge Resilience — MVP Specification
 
 **Version**: 1.1.0
-**Status**: FINAL HARDENING — owner-requested audit 2026-07-15
-**Stage**: Stage 9
+**Status**: VERIFIED — owner-requested final hardening completed 2026-07-15
+**Stage**: Complete
 
 ---
 
