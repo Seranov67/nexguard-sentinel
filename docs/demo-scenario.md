@@ -5,6 +5,7 @@
 ```bash
 export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
 export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+chmod g+w data/backups data/gateway
 docker compose up -d --build
 docker compose ps   # all containers must be healthy
 ```

@@ -84,7 +84,9 @@ Published ports are explicitly bound to `127.0.0.1` and are not exposed on other
 | `/var/run/docker.sock` | Read/Write (controller) | **High privilege — see above** |
 
 On Linux, set `DOCKER_GID` to the socket group and `NEXGUARD_DATA_GID` to the bind-mounted
-data group before starting Compose. Backups are created as `0640`; restored configs retain
+data group, then grant that group write access with
+`chmod g+w data/backups data/gateway`. This keeps the controller non-root while allowing
+atomic backup and restore writes. Backups are created as `0640`; restored configs retain
 their prior mode and data-group ownership so host-side demo tools remain usable.
 
 ---

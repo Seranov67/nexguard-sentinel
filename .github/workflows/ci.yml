@@ -47,6 +47,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build and start healthy stack
         run: |
+          chmod g+w data/backups data/gateway
           export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
           export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
           docker compose up -d --build --wait --wait-timeout 120

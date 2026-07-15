@@ -27,6 +27,7 @@ cp .env.example .env
 # Linux: grant the non-root controller access to the Docker socket and bind-mounted data.
 export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
 export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+chmod g+w data/backups data/gateway
 
 # Optional when host port 3000 is already occupied:
 # export GRAFANA_PORT=3002
