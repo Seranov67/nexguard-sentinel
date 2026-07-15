@@ -1,5 +1,6 @@
 """Tests for controller endpoints and healthy-state backup orchestration."""
 
+import asyncio
 import importlib
 import importlib.util
 import sys
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from app.docker_manager import DockerClientProtocol
     from app.main import ControllerRuntime, Settings
     from app.models import HealthResult
+    from app.notifier import TelegramNotifier
     from app.recovery import RecoveryResult
 else:
     package_name = "nexguard_controller_app"
@@ -36,6 +38,8 @@ else:
     ControllerRuntime = main_module.ControllerRuntime
     Settings = main_module.Settings
     HealthResult = models_module.HealthResult
+    notifier_module = importlib.import_module(f"{package_name}.notifier")
+    TelegramNotifier = notifier_module.TelegramNotifier
     RecoveryResult = recovery_module.RecoveryResult
 
 VALID_CONFIG = """\
@@ -167,3 +171,31 @@ async def test_backup_io_error_does_not_escape_loop(
     await runtime.handle_health_result(result)
 
     assert "backup_failed" in capsys.readouterr().out
+
+
+@pytest.mark.asyncio
+async def test_notification_tasks_are_retained_and_cleaned_up(tmp_path: Path) -> None:
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def sender(_token: str, _chat_id: str, _message: str) -> None:
+        started.set()
+        await release.wait()
+
+    runtime = ControllerRuntime(
+        _settings(tmp_path),
+        cast("DockerClientProtocol", UnusedDockerClient()),
+    )
+    runtime.notifier = TelegramNotifier(token="token", chat_id="chat", sender=sender)
+
+    runtime._notify("incident")
+    await started.wait()
+
+    assert len(runtime._notification_tasks) == 1
+    task = next(iter(runtime._notification_tasks))
+
+    release.set()
+    await task
+    await asyncio.sleep(0)
+
+    assert not runtime._notification_tasks

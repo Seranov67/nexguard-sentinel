@@ -4,6 +4,8 @@ import importlib
 import importlib.util
 import os
 import sys
+import threading
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -245,6 +247,56 @@ async def test_post_recovery_health_check_retries_until_ready(tmp_path: Path) ->
     assert result.success
     assert docker_manager.restart_calls == 1
     assert docker_manager.wait_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_docker_operations_run_outside_event_loop(tmp_path: Path) -> None:
+    event_loop_thread = threading.get_ident()
+    operation_threads: list[int] = []
+
+    class ThreadRecordingDockerManager(FakeDockerManager):
+        def restart_container(self, name: str) -> None:
+            operation_threads.append(threading.get_ident())
+            super().restart_container(name)
+
+        def wait_for_running(self, name: str, *, timeout: float) -> bool:
+            operation_threads.append(threading.get_ident())
+            return super().wait_for_running(name, timeout=timeout)
+
+    manager = _manager(tmp_path, ThreadRecordingDockerManager(), [0.0])
+
+    result = await manager.attempt_recovery(config_valid=True)
+
+    assert result.success
+    assert len(operation_threads) == 2
+    assert all(thread_id != event_loop_thread for thread_id in operation_threads)
+
+
+@pytest.mark.asyncio
+async def test_health_readiness_gets_independent_retry_window(tmp_path: Path) -> None:
+    health_results = iter([_health_result(False), _health_result()])
+
+    class SlowDockerManager(FakeDockerManager):
+        def wait_for_running(self, name: str, *, timeout: float) -> bool:
+            time.sleep(0.02)
+            return super().wait_for_running(name, timeout=timeout)
+
+    async def health_check() -> HealthResult:
+        return next(health_results)
+
+    manager = RecoveryManager(
+        config_path=tmp_path / "gateway.yaml",
+        backup_dir=tmp_path / "backups",
+        container_name="gateway-simulator",
+        docker_manager=SlowDockerManager(),
+        health_check=health_check,
+        restart_wait_seconds=0.01,
+        logger=lambda _event: None,
+    )
+
+    result = await manager.attempt_recovery(config_valid=True)
+
+    assert result.success
 
 
 @pytest.mark.asyncio

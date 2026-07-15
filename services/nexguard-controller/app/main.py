@@ -116,6 +116,21 @@ class ControllerRuntime:
             restart_wait_seconds=settings.restart_wait,
         )
         self.last_backup_monotonic: float | None = None
+        self._notification_tasks: set[asyncio.Task[None]] = set()
+
+    def _notify(self, message: str) -> None:
+        task = self.notifier.send_async(message)
+        if task is None:
+            return
+        self._notification_tasks.add(task)
+        task.add_done_callback(self._notification_tasks.discard)
+
+    async def close(self) -> None:
+        tasks = tuple(self._notification_tasks)
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
     async def handle_health_result(self, result: HealthResult) -> None:
         METRICS.gateway_up.set(1 if result.ok else 0)
@@ -148,7 +163,7 @@ class ControllerRuntime:
 
         new_incident = self.incidents.record_failure(result.reason)
         if new_incident is not None:
-            self.notifier.send_async(f"NexGuard incident opened: {new_incident.reason}")
+            self._notify(f"NexGuard incident opened: {new_incident.reason}")
         if self.incidents.current_incident is None:
             return
         if self.recovery.status == "manual_intervention_required":
@@ -161,9 +176,9 @@ class ControllerRuntime:
             METRICS.gateway_up.set(1)
             METRICS.config_integrity.set(1)
             self.incidents.record_success()
-            self.notifier.send_async("NexGuard recovery completed successfully")
+            self._notify("NexGuard recovery completed successfully")
         else:
-            self.notifier.send_async(f"NexGuard recovery failed: {recovery_result.reason}")
+            self._notify(f"NexGuard recovery failed: {recovery_result.reason}")
             _log_event(
                 "recovery_failed",
                 "ERROR",
@@ -189,6 +204,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         monitor_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await monitor_task
+        if runtime is not None:
+            await runtime.close()
 
 
 app = FastAPI(title="NexGuard Controller", version="0.1.0", lifespan=lifespan)

@@ -170,7 +170,10 @@ class RecoveryManager:
             self._log("config_restored", "INFO", "Gateway config restored atomically")
 
         try:
-            self.docker_manager.restart_container(self.container_name)
+            await asyncio.to_thread(
+                self.docker_manager.restart_container,
+                self.container_name,
+            )
         except Exception as exc:
             self._log(
                 "recovery_failed",
@@ -186,9 +189,9 @@ class RecoveryManager:
             "Managed container restart requested",
             container=self.container_name,
         )
-        readiness_deadline = asyncio.get_running_loop().time() + self.restart_wait_seconds
         try:
-            running = self.docker_manager.wait_for_running(
+            running = await asyncio.to_thread(
+                self.docker_manager.wait_for_running,
                 self.container_name,
                 timeout=self.restart_wait_seconds,
             )
@@ -205,6 +208,7 @@ class RecoveryManager:
             self._log("recovery_failed", "ERROR", "Container did not reach running state")
             return RecoveryResult(False, "container_not_running", restored)
 
+        readiness_deadline = asyncio.get_running_loop().time() + self.restart_wait_seconds
         health_result = await self.health_check()
         while not health_result.ok:
             remaining = readiness_deadline - asyncio.get_running_loop().time()
