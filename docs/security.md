@@ -20,6 +20,7 @@ This is a **local hackathon demo**, running on a single developer machine:
 | Docker label guard | `io.nexguard.managed=true` must be present on the container |
 | Minimal SDK calls | Only `container.restart()` is used |
 | Security block logging | All blocked restart attempts are logged as `SECURITY_BLOCK` events |
+| Non-root controller | Docker socket and data access use explicit supplementary group IDs |
 
 ### Recommended production mitigations
 
@@ -81,6 +82,10 @@ Published ports are explicitly bound to `127.0.0.1` and are not exposed on other
 | `/data/gateway/gateway.yaml` | Read (simulator), Write (controller) | Config file |
 | `/data/backups/` | Write (controller) | Backup files + SHA-256 checksums |
 | `/var/run/docker.sock` | Read/Write (controller) | **High privilege — see above** |
+
+On Linux, set `DOCKER_GID` to the socket group and `NEXGUARD_DATA_GID` to the bind-mounted
+data group before starting Compose. Backups are created as `0640`; restored configs retain
+their prior mode and data-group ownership so host-side demo tools remain usable.
 
 ---
 

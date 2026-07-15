@@ -1,8 +1,7 @@
 # NexGuard Edge Resilience
 
 > **Hackathon MVP** — Specification-Driven Development  
-> Status: Stages 1–8 implemented; Docker runtime verification is deferred to CI or a
-> Docker-capable target host.
+> Status: Stages 1–8 implemented; local Docker runtime gates and GitHub Actions pass.
 
 ---
 
@@ -24,6 +23,14 @@ and limited access to technical personnel.
 cp .env.example .env
 # Set a local GF_SECURITY_ADMIN_PASSWORD in .env.
 # Telegram variables may remain empty.
+
+# Linux: grant the non-root controller access to the Docker socket and bind-mounted data.
+export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+
+# Optional when host port 3000 is already occupied:
+# export GRAFANA_PORT=3002
+
 docker compose up -d --build  # starts all 4 containers
 
 # Verify everything is healthy
@@ -32,13 +39,11 @@ curl http://localhost:8080/health    # gateway simulator
 curl http://localhost:8081/health    # nexguard controller
 ```
 
-Open Grafana at [http://localhost:3000](http://localhost:3000) using
-`GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` from `.env`.
+Open Grafana at [http://localhost:3000](http://localhost:3000), or at the port selected
+with `GRAFANA_PORT`, using `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD`
+from `.env`.
 
 All published ports bind to `127.0.0.1` only.
-
-> The current development host is intentionally Docker-free. The Compose commands are
-> verified by CI/target-host gates rather than executed on this machine.
 
 ---
 

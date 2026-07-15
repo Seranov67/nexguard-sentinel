@@ -145,7 +145,7 @@ the current YAML remains valid; it performs only the guarded restart and post-re
 | gateway-simulator   | 8080 | HTTP     | /health, /metrics |
 | nexguard-controller | 8081 | HTTP     | /health, /metrics |
 | Prometheus          | 9090 | HTTP     | /api/v1/*, /metrics |
-| Grafana             | 3000 | HTTP     | / (dashboard) |
+| Grafana             | 3000 (configurable with `GRAFANA_PORT`) | HTTP | / (dashboard) |
 
 ---
 

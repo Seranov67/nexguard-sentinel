@@ -3,6 +3,8 @@
 ## Prerequisites
 
 ```bash
+export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
 docker compose up -d --build
 docker compose ps   # all containers must be healthy
 ```
@@ -118,5 +120,8 @@ NexGuard demo verification: PASS
 This command:
 1. Stops all containers: `docker compose down`
 2. Restores `data/gateway/gateway.yaml` from the bundled known-good copy
-3. Restarts and rebuilds the stack
+3. Restarts and rebuilds the gateway and controller services required by the demo
 4. Waits for gateway health and the initial verified backup
+
+Prometheus and Grafana are intentionally not required by reset; start the complete
+monitoring stack afterward with `docker compose up -d` when needed.
