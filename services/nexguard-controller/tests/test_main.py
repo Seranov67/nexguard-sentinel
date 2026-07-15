@@ -74,6 +74,7 @@ def _settings(tmp_path: Path, *, backup_dir: Path | None = None) -> Settings:
         config_path=tmp_path / "gateway.yaml",
         backup_dir=backup_dir or tmp_path / "backups",
         backup_interval=60,
+        backup_retention_count=10,
         allowed_containers={"gateway-simulator"},
         container_name="gateway-simulator",
         recovery_cooldown=60,

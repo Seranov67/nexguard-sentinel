@@ -53,6 +53,7 @@ dmypy.json
 # Data directories (contain runtime data, not source)
 data/backups/*.yaml
 data/backups/*.sha256
+data/backups/backup-manifest.json
 
 # OS
 Thumbs.db

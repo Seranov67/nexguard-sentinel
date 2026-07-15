@@ -16,6 +16,18 @@
       "title": "Config Integrity",
       "type": "stat",
       "targets": [{"expr": "nexguard_config_integrity", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {"options": {"0": {"text": "INVALID"}, "1": {"text": "VALID"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0}
     },
     {
@@ -50,7 +62,15 @@
       "id": 7,
       "title": "Last Backup Time",
       "type": "stat",
-      "targets": [{"expr": "nexguard_last_backup_timestamp_seconds", "refId": "A"}],
+      "targets": [{"expr": "nexguard_last_backup_timestamp_seconds * 1000", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"fixedColor": "green", "mode": "fixed"},
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "options": {"colorMode": "value", "graphMode": "none", "textMode": "auto"},
       "gridPos": {"h": 6, "w": 24, "x": 0, "y": 14}
     }
   ],

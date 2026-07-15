@@ -1,7 +1,7 @@
 # specs/001-nexguard-mvp/acceptance.md
 # NexGuard MVP — Acceptance Criteria
 
-**Version**: 1.0.2
+**Version**: 1.1.0
 **Linked spec**: `specs/001-nexguard-mvp/spec.md`  
 **Status**: VERIFIED — all criteria passed on 2026-07-15
 
@@ -359,6 +359,29 @@ grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
 
 ---
 
+## AC-024 — Bounded backups and atomic manifest (FR-015)
+
+**Given** more successful backups than `BACKUP_RETENTION_COUNT` have been created
+**When** the latest backup completes
+**Then**:
+- Only the newest configured number of complete YAML/checksum pairs remains
+- `backup-manifest.json` lists exactly those backups and their SHA-256 values
+- The manifest is written through `os.replace`
+
+**Verification**: Unit test `test_backup.py::test_retention_and_manifest`
+
+---
+
+## AC-025 — Telegram values reach the controller (FR-016)
+
+**Given** optional Telegram values in `.env`
+**When** Compose resolves the controller service
+**Then** both values are present in the controller environment and remain empty when omitted
+
+**Verification**: `docker compose config`
+
+---
+
 ## Acceptance Summary Table
 
 | AC ID  | FR / Rule  | Test Type     | Status |
@@ -386,3 +409,5 @@ grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
 | AC-021 | System     | E2E           | `[x]`  |
 | AC-022 | SEC-1/2    | CI/Static     | `[x]`  |
 | AC-023 | NFR-02     | Unit          | `[x]`  |
+| AC-024 | FR-015     | Unit          | `[x]`  |
+| AC-025 | FR-016     | Static        | `[x]`  |
