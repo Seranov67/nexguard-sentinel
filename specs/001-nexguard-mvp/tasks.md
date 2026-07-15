@@ -72,7 +72,7 @@ kill %1
 ---
 
 ### T003 — Gateway Simulator: Dockerfile
-**Status**: `[d]` — implementation complete; Docker verification deferred to CI/target host
+**Status**: `[x]` — Docker build and non-root runtime verified locally on 2026-07-15
 **Files**:
 ```
 services/gateway-simulator/Dockerfile
@@ -85,7 +85,7 @@ services/gateway-simulator/requirements.txt
 ---
 
 ### T004 — Docker Compose skeleton
-**Status**: `[d]` — implementation complete; Docker verification deferred to CI/target host
+**Status**: `[x]` — Compose startup and gateway health verified locally on 2026-07-15
 **Files**:
 ```
 compose.yaml
