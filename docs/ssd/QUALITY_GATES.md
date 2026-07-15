@@ -192,6 +192,25 @@ MVP can satisfy its Definition of Done.
 
 ---
 
+## Stage 9 — Final Delivery Hardening
+
+**Deliverables**
+- Bounded backup retention and atomic manifest
+- Compose-wired optional Telegram credentials
+- Public presentation assets and final repository metadata
+
+**Gates**
+
+| ID    | Check                                                              | Method                                                |
+|-------|--------------------------------------------------------------------|-------------------------------------------------------|
+| QG-9A | Backup count never exceeds configured retention                    | Unit test `test_retention_and_manifest`               |
+| QG-9B | Manifest is atomically replaced and matches retained backups       | Unit test `test_retention_and_manifest`               |
+| QG-9C | Telegram values from `.env` reach the controller                   | `docker compose config`                               |
+| QG-9D | README, architecture PNG, and monitoring screenshots are present   | Manual review                                         |
+| QG-9E | Public repository uses the required name and `main` default branch | GitHub repository metadata                            |
+
+---
+
 ## Global Non-Regression Gates (run before every commit)
 
 Run every gate that is applicable to the files available at the current stage. The

@@ -2,6 +2,7 @@
 
 import importlib
 import importlib.util
+import json
 import os
 import sys
 from datetime import UTC, datetime
@@ -116,7 +117,10 @@ def test_atomic_write_and_sha256(
     assert checksum_path.stat().st_mode & 0o777 == 0o640
     assert backup_path.stat().st_gid == backup_dir.stat().st_gid
     assert checksum_path.stat().st_gid == backup_dir.stat().st_gid
-    assert replace_targets == [checksum_path, backup_path]
+    manifest_path = backup_dir / "backup-manifest.json"
+    assert manifest_path.stat().st_mode & 0o777 == 0o640
+    assert manifest_path.stat().st_gid == backup_dir.stat().st_gid
+    assert replace_targets == [checksum_path, backup_path, manifest_path]
     assert not list(backup_dir.glob("*.tmp"))
 
 
@@ -153,3 +157,29 @@ def test_list_and_get_latest_backup(tmp_path: Path) -> None:
 
     assert list_backups(backup_dir) == [first, second]
     assert get_latest_backup(backup_dir) == second
+
+
+def test_retention_and_manifest(tmp_path: Path) -> None:
+    config_path = _write_valid_config(tmp_path)
+    backup_dir = tmp_path / "backups"
+
+    created = [
+        create_backup(
+            config_path,
+            backup_dir,
+            gateway_healthy=True,
+            now=FIXED_TIME.replace(minute=minute),
+            retention_count=2,
+        )
+        for minute in range(30, 33)
+    ]
+
+    assert list_backups(backup_dir) == created[-2:]
+    assert not created[0].exists()
+    assert not checksum_path_for(created[0]).exists()
+    manifest = json.loads((backup_dir / "backup-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["latest"] == created[-1].name
+    assert [entry["filename"] for entry in manifest["backups"]] == [
+        path.name for path in created[-2:]
+    ]
+    assert all(len(entry["sha256"]) == 64 for entry in manifest["backups"])

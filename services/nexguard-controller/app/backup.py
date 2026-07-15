@@ -1,6 +1,7 @@
 """Atomic last-known-good configuration backups with SHA-256 integrity."""
 
 import hashlib
+import json
 import os
 import tempfile
 from collections.abc import Callable
@@ -9,6 +10,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from .config_checker import check_config_text
+
+DEFAULT_RETENTION_COUNT = 10
+MANIFEST_FILENAME = "backup-manifest.json"
 
 
 class BackupError(RuntimeError):
@@ -72,17 +76,51 @@ def _write_backup_pair(
         raise
 
 
+def _write_manifest(backup_dir: Path, *, generated_at: datetime) -> None:
+    backups = list_backups(backup_dir)
+    entries = [
+        {
+            "filename": backup_path.name,
+            "sha256": checksum_path_for(backup_path).read_text(encoding="ascii").strip(),
+        }
+        for backup_path in backups
+    ]
+    manifest = {
+        "version": 1,
+        "generated_at": generated_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+        "latest": backups[-1].name if backups else None,
+        "backups": entries,
+    }
+    manifest_path = backup_dir / MANIFEST_FILENAME
+    manifest_contents = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
+    manifest_temp = _write_temp_file(manifest_path, manifest_contents)
+    try:
+        _atomic_replace(manifest_temp, manifest_path)
+    except BaseException:
+        manifest_temp.unlink(missing_ok=True)
+        raise
+
+
+def _prune_backups(backup_dir: Path, *, retention_count: int) -> None:
+    for backup_path in list_backups(backup_dir)[:-retention_count]:
+        checksum_path_for(backup_path).unlink(missing_ok=True)
+        backup_path.unlink(missing_ok=True)
+
+
 def create_backup(
     config_path: Path,
     backup_dir: Path,
     *,
     gateway_healthy: bool,
     now: datetime | None = None,
+    retention_count: int = DEFAULT_RETENTION_COUNT,
 ) -> Path:
     """Create a timestamped atomic backup from a verified healthy state."""
 
     if not gateway_healthy:
         raise BackupStateError("backup requires a verified healthy gateway state")
+    if retention_count < 1:
+        raise ValueError("retention_count must be at least 1")
 
     try:
         config_contents = config_path.read_bytes()
@@ -100,6 +138,8 @@ def create_backup(
     backup_path = backup_dir / f"gateway-{timestamp_text}.yaml"
     digest = hashlib.sha256(config_contents).hexdigest()
     _write_backup_pair(backup_path, config_contents, f"{digest}\n".encode())
+    _prune_backups(backup_dir, retention_count=retention_count)
+    _write_manifest(backup_dir, generated_at=timestamp)
     return backup_path
 
 
@@ -147,6 +187,7 @@ class BackupManager:
 
     config_path: Path
     backup_dir: Path
+    retention_count: int = DEFAULT_RETENTION_COUNT
     clock: Callable[[], datetime] = lambda: datetime.now(UTC)
 
     def create_backup(self, *, gateway_healthy: bool) -> Path:
@@ -155,6 +196,7 @@ class BackupManager:
             self.backup_dir,
             gateway_healthy=gateway_healthy,
             now=self.clock(),
+            retention_count=self.retention_count,
         )
 
     def list_backups(self) -> list[Path]:

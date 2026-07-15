@@ -446,6 +446,52 @@ docs/security.md
 
 ---
 
+## Stage 9 — Final Delivery Hardening
+
+### T026 — Bounded backups and Compose Telegram wiring
+**Status**: `[x]` — retention, manifest, and Compose environment verified 2026-07-15
+**Files**:
+```
+.env.example
+.gitignore
+compose.yaml
+services/nexguard-controller/app/backup.py
+services/nexguard-controller/app/main.py
+services/nexguard-controller/tests/test_backup.py
+services/nexguard-controller/tests/test_main.py
+```
+**Dependencies**: T006, T014, T021
+**Acceptance criterion**:
+- Backup storage retains at most `BACKUP_RETENTION_COUNT` complete pairs.
+- `backup-manifest.json` is refreshed atomically with the retained SHA-256 values.
+- Compose passes optional Telegram settings to the controller.
+
+**Verification**:
+```bash
+pytest services/nexguard-controller/tests/test_backup.py services/nexguard-controller/tests/test_main.py -v
+docker compose config --quiet
+```
+
+### T027 — Public presentation assets and repository publication
+**Status**: `[ ]`
+**Files**:
+```
+README.md
+docs/architecture.dot
+docs/architecture.png
+docs/screenshots/
+docs/video-script.md
+```
+**Dependencies**: T026
+**Acceptance criterion**:
+- README contains every required hackathon section and links to repository assets.
+- Architecture PNG and real monitoring screenshots are committed.
+- Repository is public at `Seranov67/nexguard-edge-resilience` with `main` as default.
+
+**Verification**: Manual review, GitHub repository metadata, and GitHub Actions
+
+---
+
 ## Task Dependency Graph
 
 ```
@@ -469,4 +515,6 @@ T000
           T023 depends on: T022
           T024 depends on: T023
           T025 depends on: T024
+          T026 depends on: T006, T014, T021
+          T027 depends on: T026
 ```

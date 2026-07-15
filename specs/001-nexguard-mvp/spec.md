@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/spec.md
 # NexGuard Edge Resilience — MVP Specification
 
-**Version**: 1.0.2
-**Status**: VERIFIED — owner approval recorded 2026-07-14; completion audit 2026-07-15
-**Stage**: Complete
+**Version**: 1.1.0
+**Status**: FINAL HARDENING — owner-requested audit 2026-07-15
+**Stage**: Stage 9
 
 ---
 
@@ -110,6 +110,17 @@ monitors its health, and autonomously restores service using a known-good backup
 - Required fields: `timestamp` (ISO-8601 UTC), `event_type`, `level`, `message`,
   and any relevant additional context.
 
+### FR-015 — Bounded backup retention and manifest
+- The controller **must** retain at most `BACKUP_RETENTION_COUNT` complete backups
+  (default: 10, minimum: 1).
+- Each successful backup **must** atomically refresh `backup-manifest.json` with the
+  retained filenames, SHA-256 values, and latest backup name.
+- Pruning **must** remove both the YAML backup and its companion checksum.
+
+### FR-016 — Compose-wired Telegram configuration
+- `docker compose up` **must** pass `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from
+  `.env` into the controller without storing credentials in the repository.
+
 ---
 
 ## 3. Non-Functional Requirements
@@ -171,6 +182,7 @@ monitors its health, and autonomously restores service using a known-good backup
 | `CONFIG_PATH`                   | `/data/gateway/gateway.yaml` | No |
 | `BACKUP_DIR`                    | `/data/backups` | No      |
 | `BACKUP_INTERVAL_SECONDS`       | `60`           | No       |
+| `BACKUP_RETENTION_COUNT`        | `10`           | No       |
 | `NEXGUARD_ALLOWED_CONTAINERS`   | `gateway-simulator` | No  |
 | `RECOVERY_COOLDOWN_SECONDS`     | `60`           | No       |
 | `MAX_RECOVERIES_PER_WINDOW`     | `3`            | No       |

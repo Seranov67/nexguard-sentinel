@@ -43,6 +43,7 @@ class Settings:
     config_path: Path
     backup_dir: Path
     backup_interval: float
+    backup_retention_count: int
     allowed_containers: set[str]
     container_name: str
     recovery_cooldown: float
@@ -67,6 +68,7 @@ class Settings:
             config_path=Path(os.getenv("CONFIG_PATH", "/data/gateway/gateway.yaml")),
             backup_dir=Path(os.getenv("BACKUP_DIR", "/data/backups")),
             backup_interval=_env_float("BACKUP_INTERVAL_SECONDS", 60),
+            backup_retention_count=_env_int("BACKUP_RETENTION_COUNT", 10),
             allowed_containers=allowed,
             container_name=os.getenv("GATEWAY_CONTAINER_NAME", "gateway-simulator"),
             recovery_cooldown=_env_float("RECOVERY_COOLDOWN_SECONDS", 60),
@@ -101,7 +103,11 @@ class ControllerRuntime:
             failure_threshold=settings.failure_threshold,
             metrics=METRICS.incidents,
         )
-        self.backups = BackupManager(settings.config_path, settings.backup_dir)
+        self.backups = BackupManager(
+            settings.config_path,
+            settings.backup_dir,
+            settings.backup_retention_count,
+        )
         self.notifier = TelegramNotifier.from_env()
         docker_manager = DockerManager(docker_client, settings.allowed_containers)
         self.recovery = RecoveryManager(
