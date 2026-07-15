@@ -100,6 +100,7 @@ For this hackathon demo this is acceptable because:
 nexguard-edge/
 ├── AGENTS.md                        # IDE agent instructions
 ├── README.md                        # This file
+├── LICENSE                          # MIT license
 ├── compose.yaml                     # Docker Compose stack
 ├── .env.example                     # Environment variable template
 ├── pyproject.toml                   # Python tooling config
@@ -144,3 +145,7 @@ ruff check .
 mypy services/gateway-simulator
 mypy services/nexguard-controller
 ```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
