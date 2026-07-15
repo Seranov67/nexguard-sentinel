@@ -334,7 +334,7 @@ services/nexguard-controller/tests/test_docker_manager.py
 ## Stage 5 — Prometheus & Grafana
 
 ### T018 — Prometheus configuration
-**Status**: `[d]` — static configuration passes; live scrape deferred
+**Status**: `[x]` — both live scrape targets verified `up` locally on 2026-07-15
 **Files**:
 ```
 monitoring/prometheus.yml
@@ -346,7 +346,7 @@ monitoring/prometheus.yml
 ---
 
 ### T019 — Grafana provisioning and dashboard
-**Status**: `[d]` — provisioning and seven panels validated statically
+**Status**: `[x]` — provisioned dashboard and seven live panel queries verified locally
 **Files**:
 ```
 monitoring/grafana/provisioning/datasources/prometheus.yaml
@@ -360,7 +360,7 @@ monitoring/grafana/dashboards/nexguard.json
 ---
 
 ### T020 — Add Prometheus + Grafana to compose.yaml
-**Status**: `[d]` — Compose YAML updated; container execution deferred
+**Status**: `[x]` — all four Compose services started successfully locally
 **Files**:
 ```
 compose.yaml   ← add prometheus, grafana services
