@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/acceptance.md
 # NexGuard MVP — Acceptance Criteria
 
-**Version**: 1.0.1
+**Version**: 1.0.2
 **Linked spec**: `specs/001-nexguard-mvp/spec.md`  
-**Status**: APPROVED — owner approval recorded 2026-07-14
+**Status**: VERIFIED — all criteria passed on 2026-07-15
 
 > Each acceptance criterion maps to one or more Functional Requirements (FR-xxx)
 > from `spec.md`. All criteria must pass before the MVP is considered complete.
@@ -179,8 +179,8 @@ sleep 45
 **When** the recovery manager tries to restart it  
 **Then** restart is blocked; a `SECURITY_BLOCK` event is logged
 
-**Verification**: Unit tests `test_docker_manager.py::test_block_without_label` and
-`test_docker_manager.py::test_block_not_in_allowlist`
+**Verification**: Unit tests `test_docker_manager.py::test_docker_label_enforcement` and
+`test_docker_manager.py::test_allowlist_enforcement`
 
 ---
 
@@ -259,9 +259,11 @@ curl -sf -u "${GF_SECURITY_ADMIN_USER}:${GF_SECURITY_ADMIN_PASSWORD}" \
 
 **Verification**:
 ```bash
-docker compose logs nexguard-controller | grep "^{" | python3 -c "
+docker logs nexguard-controller 2>&1 | grep "^{" | python3 -c "
 import sys, json
-for line in sys.stdin:
+lines = list(sys.stdin)
+assert lines, 'no structured JSON events found'
+for line in lines:
     d = json.loads(line.strip())
     assert 'timestamp' in d
     assert 'event_type' in d
@@ -292,7 +294,7 @@ print('AC-017: PASS')
 - Status is `manual_intervention_required`
 - An event is logged
 
-**Verification**: Unit test `test_recovery.py::test_rate_limit_and_manual_intervention`
+**Verification**: Unit test `test_recovery.py::test_max_recovery_limit`
 
 ---
 
@@ -361,26 +363,26 @@ grep -rIE "g""hp_|xo""xb-|AK""IA|bo""t[0-9]{8,}:" . \
 
 | AC ID  | FR / Rule  | Test Type     | Status |
 |--------|------------|---------------|--------|
-| AC-001 | FR-001     | Integration   | `[ ]`  |
-| AC-002 | FR-001     | Integration   | `[ ]`  |
-| AC-003 | FR-002     | Integration   | `[ ]`  |
-| AC-004 | FR-003     | Integration   | `[ ]`  |
-| AC-005 | FR-003     | Unit          | `[ ]`  |
-| AC-006 | FR-004     | Integration   | `[ ]`  |
-| AC-007 | FR-005     | Integration   | `[ ]`  |
-| AC-008 | FR-005     | Unit          | `[ ]`  |
-| AC-009 | FR-006     | Unit          | `[ ]`  |
-| AC-010 | FR-007     | Unit          | `[ ]`  |
-| AC-011 | FR-008     | Integration   | `[ ]`  |
-| AC-012 | FR-009     | Unit          | `[ ]`  |
-| AC-013 | FR-010     | Unit          | `[ ]`  |
-| AC-014 | FR-011     | Integration   | `[ ]`  |
-| AC-015 | FR-012     | Integration   | `[ ]`  |
-| AC-016 | FR-013     | Unit          | `[ ]`  |
-| AC-017 | FR-014     | Integration   | `[ ]`  |
-| AC-018 | ARCH-7     | Unit          | `[ ]`  |
-| AC-019 | ARCH-8/9   | Unit          | `[ ]`  |
-| AC-020 | System     | E2E           | `[ ]`  |
-| AC-021 | System     | E2E           | `[ ]`  |
-| AC-022 | SEC-1/2    | CI/Static     | `[ ]`  |
-| AC-023 | NFR-02     | Unit          | `[ ]`  |
+| AC-001 | FR-001     | Integration   | `[x]`  |
+| AC-002 | FR-001     | Integration   | `[x]`  |
+| AC-003 | FR-002     | Integration   | `[x]`  |
+| AC-004 | FR-003     | Integration   | `[x]`  |
+| AC-005 | FR-003     | Unit          | `[x]`  |
+| AC-006 | FR-004     | Integration   | `[x]`  |
+| AC-007 | FR-005     | Integration   | `[x]`  |
+| AC-008 | FR-005     | Unit          | `[x]`  |
+| AC-009 | FR-006     | Unit          | `[x]`  |
+| AC-010 | FR-007     | Unit          | `[x]`  |
+| AC-011 | FR-008     | Integration   | `[x]`  |
+| AC-012 | FR-009     | Unit          | `[x]`  |
+| AC-013 | FR-010     | Unit          | `[x]`  |
+| AC-014 | FR-011     | Integration   | `[x]`  |
+| AC-015 | FR-012     | Integration   | `[x]`  |
+| AC-016 | FR-013     | Unit          | `[x]`  |
+| AC-017 | FR-014     | Integration   | `[x]`  |
+| AC-018 | ARCH-7     | Unit          | `[x]`  |
+| AC-019 | ARCH-8/9   | Unit          | `[x]`  |
+| AC-020 | System     | E2E           | `[x]`  |
+| AC-021 | System     | E2E           | `[x]`  |
+| AC-022 | SEC-1/2    | CI/Static     | `[x]`  |
+| AC-023 | NFR-02     | Unit          | `[x]`  |

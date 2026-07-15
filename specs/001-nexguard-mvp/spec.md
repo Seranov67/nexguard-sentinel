@@ -1,9 +1,9 @@
 # specs/001-nexguard-mvp/spec.md
 # NexGuard Edge Resilience — MVP Specification
 
-**Version**: 1.0.1
-**Status**: APPROVED — owner approval recorded 2026-07-14
-**Stage**: 1 (Implementation)
+**Version**: 1.0.2
+**Status**: VERIFIED — owner approval recorded 2026-07-14; completion audit 2026-07-15
+**Stage**: Complete
 
 ---
 
@@ -172,7 +172,6 @@ monitors its health, and autonomously restores service using a known-good backup
 | `BACKUP_DIR`                    | `/data/backups` | No      |
 | `BACKUP_INTERVAL_SECONDS`       | `60`           | No       |
 | `NEXGUARD_ALLOWED_CONTAINERS`   | `gateway-simulator` | No  |
-| `DOCKER_SOCKET`                 | `/var/run/docker.sock` | No |
 | `RECOVERY_COOLDOWN_SECONDS`     | `60`           | No       |
 | `MAX_RECOVERIES_PER_WINDOW`     | `3`            | No       |
 | `RECOVERY_WINDOW_SECONDS`       | `600`          | No       |
@@ -180,7 +179,15 @@ monitors its health, and autonomously restores service using a known-good backup
 | `METRICS_PORT`                  | `8081`         | No       |
 | `TELEGRAM_BOT_TOKEN`            | *(unset)*      | No       |
 | `TELEGRAM_CHAT_ID`              | *(unset)*      | No       |
-| `LOG_LEVEL`                     | `INFO`         | No       |
+
+### Docker Compose host variables
+
+| Variable             | Default                | Purpose |
+|----------------------|------------------------|---------|
+| `DOCKER_SOCKET`      | `/var/run/docker.sock` | Host socket bind source |
+| `DOCKER_GID`         | `0`                    | Supplementary group for socket access |
+| `NEXGUARD_DATA_GID`  | `1000`                 | Supplementary group for bind-mounted data |
+| `GRAFANA_PORT`       | `3000`                 | Grafana host port |
 
 ---
 

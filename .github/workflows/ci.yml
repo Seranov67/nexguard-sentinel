@@ -39,3 +39,35 @@ jobs:
             echo "Secret signature found"
             exit 1
           fi
+
+  docker-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start healthy stack
+        run: |
+          export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+          export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+          docker compose up -d --build --wait --wait-timeout 120
+      - name: Scenario A - stopped container recovers
+        run: |
+          export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+          export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+          ./scripts/demo-stop.sh
+          sleep 45
+          ./scripts/verify-demo.sh
+      - name: Scenario B - corrupt config recovers
+        run: |
+          export DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+          export NEXGUARD_DATA_GID="$(stat -c '%g' data/gateway)"
+          ./scripts/reset-demo.sh
+          ./scripts/demo-corrupt-config.sh
+          sleep 45
+          ./scripts/verify-demo.sh
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Clean up Compose resources
+        if: always()
+        run: docker compose down -v

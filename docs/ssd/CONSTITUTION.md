@@ -122,16 +122,16 @@ ANALYZE → SPECIFY → REVIEW → IMPLEMENT (stage-by-stage) → VERIFY → COM
 
 ## 7. Definition of Done (MVP)
 
-- [ ] `docker compose up -d --build` completes without errors.
-- [ ] All containers reach `healthy` status.
-- [ ] Scenario A (container stop) resolves automatically.
-- [ ] Scenario B (config corruption) resolves automatically.
-- [ ] Tests pass without a Telegram token configured.
-- [ ] No secrets or tokens in the repository.
-- [ ] `.env.example` contains only placeholder values.
-- [ ] Grafana dashboard loads automatically on first start.
-- [ ] README covers: quick-start, architecture, and demo scenarios.
-- [ ] A new user can run the full stack in **under 10 minutes**.
+- [x] `docker compose up -d --build` completes without errors.
+- [x] All containers reach `healthy` status.
+- [x] Scenario A (container stop) resolves automatically.
+- [x] Scenario B (config corruption) resolves automatically.
+- [x] Tests pass without a Telegram token configured.
+- [x] No secrets or tokens in the repository.
+- [x] `.env.example` contains only placeholder values.
+- [x] Grafana dashboard loads automatically on first start.
+- [x] README covers: quick-start, architecture, and demo scenarios.
+- [x] A new user can run the full stack in **under 10 minutes**.
 
 ---
 
@@ -148,3 +148,4 @@ Changes to this Constitution require:
 |------------|-----------|-------------------------|
 | 2026-07-14 | bootstrap | Initial version created |
 | 2026-07-14 | owner-approved amendment | Allow Docker-only gates to be deferred on an explicitly Docker-free development host |
+| 2026-07-15 | owner-requested completion audit | Record all MVP Definition of Done gates as verified |
