@@ -7,12 +7,20 @@
 Automated monitoring, configuration backup, and self-recovery for remote IoT gateways
 and smart-city infrastructure.
 
-[Architecture](docs/architecture.png) | [Demo Runbook](docs/demo-scenario.md) |
+[Architecture](docs/architecture.png) | [Demo Video](#demo-video) | [Demo Runbook](docs/demo-scenario.md) |
 [Video Script](docs/video-script.md) | [Security Model](docs/security.md)
 
-> Hackathon MVP status: implementation and automated recovery are complete. A public
-> demo-video URL and DoraHacks submission URL must be added after those external assets
-> are created.
+> Hackathon MVP status: implementation and automated recovery are complete. Add the
+> [DoraHacks submission URL](#dorahacks-submission) after the BUIDL is published.
+
+## Demo Video
+
+**Watch the 2–3 minute walkthrough:** *URL pending — publish to YouTube, Loom, or Vimeo
+(unlisted or public) using [docs/video-script.md](docs/video-script.md), then replace this
+line with the link.*
+
+Recording checklist: 1080p, no secrets on screen (`.env`, tokens, passwords), opens in an
+incognito window without sign-in.
 
 ## Problem
 
@@ -178,6 +186,10 @@ cannot be assumed.
 
 These are post-MVP directions; Kubernetes, cloud infrastructure, databases, authentication,
 and AI/ML remain outside this repository's current scope.
+
+## DoraHacks Submission
+
+**BUIDL URL:** *pending — add the public DoraHacks project link after submission.*
 
 ## Team
 
