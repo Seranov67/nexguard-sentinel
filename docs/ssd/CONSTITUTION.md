@@ -52,6 +52,15 @@ The following are explicitly **out of scope** and must not be added:
 | Database                | PostgreSQL, SQLite, Redis                 |
 | Cloud deployment        | AWS, GCP, Azure, Terraform                |
 
+This scope freeze governs `specs/001-nexguard-mvp`. An owner-approved event
+amendment dated 2026-09-04 permits `specs/002-ethonline-sentinel` to add only
+the following isolated feature surfaces: Base Sepolia smart contracts, a live
+The Graph data source, schema-validated AI classification, and local SQLite
+durability. The amendment does not permit mainnet, real-value custody, automatic
+unpause, a web control panel, authentication, cloud infrastructure, or broad
+changes to the completed gateway MVP. The new specification and its gates take
+precedence only where this paragraph explicitly conflicts with the table above.
+
 ### 3.3 Architectural invariants
 - **ARCH-1** — The health-check loop runs **every 10 seconds** (configurable via env,
   but default must be 10 s).
@@ -149,3 +158,4 @@ Changes to this Constitution require:
 | 2026-07-14 | bootstrap | Initial version created |
 | 2026-07-14 | owner-approved amendment | Allow Docker-only gates to be deferred on an explicitly Docker-free development host |
 | 2026-07-15 | owner-requested completion audit | Record all MVP Definition of Done gates as verified |
+| 2026-09-04 | owner-approved ETHOnline amendment | Permit the isolated Sentinel event feature defined by `specs/002-ethonline-sentinel` |

@@ -1,0 +1,21 @@
+title = "NexGuard Sentinel repository"
+minVersion = "8.30.0"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated dependencies, virtual environments and compiler binaries"
+paths = [
+  '''(^|[\\/])node_modules([\\/]|$)''',
+  '''(^|[\\/])\.venv([\\/]|$)''',
+  '''(^|[\\/])\.solcx([\\/]|$)''',
+  '''(^|[\\/])__pycache__([\\/]|$)''',
+  '''(^|[\\/])\.pytest_cache([\\/]|$)''',
+  '''(^|[\\/])\.mypy_cache([\\/]|$)''',
+  '''(^|[\\/])\.ruff_cache([\\/]|$)'''
+]
+stopwords = [
+  "admin:admin",
+  "your_bot_token"
+]

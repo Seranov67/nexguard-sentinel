@@ -1,0 +1,133 @@
+# NexGuard Sentinel — declarative configuration
+# Pre-event specification template. Product parser is written during ETHOnline.
+
+version: 1
+
+chain:
+  name: base-sepolia
+  chain_id: 84532
+  rpc_http: ${RPC_HTTP}
+  confirmations: 2
+  receipt_timeout: 60s
+
+state:
+  path: ${SENTINEL_STATE_PATH:-.sentinel/state.sqlite3}
+  fsync: true
+
+# 1. WATCH — live The Graph data, delivered at least once.
+sources:
+  - name: vault-withdrawals
+    type: subgraph
+    endpoint: ${SUBGRAPH_URL}
+    poll_interval: 5s
+    page_size: 100
+    delivery: at_least_once
+    cursor:
+      field: sequence
+      id_field: id
+      durable: true
+      rewind_blocks: 2
+    query: |
+      query Withdrawals($after: BigInt!) {
+        withdrawals(
+          first: 100
+          orderBy: sequence
+          orderDirection: asc
+          where: { sequence_gt: $after }
+        ) {
+          id
+          sequence
+          who
+          amount
+          timestamp
+          blockNumber
+          transactionHash
+          logIndex
+        }
+        _meta {
+          block { number hash }
+        }
+      }
+    map:
+      id: id
+      sequence: sequence
+      value: amount
+      actor: who
+      at: timestamp
+      block: blockNumber
+      tx: transactionHash
+
+# 2. DETECT — deterministic safety floor plus structured AI classification.
+detectors:
+  - name: catastrophic-drain
+    source: vault-withdrawals
+    kind: window_threshold
+    field: value
+    aggregate: sum
+    window: 30s
+    threshold: "3000000000000000"  # 0.003 test ETH; demo only
+    minimum_events: 3
+    severity: critical
+
+  - name: graph-risk-classifier
+    source: vault-withdrawals
+    kind: structured_llm
+    model_url: ${OLLAMA_URL}
+    model: ${OLLAMA_MODEL}
+    prompt: prompts/withdrawal-anomaly.md
+    timeout: 10s
+    temperature: 0
+    minimum_confidence: 0.80
+    output_schema:
+      severity: [info, warning, critical]
+      recommended_action: [none, notify, pause]
+      confidence: number_0_to_1
+      rationale: string_max_240
+    on_invalid: refuse_and_notify
+    on_timeout: refuse_and_notify
+
+# 3. DECIDE + 4. ACT — AI proposes; deterministic policy authorizes.
+responders:
+  - on:
+      severity: critical
+      recommended_action: pause
+    action: pause
+    contract: ${GUARDIAN_ADDRESS}
+    method: pause
+    args: ["${incident.ref}", "${incident.severity_code}"]
+
+    policy:
+      cooldown: 300s
+      max_actions: 1
+      window: 1h
+      latch: true
+      reserve_before_execute: true
+      latch_on: [indeterminate, state_store_failure, unfinished_intent]
+
+    # 5. VERIFY — receipt alone is not enough.
+    verify:
+      confirmations: 2
+      read: paused
+      expect: true
+      on_mismatch: indeterminate
+      on_timeout: indeterminate
+
+    # 6. PROVE — pause(ref, severity) emits the audit record atomically.
+    prove:
+      event: IncidentRecorded
+      ref_encoding: canonical-json-v1
+
+  - on:
+      severity: warning
+    action: notify
+    channels: [telegram]
+
+notify:
+  telegram:
+    bot_token: ${TELEGRAM_BOT_TOKEN}
+    chat_id: ${TELEGRAM_CHAT_ID}
+    delivery: durable_outbox
+    on: [incident_opened, action_taken, action_refused, latched]
+
+# Manual-only recovery:
+# sentinel reset --operator "serhii" --reason "reconciled tx 0x... on Basescan"
