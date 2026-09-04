@@ -48,6 +48,14 @@ contracts/cache/
 contracts/out/
 contracts/broadcast/
 
+# Node / The Graph
+node_modules/
+subgraph/build/
+subgraph/generated/
+subgraph/tests/.bin/
+subgraph/tests/.docker/
+subgraph/tests/.latest.json
+
 # Secrets — NEVER commit these
 .env
 .env.ethonline

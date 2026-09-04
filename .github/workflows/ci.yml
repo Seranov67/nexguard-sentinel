@@ -21,6 +21,27 @@ jobs:
             ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46 \
             "forge fmt --check && forge test -vvv"
 
+  subgraph:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: subgraph/package-lock.json
+      - name: Install pinned Subgraph toolchain
+        working-directory: subgraph
+        run: npm ci
+      - name: Generate and compile Subgraph
+        working-directory: subgraph
+        run: |
+          npm run codegen
+          npm run build
+      - name: Matchstick mapping tests
+        working-directory: subgraph
+        run: npm test
+
   quality:
     runs-on: ubuntu-latest
     steps:

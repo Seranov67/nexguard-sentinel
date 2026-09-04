@@ -1,0 +1,17 @@
+"""A valueless DemoVault withdrawal indexed from Base Sepolia."""
+type Withdrawal @entity(immutable: true) {
+  """Canonical transaction hash plus log index."""
+  id: Bytes!
+  """Sortable event position: blockNumber * 1,000,000 + logIndex."""
+  sequence: BigInt!
+  blockNumber: BigInt!
+  blockHash: Bytes!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  timestamp: BigInt!
+  who: Bytes!
+  recipient: Bytes!
+  triggeredBy: Bytes!
+  amount: BigInt!
+  remainingCredit: BigInt!
+}

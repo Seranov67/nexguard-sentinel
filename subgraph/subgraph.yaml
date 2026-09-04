@@ -1,0 +1,27 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: DemoVault
+    network: base-sepolia
+    source:
+      # Replaced with the verified ES102 deployment address before publishing.
+      address: "0x0000000000000000000000000000000000000000"
+      abi: DemoVault
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Withdrawal
+      abis:
+        - name: DemoVault
+          file: ./abis/DemoVault.json
+      eventHandlers:
+        - event: Withdrawal(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdrawal
+      file: ./src/demo-vault.ts

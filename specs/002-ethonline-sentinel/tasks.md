@@ -33,7 +33,7 @@ Status: `[ ]` todo, `[/]` in progress, `[x]` complete, `[d]` deferred.
 
 ### ES201 — Subgraph
 
-**Status:** `[ ]`
+**Status:** `[/]`
 **Files:** `subgraph/schema.graphql`, `subgraph/subgraph.yaml`, `subgraph/src/`, tests
 **Depends:** ES102
 **Acceptance:** ES-FR-003 and EG-2.

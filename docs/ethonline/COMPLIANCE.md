@@ -34,7 +34,7 @@ the final hash and Dashboard-confirmed start before creating the tag/branch.
 | Write-path local checks | 6 pytest tests; Ruff pass; strict mypy pass | verified |
 | Solidity preparation compile | solc 0.8.24; 11 ABI entries; 1545 bytecode bytes | verified |
 | Graph CLI | local `@graphprotocol/graph-cli` 0.98.1 on Node 22.17.1 | verified |
-| Graph CLI dependency audit | 15 advisories: 1 critical, 10 high, 4 moderate | open risk |
+| Graph CLI dependency audit | Event implementation lockfile: 16 development-tool advisories (1 critical, 10 high, 5 moderate); CLI is excluded from the Sentinel runtime | open, bounded risk |
 | Secret scan | Gitleaks 8.30.1, first-party workspace: no leaks | verified |
 | Local backup | Clean English snapshot SHA-256 `384a8a94…ec04e`; 45-file restore comparison passed | verified |
 | Off-device backup | No evidence yet | pending |
@@ -51,6 +51,7 @@ submission implementation.
 | Dashboard-confirmed hacking start | Authenticated Dashboard checked 2026-09-04; schedule shows `Hacking Begins!` at 19:00 Europe/Kyiv | verified |
 | Event-only history | baseline tag and event branch exist; event commits/diff begin with ES000 | in progress |
 | Public repository | anonymous/incognito access test | pending |
+| Local Graph implementation | Graph codegen/build pass; Matchstick 0.6.0 Docker test 1/1 pass; deterministic tx-hash/log-index ID and sequence cursor | verified locally 2026-09-04 |
 | Live Graph provider | Subgraph ID, public-safe endpoint form, query and response metadata | pending |
 | Meaningful AI use | schema, prompt/version, Graph-derived inputs, output and policy trace | pending |
 | Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
@@ -71,7 +72,8 @@ submission implementation.
 | 2026-09-04 18:40 | Hacking start verified | Authenticated Dashboard and event schedule: 2026-09-04 19:00 Europe/Kyiv | verified |
 | 2026-09-04 19:01 | Baseline created | `pre-ethonline-2026` → `fa202e994a77ea365061f6ac609daea1b5ad60dd`; branch `feature/ethonline-sentinel` | verified |
 | 2026-09-04 19:12–19:21 | Pre-event non-regression | Ubuntu/WSL2; Python 3.12.14 container; Docker/Compose; 50 tests; Scenarios A and B | verified; temporary stack and clone removed |
-| 2026-09-04 | ES101 contracts | Foundry 1.5.1; Solc 0.8.24; 8 tests | verified locally; Base Sepolia pending |
+| 2026-09-04 | ES101 contracts | Foundry 1.5.1; Solc 0.8.24; 9 tests | verified locally; Base Sepolia pending |
+| 2026-09-04 | ES201 local Subgraph | Graph CLI 0.98.1; codegen/build; Matchstick 0.6.0 Docker test | verified locally; live provider pending |
 | | Deployment | chain/address/tx | |
 | | Graph deploy | Subgraph ID/version | |
 | | Live query | indexed block/entity/latency | |

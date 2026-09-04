@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { DemoVault } from "../src/DemoVault.sol";
-import { Guardian } from "../src/Guardian.sol";
+import {DemoVault} from "../src/DemoVault.sol";
+import {Guardian} from "../src/Guardian.sol";
 
 contract Actor {
     function pause(Guardian guardian, bytes32 incidentRef, uint8 severity) external {
@@ -92,8 +92,7 @@ contract GuardianTest {
     }
 
     function testOwnerCannotAlsoBeKeeper() public {
-        (bool ok,) =
-            address(guardian).call(abi.encodeCall(Guardian.setKeeper, (address(this), true)));
+        (bool ok,) = address(guardian).call(abi.encodeCall(Guardian.setKeeper, (address(this), true)));
         require(!ok, "owner and keeper roles must stay separate");
     }
 }
