@@ -1,7 +1,7 @@
 # NexGuard Sentinel — ETHOnline 2026 specification
 
 **Version:** 1.0.0-draft
-**Status:** PROPOSED — awaiting owner approval
+**Status:** APPROVED — owner authorized implementation on 2026-09-04
 **Baseline:** `pre-ethonline-2026` / `fa202e994a77ea365061f6ac609daea1b5ad60dd`
 **Event start:** 2026-09-04 19:00 Europe/Kyiv
 

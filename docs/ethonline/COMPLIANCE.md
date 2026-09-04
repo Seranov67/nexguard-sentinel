@@ -57,6 +57,8 @@ submission implementation.
 | Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
 | Testnet contracts | chain ID, addresses, deployment tx hashes, explorer links | pending |
 | Contract implementation | Solc 0.8.24 compile; 9 Foundry tests; 5 deployment-tool tests; full 55-test Python suite; guarded EIP-1559 deploy tool | verified locally 2026-09-04; live deployment pending |
+| Disposable testnet roles | Keeper/deployer `0x46C3a46Efd54f928707F83D9e3F5f87f0D420172`; owner `0xcF44200ba4024772acF529D87B758C4FCA6e7A15`; secrets stored only in ignored `.env.ethonline` | generated locally 2026-09-04; deployer funding pending |
+| Base Sepolia faucet | ETHGlobal sent 0.1 test ETH to the participant's verified wallet in tx `0xce439e827fad4c0cb8b8735e3630e68c8dd25d6e08bf2c39c7de54b8f4cb7c0c` | verified onchain 2026-09-04; transfer to disposable deployer pending |
 | Reproducibility | clean-clone install/test/run record | pending |
 | Demo video | public URL, duration 2–4 min, ≥720p, human narration | pending |
 | Disclosure | final prior/new table and license notices | pending final review |
@@ -74,6 +76,7 @@ submission implementation.
 | 2026-09-04 19:12–19:21 | Pre-event non-regression | Ubuntu/WSL2; Python 3.12.14 container; Docker/Compose; 50 tests; Scenarios A and B | verified; temporary stack and clone removed |
 | 2026-09-04 | ES101 contracts | Foundry 1.5.1; Solc 0.8.24; 9 tests | verified locally; Base Sepolia pending |
 | 2026-09-04 | ES201 local Subgraph | Graph CLI 0.98.1; codegen/build; Matchstick 0.6.0 Docker test | verified locally; live provider pending |
+| 2026-09-04 19:57 | Base Sepolia faucet | ETHGlobal claim tx `0xce439e82…b7c0c`; 0.1 test ETH to verified participant wallet | verified; disposable deployer remains unfunded |
 | | Deployment | chain/address/tx | |
 | | Graph deploy | Subgraph ID/version | |
 | | Live query | indexed block/entity/latency | |

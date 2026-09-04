@@ -20,5 +20,6 @@
 | ES-NFR-004 | end-to-end audit record contains every required stable field | EG-5 |
 | ES-NFR-005 | existing gateway test suite and applicable Compose gates remain green | EG-5 |
 
-Approval of this document authorizes Stage 1 implementation only. Later stages
-advance only after the preceding gate passes, following `AGENTS.md`.
+The owner approved this specification and authorized implementation on
+2026-09-04. Later stages advance only after the preceding gate passes, following
+`AGENTS.md`.
