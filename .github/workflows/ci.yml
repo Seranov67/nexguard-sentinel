@@ -9,6 +9,18 @@ permissions:
   contents: read
 
 jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Foundry format and tests
+        run: |
+          docker run --rm \
+            --volume "$PWD/contracts:/work" \
+            --workdir /work \
+            ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46 \
+            "forge fmt --check && forge test -vvv"
+
   quality:
     runs-on: ubuntu-latest
     steps:

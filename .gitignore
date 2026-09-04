@@ -43,6 +43,11 @@ dmypy.json
 # Docker
 *.log
 
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+
 # Secrets — NEVER commit these
 .env
 *.pem

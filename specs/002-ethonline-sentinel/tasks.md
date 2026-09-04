@@ -17,14 +17,14 @@ Status: `[ ]` todo, `[/]` in progress, `[x]` complete, `[d]` deferred.
 
 ### ES101 — Guardian and Demo Vault
 
-**Status:** `[ ]`
+**Status:** `[x]`
 **Files:** `contracts/src/Guardian.sol`, `contracts/src/DemoVault.sol`
 **Depends:** ES000 approval
 **Acceptance:** ES-FR-001, ES-FR-002.
 
 ### ES102 — contract tests and deployment
 
-**Status:** `[ ]`
+**Status:** `[/]`
 **Files:** `contracts/test/`, `contracts/script/`, contract configuration
 **Depends:** ES101
 **Acceptance:** EG-1 and recorded Base Sepolia evidence.

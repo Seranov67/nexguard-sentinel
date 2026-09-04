@@ -55,6 +55,7 @@ submission implementation.
 | Meaningful AI use | schema, prompt/version, Graph-derived inputs, output and policy trace | pending |
 | Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
 | Testnet contracts | chain ID, addresses, deployment tx hashes, explorer links | pending |
+| Contract implementation | Solc 0.8.24 compile and 8 Foundry tests covering roles, duplicate refs, pause enforcement, and demo vulnerability | verified locally 2026-09-04; live deployment pending |
 | Reproducibility | clean-clone install/test/run record | pending |
 | Demo video | public URL, duration 2–4 min, ≥720p, human narration | pending |
 | Disclosure | final prior/new table and license notices | pending final review |
@@ -70,6 +71,7 @@ submission implementation.
 | 2026-09-04 18:40 | Hacking start verified | Authenticated Dashboard and event schedule: 2026-09-04 19:00 Europe/Kyiv | verified |
 | 2026-09-04 19:01 | Baseline created | `pre-ethonline-2026` → `fa202e994a77ea365061f6ac609daea1b5ad60dd`; branch `feature/ethonline-sentinel` | verified |
 | 2026-09-04 19:12–19:21 | Pre-event non-regression | Ubuntu/WSL2; Python 3.12.14 container; Docker/Compose; 50 tests; Scenarios A and B | verified; temporary stack and clone removed |
+| 2026-09-04 | ES101 contracts | Foundry 1.5.1; Solc 0.8.24; 8 tests | verified locally; Base Sepolia pending |
 | | Deployment | chain/address/tx | |
 | | Graph deploy | Subgraph ID/version | |
 | | Live query | indexed block/entity/latency | |
