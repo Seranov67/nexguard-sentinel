@@ -38,6 +38,8 @@ the final hash and Dashboard-confirmed start before creating the tag/branch.
 | Secret scan | Gitleaks 8.30.1, first-party workspace: no leaks | verified |
 | Local backup | Clean English snapshot SHA-256 `384a8a94…ec04e`; 45-file restore comparison passed | verified |
 | Off-device backup | No evidence yet | pending |
+| Ubuntu verification host | WSL2 Ubuntu; Docker 29.7.1; Compose 5.3.1; isolated `python:3.12-slim` runtime reported Python 3.12.14 | verified 2026-09-04 |
+| Pre-event non-regression | Ruff; strict MyPy for both services; 50 pytest tests; Compose config; four-service health; Scenario A stop/restart; Scenario B corrupt/restore/restart | verified 2026-09-04 in native Linux temporary clone |
 
 These results apply only to pre-event spikes/preparation, not to the future
 submission implementation.
@@ -67,6 +69,7 @@ submission implementation.
 |---|---|---|---|
 | 2026-09-04 18:40 | Hacking start verified | Authenticated Dashboard and event schedule: 2026-09-04 19:00 Europe/Kyiv | verified |
 | 2026-09-04 19:01 | Baseline created | `pre-ethonline-2026` → `fa202e994a77ea365061f6ac609daea1b5ad60dd`; branch `feature/ethonline-sentinel` | verified |
+| 2026-09-04 19:12–19:21 | Pre-event non-regression | Ubuntu/WSL2; Python 3.12.14 container; Docker/Compose; 50 tests; Scenarios A and B | verified; temporary stack and clone removed |
 | | Deployment | chain/address/tx | |
 | | Graph deploy | Subgraph ID/version | |
 | | Live query | indexed block/entity/latency | |
