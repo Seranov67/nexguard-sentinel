@@ -38,6 +38,7 @@ guards, access control or post-action verification.
 | 04 Sep, event period | `contracts/deploy.py`, deployment tests, CI/type gates, secret-safe environment template | Codex added a Base-Sepolia-only EIP-1559 deployment and verification path, strengthened owner/keeper separation, and added five Python safety tests | Human delegated implementation decisions; no wallet secret or live deployment is claimed |
 | 04 Sep, event period | `subgraph/` schema, mapping, tests and provider handoff notes | Codex implemented deterministic indexing for DemoVault withdrawals with a canonical event ID and durable ordering cursor | Human delegated implementation decisions; provider publication and live-query evidence remain pending |
 | 04 Sep, event period | Ignored `.env.ethonline` disposable Base Sepolia roles | Codex generated separate testnet-only owner and keeper/deployer accounts without printing or committing private keys | Human must fund only the public deployer address with faucet ETH; wallets must never receive real value |
+| 04 Sep, event period | `docs/ethonline/TESTNET_HANDOFF.md` | Codex recorded the verified state, safe funding steps, public addresses, and exact continuation checklist | Human requested a documented pause until the following day and must perform the wallet-authorized testnet transfer |
 
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
