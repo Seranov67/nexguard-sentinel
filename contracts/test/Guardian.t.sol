@@ -28,11 +28,10 @@ contract GuardianTest {
     bytes32 private constant REASON = keccak256("human-reviewed");
 
     function setUp() public {
-        guardian = new Guardian(address(this));
-        vault = new DemoVault(address(guardian));
         keeper = new Actor();
         outsider = new Actor();
-        guardian.setKeeper(address(keeper), true);
+        guardian = new Guardian(address(this), address(keeper));
+        vault = new DemoVault(address(guardian));
     }
 
     function testKeeperCanPauseAndVaultReadsGuardian() public {
@@ -90,5 +89,11 @@ contract GuardianTest {
         guardian.setKeeper(address(keeper), false);
         (bool ok,) = address(keeper).call(abi.encodeCall(Actor.pause, (guardian, INCIDENT, 3)));
         require(!ok, "revoked keeper must not pause");
+    }
+
+    function testOwnerCannotAlsoBeKeeper() public {
+        (bool ok,) =
+            address(guardian).call(abi.encodeCall(Guardian.setKeeper, (address(this), true)));
+        require(!ok, "owner and keeper roles must stay separate");
     }
 }

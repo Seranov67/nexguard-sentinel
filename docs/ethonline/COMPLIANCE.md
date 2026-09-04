@@ -55,7 +55,7 @@ submission implementation.
 | Meaningful AI use | schema, prompt/version, Graph-derived inputs, output and policy trace | pending |
 | Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
 | Testnet contracts | chain ID, addresses, deployment tx hashes, explorer links | pending |
-| Contract implementation | Solc 0.8.24 compile and 8 Foundry tests covering roles, duplicate refs, pause enforcement, and demo vulnerability | verified locally 2026-09-04; live deployment pending |
+| Contract implementation | Solc 0.8.24 compile; 9 Foundry tests; 5 deployment-tool tests; full 55-test Python suite; guarded EIP-1559 deploy tool | verified locally 2026-09-04; live deployment pending |
 | Reproducibility | clean-clone install/test/run record | pending |
 | Demo video | public URL, duration 2–4 min, ≥720p, human narration | pending |
 | Disclosure | final prior/new table and license notices | pending final review |

@@ -9,7 +9,9 @@
 - Solidity compiler: 0.8.24
 - Format: PASS
 - Compile: PASS
-- Tests: 8 passed, 0 failed, 0 skipped
+- Solidity tests: 9 passed, 0 failed, 0 skipped
+- Python deployment-tool tests: 5 passed
+- Full Python non-regression suite: 55 passed
 
 Covered behavior:
 
@@ -21,6 +23,13 @@ Covered behavior:
 - invalid severity refuses the transition;
 - Demo Vault withdrawal is blocked while Guardian is paused;
 - the intentional demo-only withdrawal vulnerability works before pause.
+- owner and keeper addresses cannot be configured as the same account;
+- deployment tooling refuses the wrong chain and identical owner/keeper roles;
+- public deployment evidence is written atomically.
+
+The deployment tool loads secrets only from the ignored `.env.ethonline`,
+refuses any chain other than Base Sepolia, constructs EIP-1559 transactions,
+checks receipt status, and re-reads role and Guardian/Vault linkage state.
 
 ## Live evidence pending
 

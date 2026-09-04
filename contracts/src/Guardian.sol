@@ -12,6 +12,7 @@ contract Guardian {
     error InvalidReference();
     error InvalidSeverity(uint8 severity);
     error NotPaused();
+    error RolesMustDiffer();
     error UnauthorizedKeeper(address caller);
     error UnauthorizedOwner(address caller);
 
@@ -25,9 +26,12 @@ contract Guardian {
     mapping(address keeper => bool allowed) public keepers;
     mapping(bytes32 incidentRef => bool used) public usedIncidentRefs;
 
-    constructor(address initialOwner) {
-        if (initialOwner == address(0)) revert InvalidAddress();
+    constructor(address initialOwner, address initialKeeper) {
+        if (initialOwner == address(0) || initialKeeper == address(0)) revert InvalidAddress();
+        if (initialOwner == initialKeeper) revert RolesMustDiffer();
         owner = initialOwner;
+        keepers[initialKeeper] = true;
+        emit KeeperUpdated(initialKeeper, true);
     }
 
     modifier onlyOwner() {
@@ -42,6 +46,7 @@ contract Guardian {
 
     function setKeeper(address keeper, bool allowed) external onlyOwner {
         if (keeper == address(0)) revert InvalidAddress();
+        if (keeper == owner && allowed) revert RolesMustDiffer();
         keepers[keeper] = allowed;
         emit KeeperUpdated(keeper, allowed);
     }

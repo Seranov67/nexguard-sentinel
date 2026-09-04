@@ -50,6 +50,7 @@ contracts/broadcast/
 
 # Secrets — NEVER commit these
 .env
+.env.ethonline
 *.pem
 *.key
 *.crt

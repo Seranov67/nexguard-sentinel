@@ -20,4 +20,18 @@ forge fmt --check
 forge test -vvv
 ```
 
+For Base Sepolia deployment, copy `.env.ethonline.example` to the ignored
+`.env.ethonline`, populate it locally, build artifacts, and run:
+
+```bash
+cd contracts
+forge build
+cd ..
+python contracts/deploy.py --evidence docs/ethonline/deployments/base-sepolia.json
+```
+
+The deployment script refuses non-Base-Sepolia RPCs, never prints the private
+key, uses EIP-1559 transactions, verifies successful receipts, and re-reads the
+configured owner, keeper, initial pause state, and Vault-to-Guardian link.
+
 Never deploy these contracts to mainnet or use them with assets of value.

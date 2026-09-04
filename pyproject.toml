@@ -28,6 +28,8 @@ dev = [
     "types-PyYAML>=6.0",
     "types-requests>=2.31",
     "uvicorn>=0.32",
+    "python-dotenv==1.2.3",
+    "web3==7.16.0",
 ]
 
 [tool.pytest.ini_options]
@@ -35,6 +37,7 @@ asyncio_mode = "auto"
 addopts = "--import-mode=importlib"
 pythonpath = ["services/gateway-simulator"]
 testpaths = [
+    "contracts/tests",
     "services/gateway-simulator/tests",
     "services/nexguard-controller/tests",
 ]
