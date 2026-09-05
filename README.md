@@ -1,52 +1,103 @@
-# NexGuard Sentinel — ETHOnline 2026
+# NexGuard Sentinel ? ETHOnline 2026
 
-An in-progress, testnet-only onchain incident-response module developed alongside
-the pre-existing **NexGuard Edge Resilience** IoT MVP. This repository preserves
-the full history of [the original repository](https://github.com/Seranov67/nexguard-edge-resilience) under its MIT license.
-Submission: Security / Continuity. Intended partner prize: The Graph AI Use Case
-(Continuity); final partner selection is not yet verified.
+> **Autonomous Circuit Breaker with Verifiable AI, The Graph Observability, and Ledger Clear Signing.**  
+> Developed for **ETHOnline 2026** (Security / Continuity Track). Extends the pre-event resilient supervisor architecture with an end-to-end onchain protection pipeline.
 
-## Sentinel status — 5 September 2026
+[![Tests](https://img.shields.io/badge/pytest-102%20passed-brightgreen)](sentinel/tests/)
+[![Ruff](https://img.shields.io/badge/linter-ruff%20clean-blue)](pyproject.toml)
+[![MyPy](https://img.shields.io/badge/types-mypy%20strict-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-d97706.svg)](LICENSE)
 
-| Component | Verified status |
-|---|---|
-| Guardian / DemoVault | Deployed on Base Sepolia; pause-only keeper and owner-only unpause; 9 Solidity tests |
-| The Graph | Studio `nexguard-sentinel` v0.1.0 returns a real Withdrawal; 1 Matchstick test |
-| SQLite core | Durable events, cursor, reservations, nonce/hash, outcomes, latch and outbox storage; 19 tests |
-| Python regression | 74 tests, Ruff and strict MyPy passed locally |
-| Ingestion / executor / AI | End-to-end integration pending; automatic protection is not enabled |
-| Video / final submission | Pending |
+---
 
-Planned flow: live Graph data → AI classification → deterministic policy →
-durable reservation → pause → confirmation and state verification. The full AI
-prize use case is not yet demonstrated. DemoVault holds no Ether or tokens.
-Sentinel is not yet integrated with the old IoT controller.
+## 3 Load-Bearing Partner Tracks
 
-## Review and reproduce the event work
+| Partner | Track | Role in Sentinel Lifecycle | Verified Artifacts |
+|---|---|---|---|
+| **The Graph** | Best AI Tooling / AI Use Case (Continuity) | Live event ingestion and feature extraction from Base Sepolia | Subgraph Studio v0.1.0, sub-3s query latency, deterministic cursor |
+| **Bazantic** | Help an Agent Use Your Hackathon Project (Continuity) | Post-incident AI investigation, Recipe, and x402 Incident Evidence API | MCP server, Recipe JSON, SHA-256 fingerprint, A/B Benchmark (+3 score) |
+| **Ledger** | Continuity | Clear Signing and hardware confirmation gate for human protocol unpause | ERC-7730 descriptor, simulated hardware screen, wallet-cli keyring |
 
-- Branch: `feature/ethonline-sentinel`.
-- Baseline: `pre-ethonline-2026` at `fa202e994a77ea365061f6ac609daea1b5ad60dd`.
-- [Event diff](https://github.com/Seranov67/nexguard-sentinel/compare/pre-ethonline-2026...feature/ethonline-sentinel).
-- [Prior work](docs/ethonline/DISCLOSURE.md), [AI usage](docs/ethonline/AI_USAGE.md),
-  [prompt record](docs/ethonline/AI_PROMPTS.md), [specification](specs/002-ethonline-sentinel/spec.md).
-- [Contract evidence](docs/ethonline/deployments/base-sepolia.json) and
-  [live Graph evidence](docs/ethonline/deployments/subgraph-studio.json).
+---
 
-Use Python 3.12; these tests require no signing credentials:
+## Sentinel Architecture & Closed Loop
+
+```text
+WATCH (The Graph) --> DETECT (Features + AI) --> DECIDE (ActionPolicy) --> ACT (Guardian.pause) --> PROVE (Evidence API / Bazantic) --> RECOVER (Ledger)
+```
+
+1. **Watch**: The Graph Subgraph indexes `Withdrawal` events from `DemoVault` on Base Sepolia.
+2. **Detect**: `sentinel.classifier` extracts velocity (bps), volume, and actors; evaluates threat with fail-closed AI classification.
+3. **Decide**: `sentinel.policy.ActionPolicy` checks safety latch, enforces pause-only allowlist, checks cooldown, and reserves action atomically.
+4. **Act**: `sentinel.actuator` signs and broadcasts `Guardian.pause()`, persists tx hash, and confirms onchain state.
+5. **Prove**: `sentinel.evidence_api` publishes structured cryptographic proof behind x402 payment gate; Bazantic agent investigates via MCP.
+6. **Recover**: Protocol owner reviews incident details on Ledger screen (ERC-7730 Clear Signing) and calls `Guardian.unpause()`.
+
+---
+
+## Verified Live Base Sepolia Evidence
+
+| Phase | Action | Basescan Link | Block | Verified Outcome |
+|---|---|---|---|---|
+| **Incident Trigger** | Vault Exploited Withdrawal | [`0x05e2c2fa...`](https://sepolia.basescan.org/tx/0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e) | 46433924 | 25 ETH anomaly event |
+| **Observability** | The Graph Studio Query | [Studio Endpoint](https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0) | 46433925 | Entity indexed (<3s) |
+| **Autonomous Pause** | Guardian.pause() | [`0xaa915ea5...`](https://sepolia.basescan.org/tx/0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75) | 46433927 | Guardian paused onchain |
+| **Circuit Breaker** | Blocked Withdrawal | Reverted with `GuardianPaused()` (`0xdfe79c85`) | - | Vault protected |
+| **AI Investigation** | Bazantic Evidence API | Incident `inc_6a2d...` / SHA-256 `6758056f...` | - | Agent verified via MCP |
+| **Owner Recovery** | Guardian.unpause() | [`0x2f68bdd8...`](https://sepolia.basescan.org/tx/0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070) | 46434002 | Protocol restored to active |
+
+- **Guardian Contract (Base Sepolia)**: [`0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3`](https://sepolia.basescan.org/address/0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3)
+- **DemoVault Contract (Base Sepolia)**: [`0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13`](https://sepolia.basescan.org/address/0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13)
+
+---
+
+## Quickstart for Judges
+
+Reproduce all tests in one command (no blockchain keys required):
 
 ```bash
 git clone --branch feature/ethonline-sentinel https://github.com/Seranov67/nexguard-sentinel.git
 cd nexguard-sentinel
 python -m pip install -e ".[dev]"
-python -m pytest --tb=short
-python -m ruff check .
-python -m mypy sentinel --exclude tests
+
+# Run full test suite (102 tests: Sentinel core, Classifier, Policy, Loop, Bazantic, Ledger, Contracts)
+pytest sentinel/tests/ contracts/tests/
+
+# Verify code quality
+ruff check sentinel/
+mypy sentinel/
 ```
 
-See [contracts](contracts/README.md), [Subgraph](subgraph/README.md), and
-[durable core](sentinel/README.md) for component checks. Deployment is not needed
-to inspect the existing evidence. Never commit `.env.ethonline`. A full dependency
-lock and final clean-clone/end-to-end validation remain submission work.
+### Operational CLI Commands
+
+```bash
+# Check system status, cursor, and onchain Guardian state
+python -m sentinel.cli status
+
+# Run single autonomous loop pass (with simulation)
+python -m sentinel.cli run --once --dry-run
+
+# Run Ledger ERC-7730 Clear Signing recovery simulation
+python -m sentinel.ledger.unpause_ledger --simulate --reason "Security audit passed: vulnerability patched"
+
+# Run Bazantic A/B Benchmark comparison
+python -m sentinel.bazantic.benchmark_ab
+```
+
+---
+
+## Event Documentation & Lineage
+
+- Branch: `feature/ethonline-sentinel`
+- Baseline: `pre-ethonline-2026` tag at `fa202e994a77ea365061f6ac609daea1b5ad60dd`
+- [Prior Work & Disclosure](docs/ethonline/DISCLOSURE.md)
+- [Compliance Matrix](docs/ethonline/COMPLIANCE.md)
+- [AI Assistance Log](docs/ethonline/AI_USAGE.md)
+- [Prompt Register](docs/ethonline/AI_PROMPTS.md)
+- [Partner Strategy](docs/ethonline/PRIZES.md)
+- [A/B Benchmark Results](docs/ethonline/BAZANTIC_AB_BENCHMARK.md)
+
+---
 
 ## Pre-existing NexGuard Edge Resilience
 
