@@ -20,7 +20,16 @@ configuration, not authored project prompts. The final submission should use the
 product's supported conversation export/share mechanism if judges need the full
 assistant transcript; do not manually fabricate omitted turns.
 
-## Earlier AI sessions
+## Additional preserved event prompts (5 September)
+
+- `так продовжуємо далі` — continue development; ES301 durable core.
+- `git\@github.com:Seranov67/nexguard-sentinel.git закинь на новий репозиторій я вирішив щоб нікрого не заплутувати новий репозиторій зробити` — publish to the owner's newly selected repository while preserving provenance.
+- `ок тоді продовжуємо розробку і по перевір чи правильно ми все зробили чи не зиожуть нас недопустити чи дискваліфікувати` — continue development and review eligibility; ES302 ingestion and eligibility review.
+
+These are selected exact available user prompts, not a complete transcript.
+Credential-bearing messages must be redacted before any transcript publication.
+
+## Earlier AI session evidence
 
 Claude assisted the initial preparation documents before 3 September. Exact raw
 prompts are not currently present in this workspace. This is an explicit evidence

@@ -71,7 +71,8 @@ outcomes, latch, and outbox.
 
 ### ES302 — ingestion, policy, executor, and reconciliation
 
-**Status:** `[ ]`
+**Status:** `[/]` — validated Graph snapshot pagination and replay ingestion started;
+transport integration, policy, executor, reconciliation and EG-3 remain incomplete.
 **Files:** Sentinel source modules and focused tests
 **Depends:** ES201, ES301
 **Acceptance:** ES-FR-004 and ES-FR-007 through ES-FR-011; EG-3.
