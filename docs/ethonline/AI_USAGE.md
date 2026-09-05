@@ -48,6 +48,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | README, identity/disclosure and repository publication | Codex updated the event presentation and publication links while preserving history and prior-work attribution | Owner explicitly requested publication to Seranov67/nexguard-sentinel; runtime code unchanged |
 
+| 05 Sep, event period | `sentinel/ingestion.py`, tests, eligibility review and prompt register | Codex implemented strict Graph page validation with snapshot pagination and replay dedupe, and reviewed public eligibility requirements | Human requested development and a disqualification-risk review; 80 tests passed; live transport and nullable Graph metadata remain explicitly unresolved; no signer enabled |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.
