@@ -7,15 +7,15 @@ Confirmed for workspace preparation on 2026-09-05.
 | Product / submission name | NexGuard Sentinel |
 | Event documentation title | NexGuard Sentinel — ETHOnline 2026 |
 | Primary code workspace | `D:\nexguard-edge-resilience` |
-| GitHub repository | `Seranov67/nexguard-edge-resilience` |
+| GitHub repository | `Seranov67/nexguard-sentinel` |
 | Event branch | `feature/ethonline-sentinel` |
 | Preparation materials | `D:\NexGuard Sentinel` |
 | Previous IoT MVP | NexGuard Edge Resilience |
 
-Use **NexGuard Sentinel** in event-facing descriptions. The folder and repository
-retain their existing names so checkout paths, Git remotes, and evidence links
-remain consistent. Preserve the previous MVP's historical name in its specification,
-architecture, and disclosure; this is an extension in the same repository.
+Use **NexGuard Sentinel** in event-facing descriptions. The local folder retains its existing name. On 5 September the owner selected
+`Seranov67/nexguard-sentinel` as the new publication repository, preserving all
+Git history and the baseline tag. The old remote is retained as `upstream`. Preserve the previous MVP's historical name in its specification,
+architecture, and disclosure; the new publication repository retains the original project history.
 
 ## Where work belongs
 

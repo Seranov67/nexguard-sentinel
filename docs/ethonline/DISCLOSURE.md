@@ -1,9 +1,14 @@
 # Prior-work disclosure
 
 This document separates work that existed before ETHOnline 2026 from work that
-will be produced during the event. The intended submission pool is The Graph
+is being produced during the event. The intended submission pool is The Graph
 AI/Continuity; actual Dashboard selection remains pending. Only event-period
 feature work will be presented for judging.
+
+Publication repository: <https://github.com/Seranov67/nexguard-sentinel>.
+The owner selected this new repository on 5 September 2026 for clearer naming.
+The complete original Git history and pre-event baseline are preserved; a new
+repository name does not make the pre-existing work event-period work.
 
 ## 1. NexGuard Edge Resilience
 
@@ -23,8 +28,10 @@ the BUIDL was never published and the project was not submitted.
 
 Pre-existing components include health monitoring, an incident state machine,
 cooldown and sliding-window recovery guards, a latch, and Telegram notification.
-The ETHOnline feature will adapt selected concepts and code with attribution;
-it will not represent these components as new event work.
+The ETHOnline feature is currently a separate onchain module alongside the IoT
+controller. It adapts resilience concepts; no integration with the old controller
+or reuse of its runtime code is claimed at this stage. Any later reuse will be
+identified explicitly rather than represented as new event work.
 
 ## 2. Latch Agent
 
@@ -78,16 +85,19 @@ is the on-chain Sentinel vertical slice:
 - Guardian/Vault contracts and an auditable incident reference;
 - tests, CI, deployment artifacts and demo documentation.
 
-The submission repository will preserve the pre-event history and mark the final
-verified pre-event commit with `pre-ethonline-2026` after the Dashboard-confirmed
-hacking start. Until then, this is planned evidence, not a completed claim.
+The repository preserves the pre-event history. The annotated tag
+`pre-ethonline-2026` resolves to the baseline above. The event branch was created
+after the confirmed 4 September 19:00 Kyiv start. Contracts, a live Subgraph and
+SQLite core are implemented; ingestion, AI and the full executor remain pending.
+See `COMPLIANCE.md` and `deployments/` for verified evidence.
 
 ## 6. Support communication
 
 No support ticket is claimed as filed in this document. If a ticket is sent,
 its date, channel and response will be recorded here after the fact.
 
-**Ticket status:** not sent as of 3 September 2026, 21:30 Kyiv.
+**Ticket status:** no sent support disclosure or organizer response verified as
+of 5 September 2026. Prepared wording is in `../../submission/FORM-DRAFT.md`.
 
 ## 7. Evidence limitations
 
@@ -96,5 +106,5 @@ its date, channel and response will be recorded here after the fact.
   public submission URL is known. Verify once more before final submission.
 - Exact raw prompts from earlier Claude sessions are not present locally; see
   `AI_PROMPTS.md` and do not reconstruct them as verbatim history.
-- Deployment, Graph, latency and event-period implementation sections remain
-  future work until `COMPLIANCE.md` contains evidence.
+- The new contract and Graph evidence is recorded in `deployments/`; this does
+  not prove the unfinished automated protection or AI classification.

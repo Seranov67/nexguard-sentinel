@@ -46,6 +46,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | `sentinel/`, package discovery, CI type check and runtime-state ignore | Codex implemented ES301 environment settings and SQLite schema v1, atomic event/cursor writes, exclusive reservations, nonce/hash/outcome persistence, latch, audit and outbox storage; added 19 tests | Human authorized continuation; 74 Python tests, Ruff, strict MyPy and Compose checks passed; no automatic signer or AI execution is enabled |
 
+| 05 Sep, event period | README, identity/disclosure and repository publication | Codex updated the event presentation and publication links while preserving history and prior-work attribution | Owner explicitly requested publication to Seranov67/nexguard-sentinel; runtime code unchanged |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.

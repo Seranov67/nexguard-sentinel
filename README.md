@@ -1,6 +1,59 @@
-# NexGuard Edge Resilience
+# NexGuard Sentinel — ETHOnline 2026
 
-[![CI](https://github.com/Seranov67/nexguard-edge-resilience/actions/workflows/ci.yml/badge.svg)](https://github.com/Seranov67/nexguard-edge-resilience/actions/workflows/ci.yml)
+An in-progress, testnet-only onchain incident-response module developed alongside
+the pre-existing **NexGuard Edge Resilience** IoT MVP. This repository preserves
+the full history of [the original repository](https://github.com/Seranov67/nexguard-edge-resilience) under its MIT license.
+Submission: Security / Continuity. Intended partner prize: The Graph AI Use Case
+(Continuity); final partner selection is not yet verified.
+
+## Sentinel status — 5 September 2026
+
+| Component | Verified status |
+|---|---|
+| Guardian / DemoVault | Deployed on Base Sepolia; pause-only keeper and owner-only unpause; 9 Solidity tests |
+| The Graph | Studio `nexguard-sentinel` v0.1.0 returns a real Withdrawal; 1 Matchstick test |
+| SQLite core | Durable events, cursor, reservations, nonce/hash, outcomes, latch and outbox storage; 19 tests |
+| Python regression | 74 tests, Ruff and strict MyPy passed locally |
+| Ingestion / executor / AI | End-to-end integration pending; automatic protection is not enabled |
+| Video / final submission | Pending |
+
+Planned flow: live Graph data → AI classification → deterministic policy →
+durable reservation → pause → confirmation and state verification. The full AI
+prize use case is not yet demonstrated. DemoVault holds no Ether or tokens.
+Sentinel is not yet integrated with the old IoT controller.
+
+## Review and reproduce the event work
+
+- Branch: `feature/ethonline-sentinel`.
+- Baseline: `pre-ethonline-2026` at `fa202e994a77ea365061f6ac609daea1b5ad60dd`.
+- [Event diff](https://github.com/Seranov67/nexguard-sentinel/compare/pre-ethonline-2026...feature/ethonline-sentinel).
+- [Prior work](docs/ethonline/DISCLOSURE.md), [AI usage](docs/ethonline/AI_USAGE.md),
+  [prompt record](docs/ethonline/AI_PROMPTS.md), [specification](specs/002-ethonline-sentinel/spec.md).
+- [Contract evidence](docs/ethonline/deployments/base-sepolia.json) and
+  [live Graph evidence](docs/ethonline/deployments/subgraph-studio.json).
+
+Use Python 3.12; these tests require no signing credentials:
+
+```bash
+git clone --branch feature/ethonline-sentinel https://github.com/Seranov67/nexguard-sentinel.git
+cd nexguard-sentinel
+python -m pip install -e ".[dev]"
+python -m pytest --tb=short
+python -m ruff check .
+python -m mypy sentinel --exclude tests
+```
+
+See [contracts](contracts/README.md), [Subgraph](subgraph/README.md), and
+[durable core](sentinel/README.md) for component checks. Deployment is not needed
+to inspect the existing evidence. Never commit `.env.ethonline`. A full dependency
+lock and final clean-clone/end-to-end validation remain submission work.
+
+## Pre-existing NexGuard Edge Resilience
+
+The sections below describe the pre-event IoT MVP. Their completion claims and
+DoraHacks placeholders refer to that older project, not the Sentinel submission.
+
+[![CI](https://github.com/Seranov67/nexguard-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/Seranov67/nexguard-sentinel/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-0b7285)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-d97706.svg)](LICENSE)
 
@@ -86,8 +139,8 @@ The complete presenter flow is in [docs/demo-scenario.md](docs/demo-scenario.md)
 Prerequisites: Docker with Compose V2. Python 3.12 is needed only for local test commands.
 
 ```bash
-git clone https://github.com/Seranov67/nexguard-edge-resilience.git
-cd nexguard-edge-resilience
+git clone https://github.com/Seranov67/nexguard-sentinel.git
+cd nexguard-sentinel
 cp .env.example .env
 ```
 
