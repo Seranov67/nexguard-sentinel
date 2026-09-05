@@ -44,7 +44,9 @@ see `docs/ethonline/deployments/subgraph-studio.json` for query and latency evid
 
 ### ES301 — package, configuration, and durable state
 
-**Status:** `[ ]`
+**Status:** `[x]` — SQLite schema v1 and environment settings implemented;
+74 Python tests pass, including 19 Sentinel tests covering restart, process crash,
+replay, concurrent reservation and transactional rollback; Ruff and strict MyPy pass.
 **Files:** `sentinel/`, migrations, config loader, package/lock and unit tests
 **Depends:** ES000 approval
 **Acceptance:** durable schema covers cursor, dedupe, incidents, intents, tx data,

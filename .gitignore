@@ -57,6 +57,7 @@ subgraph/tests/.docker/
 subgraph/tests/.latest.json
 
 # Secrets — NEVER commit these
+.sentinel/
 .env
 .env.ethonline
 *.pem

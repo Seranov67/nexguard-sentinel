@@ -1,0 +1,3 @@
+# ES301 runtime lock: CPython 3.12, standard library only.
+# No third-party runtime distributions are required by sentinel.config/store.
+# Add exact direct dependencies here when ES302 introduces network/signing clients.

@@ -44,6 +44,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | Studio deployment, live event/query evidence and ES201 status | Codex deployed v0.1.0 with the installed CLI, generated a valueless demo withdrawal, checked the live entity against onchain evidence, and recorded query latency and an appearance upper bound | Human created the Studio Subgraph, supplied its credential and explicitly authorized its use; the credential stays outside Git |
 
+| 05 Sep, event period | `sentinel/`, package discovery, CI type check and runtime-state ignore | Codex implemented ES301 environment settings and SQLite schema v1, atomic event/cursor writes, exclusive reservations, nonce/hash/outcome persistence, latch, audit and outbox storage; added 19 tests | Human authorized continuation; 74 Python tests, Ruff, strict MyPy and Compose checks passed; no automatic signer or AI execution is enabled |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.

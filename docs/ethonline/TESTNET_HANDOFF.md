@@ -29,8 +29,11 @@ Public receipts and verified contract state are recorded in
   verification delay; not an exact indexing latency).
 - Studio deployment is available for development queries; decentralized-network
   publication via the Studio Publish button has not been performed.
-- Next implementation stage: ES301 durable state/configuration, then ES302 ingestion
-  and the safe action loop. Automatic pause and AI classification remain pending.
+- ES301 complete: environment configuration and SQLite durable core; 19 Sentinel
+  tests and 55 existing tests pass, including a separate-process crash after nonce
+  persistence, concurrent reservations and transactional failure rollback.
+- Next: ES302 ingestion, deterministic policy, executor and reconciliation.
+  Automatic pause, AI classification and notification delivery remain pending.
 
 The funding instructions below are retained as the historical 4 September handoff.
 

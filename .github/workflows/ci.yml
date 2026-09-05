@@ -60,6 +60,8 @@ jobs:
         run: mypy services/nexguard-controller
       - name: MyPy contract deployment tool
         run: mypy contracts/deploy.py
+      - name: MyPy Sentinel durable core
+        run: mypy sentinel --exclude tests
       - name: Tests without Telegram credentials
         env:
           TELEGRAM_BOT_TOKEN: ""
