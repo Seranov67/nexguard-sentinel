@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
+from eth_utils import to_checksum_address
 
 from sentinel.store import Outcome, StateStore
 
@@ -27,14 +28,17 @@ PAUSED_SELECTOR = "0x5c975abb"  # keccak256("paused()")[:4]
 def build_pause_calldata(incident_ref: str, severity: int = 2) -> str:
     """Encode Guardian.pause(bytes32,uint8) calldata hex."""
     clean_ref = incident_ref.removeprefix("0x")
-    if len(clean_ref) > 64:
-        # Hash to 32 bytes if longer than 32 bytes
-        clean_ref = hashlib.sha256(clean_ref.encode("utf-8")).hexdigest()
-    else:
-        clean_ref = clean_ref.zfill(64)
+    try:
+        int(clean_ref, 16)
+        if len(clean_ref) == 64:
+            ref_hex = clean_ref
+        else:
+            ref_hex = hashlib.sha256(incident_ref.encode("utf-8")).hexdigest()
+    except ValueError:
+        ref_hex = hashlib.sha256(incident_ref.encode("utf-8")).hexdigest()
 
     sev_hex = hex(severity).removeprefix("0x").zfill(64)
-    return PAUSE_SELECTOR + clean_ref + sev_hex
+    return PAUSE_SELECTOR + ref_hex + sev_hex
 
 
 @dataclass(frozen=True)
@@ -85,7 +89,7 @@ class Actuator:
             return False
         try:
             tx_data = {
-                "to": self.guardian_address,
+                "to": to_checksum_address(self.guardian_address),
                 "data": PAUSED_SELECTOR,
             }
             result = self._rpc_call("eth_call", [tx_data, "latest"])
@@ -185,7 +189,7 @@ class Actuator:
 
             # Build transaction dict
             tx_dict = {
-                "to": self.guardian_address,
+                "to": to_checksum_address(self.guardian_address),
                 "value": 0,
                 "gas": 150000,
                 "gasPrice": gas_price,

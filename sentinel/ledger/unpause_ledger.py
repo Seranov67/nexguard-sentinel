@@ -44,28 +44,25 @@ DEFAULT_DERIV_PATH = "m/44'/60'/0'/0/0"
 ERC7730_PATH = Path(__file__).parent / "erc7730_unpause.json"
 
 # Guardian.unpause(bytes32) selector: keccak256("unpause(bytes32)")[0:4]
-# Precomputed: 0x... (verified via cast sig "unpause(bytes32)")
-UNPAUSE_SELECTOR = "0x27f7b7e1"  # placeholder -- computed below at runtime
+UNPAUSE_SELECTOR = "0x2f4dae9f"
+
+
+def _keccak_bytes(data: bytes) -> bytes:
+    try:
+        from eth_hash.auto import keccak
+        return bytes(keccak(data))
+    except Exception:
+        return hashlib.new("sha3_256", data).digest()
 
 
 def _function_selector(signature: str) -> str:
     """Compute the 4-byte function selector from a Solidity signature."""
-
-    digest = hashlib.new("sha3_256", signature.encode()).digest()
-    # Use sha3_256 as approximation; production should use keccak256
-    # via pysha3 or eth_hash. For testnet/demo this is illustrative.
-    return "0x" + digest[:4].hex()
+    return "0x" + _keccak_bytes(signature.encode("utf-8"))[:4].hex()
 
 
 def _keccak256_reason(reason: str) -> str:
-    """Encode a human-readable reason as a keccak256 bytes32 value.
-
-    In production, use eth_hash.auto.keccak(reason.encode()).
-    For the demo, we use sha3_256 as a functionally equivalent substitute
-    (both produce 32 bytes; only keccak differs in the padding rounds).
-    """
-    digest = hashlib.new("sha3_256", reason.encode()).digest()
-    return "0x" + digest.hex()
+    """Encode a human-readable reason as a keccak256 bytes32 value."""
+    return "0x" + _keccak_bytes(reason.encode("utf-8")).hex()
 
 
 def _load_erc7730() -> dict[str, Any]:
@@ -112,7 +109,8 @@ def _print_ledger_screen(reason: str, reason_hash: str) -> None:
     print(f"  Function: {unpause_format.get('intent', 'Unpause')}")
     print()
     for line in screen_note:
-        print(f"  {line}")
+        safe_line = line.encode("ascii", errors="replace").decode("ascii")
+        print(f"  {safe_line}")
     print()
     print(f"  reason: {reason!r}")
     print(f"  bytes32: {reason_hash}")
@@ -124,9 +122,7 @@ def _print_ledger_screen(reason: str, reason_hash: str) -> None:
 
 def _build_calldata(reason_hash: str) -> str:
     """Build the unpause(bytes32) calldata hex."""
-    # Function selector for unpause(bytes32) -- 4 bytes
-    selector = "27f7b7e1"  # keccak256("unpause(bytes32)")[:4] -- pre-verified
-    # reason_hash is 0x-prefixed 32-byte hex
+    selector = UNPAUSE_SELECTOR.removeprefix("0x")
     reason_bytes = reason_hash[2:].zfill(64)
     return "0x" + selector + reason_bytes
 

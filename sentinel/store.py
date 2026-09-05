@@ -204,7 +204,7 @@ class StateStore:
                 raise ValueError("No unfinished intent")
             if outcome in ("success", "reverted") and row[0] not in ("broadcast", "indeterminate"):
                 raise ValueError("A receipt outcome requires a broadcast or reconciliation")
-            if outcome in ("success", "reverted") and row[1] is None:
+            if outcome == "success" and row[1] is None:
                 raise ValueError("A receipt outcome requires a persisted transaction hash")
             if outcome == "already_desired" and row[0] != "reserved":
                 raise ValueError("Already-desired is only valid before transaction preparation")
