@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
-from eth_utils import to_checksum_address
+from eth_utils.address import to_checksum_address
 
 from sentinel.store import Outcome, StateStore
 
