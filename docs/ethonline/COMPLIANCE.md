@@ -113,3 +113,15 @@ submission implementation.
 | Control Loop Orchestration | `sentinel/loop.py` (`run_loop_step` tying Graph ingestion, features, classifier, policy, actuator, and durable state cursor) | verified |
 | Operational CLI | `sentinel/cli.py` (`status`, `run`, `reset`, `reconcile` with operator audit trail) | verified |
 | Test Coverage & Quality Gates | `sentinel/tests/` (97 tests passing: `test_classifier.py`, `test_policy.py`, `test_loop_e2e.py`; Ruff and strict MyPy clean) | verified |
+
+## Live Base Sepolia Verification Evidence
+
+| Phase | Action | Transaction Hash / Explorer Link | Block Number | State Outcome |
+|---|---|---|---|---|
+| 1. Incident Ingestion | Demo credit faucet | [`0x28b545ef...`](https://sepolia.basescan.org/tx/0x28b545ef8860ff7c0b1025a11aee354bd5ba3e4074060e87022fd56888854e30) | 46433924 | Demo credits allocated |
+| 2. Incident Trigger | Unsafe Vault withdrawal | [`0x05e2c2fa...`](https://sepolia.basescan.org/tx/0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e) | 46433924 | 25 ETH anomaly emitted |
+| 3. Subgraph Indexing | The Graph Studio query | Query latency < 3s, appearance upper bound 3s | 46433925 | Entity indexed |
+| 4. Autonomous Pause | Guardian.pause(incidentRef, 3) | [`0xaa915ea5...`](https://sepolia.basescan.org/tx/0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75) | 46433927 | `Guardian.paused() == true` |
+| 5. Vault Block Proof | Withdrawal attempted | Contract execution reverted with `GuardianPaused()` (`0xdfe79c85`) | - | Vault circuit broken |
+| 6. Bazantic Evidence | Incident Evidence API | `inc_6a2d540da0445aa2` SHA256 `6758056f...` via x402 payment gate | - | Agent verified |
+| 7. Ledger Recovery | Guardian.unpause(reasonHash) | [`0x2f68bdd8...`](https://sepolia.basescan.org/tx/0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070) | 46434002 | `Guardian.paused() == false` |
