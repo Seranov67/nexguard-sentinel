@@ -13,6 +13,7 @@ import argparse
 import os
 import sys
 import time
+from pathlib import Path
 
 from sentinel.actuator import Actuator
 from sentinel.config import Settings
@@ -21,6 +22,13 @@ from sentinel.store import StateStore
 
 
 def _load_settings_and_store() -> tuple[Settings, StateStore]:
+    from dotenv import load_dotenv
+
+    if Path(".env.ethonline").exists():
+        load_dotenv(".env.ethonline")
+    else:
+        load_dotenv()
+
     settings = Settings.from_env(os.environ)
     store = StateStore(settings.state_path)
     return settings, store
