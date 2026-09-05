@@ -13,6 +13,23 @@ Status: `[ ]` todo, `[/]` in progress, `[x]` complete, `[d]` deferred.
 **Acceptance:** EG-0 passes and production code is unchanged.
 **Verify:** Git refs/status/diff, document cross-reference review, secret scans.
 
+### ES001 — workspace identity and agent onboarding
+
+**Status:** `[x]` — documentation cross-reference and scoped diff checks passed;
+branch and origin verified on 2026-09-05. Production code unchanged.
+**Files:** `AGENTS.md`, `docs/ethonline/PROJECT_IDENTITY.md`,
+`specs/002-ethonline-sentinel/tasks.md`
+**Depends:** ES000; owner requested project/name preparation on 2026-09-05.
+**Acceptance:** Record Sentinel's display name, existing repository and working
+directory, event branch, preparation-only directory, and approved scope amendment.
+Preserve previous MVP identity and existing unrelated working-tree changes.
+**Justification:** Agent instructions still identify only the old MVP and omit
+the approved Sentinel amendment. Documentation-only clarification avoids renaming
+runtime identifiers or changing production behavior.
+**Verify:** `git diff --check -- AGENTS.md docs/ethonline/PROJECT_IDENTITY.md specs/002-ethonline-sentinel/tasks.md`;
+`git branch --show-current`; `git remote get-url origin`; manual cross-reference
+with the Constitution amendment, Sentinel specification, and README.
+
 ## Stage 1
 
 ### ES101 — Guardian and Demo Vault
