@@ -232,3 +232,16 @@ class StateStore:
     def is_latched(self) -> bool:
         with self._connection() as db:
             return db.execute("SELECT 1 FROM latch").fetchone() is not None
+
+    def latch_reason(self) -> str | None:
+        with self._connection() as db:
+            row = db.execute("SELECT reason FROM latch WHERE singleton=1").fetchone()
+            return str(row[0]) if row else None
+
+    def reset_latch(self, operator: str, reason: str) -> None:
+        if not operator.strip() or not reason.strip():
+            raise ValueError("Operator and reason required to reset latch")
+        with self._transaction() as db:
+            db.execute("DELETE FROM latch WHERE singleton=1")
+            audit_payload = json.dumps({"operator": operator, "reason": reason})
+            self._audit(db, "latch", "latch_reset", audit_payload)

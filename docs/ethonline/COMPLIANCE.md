@@ -102,3 +102,14 @@ submission implementation.
 | Clear Signing descriptor | `sentinel/ledger/erc7730_unpause.json` specifying `Guardian.unpause()` for Base Sepolia (84532) | verified |
 | Hardware confirmation gate | `sentinel/ledger/unpause_ledger.py` with `--simulate` and `--dry-run` modes | verified |
 | Ledger Tests | `sentinel/tests/test_ledger_unpause.py` (15 tests passing) | verified |
+
+## Sentinel Gate 3 ? Safe Automation & End-to-End Loop Evidence
+
+| Item | Evidence | Status |
+|---|---|---|
+| Feature Extraction & AI Classifier | `sentinel/classifier.py` (Bounded numeric features, structured JSON schema validation, fail-closed on low confidence < 0.8 or errors, deterministic catastrophic threshold >= 10 ETH override) | verified |
+| Deterministic Action Policy | `sentinel/policy.py` (Pre-read onchain contract state, latch enforcement, allowlist `pause` only, cooldown budget, durable single-flight reservation) | verified |
+| Pause Actuator | `sentinel/actuator.py` (Encodes `Guardian.pause(bytes32,uint8)`, immediate tx_hash broadcast persistence before confirmation, verifies `paused()` post-state) | verified |
+| Control Loop Orchestration | `sentinel/loop.py` (`run_loop_step` tying Graph ingestion, features, classifier, policy, actuator, and durable state cursor) | verified |
+| Operational CLI | `sentinel/cli.py` (`status`, `run`, `reset`, `reconcile` with operator audit trail) | verified |
+| Test Coverage & Quality Gates | `sentinel/tests/` (97 tests passing: `test_classifier.py`, `test_policy.py`, `test_loop_e2e.py`; Ruff and strict MyPy clean) | verified |

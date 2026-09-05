@@ -52,6 +52,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | Multi-partner expansion (Bazantic MCP/Recipe and Ledger Clear-Signing/Keyring) | AI drafted the Incident Evidence API, Bazantic MCP server, recipe schema, A/B benchmark runner, Ledger ERC-7730 descriptor, simulated unpause CLI, and keyring helper; implemented unit/integration tests and resolved lint/type errors | Human owner reviewed multi-partner strategy, confirmed no hardware device present (simulated mode accepted), and authorized test suite validation (74 tests passing, ruff and strict mypy clean) |
 
+| 05 Sep, event period | Gate 3 Safe Automation (Classifier, ActionPolicy, Actuator, Loop, CLI) | AI designed and implemented deterministic feature extraction, fail-closed AI classification, strict ActionPolicy, Base Sepolia Guardian.pause actuator, end-to-end loop runner, and operational CLI; added 23 new tests (97 total passing) and achieved 100% ruff and strict mypy compliance | Human approved the Gate 3 implementation plan and verified non-regression across all components |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.
