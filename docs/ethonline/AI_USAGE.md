@@ -40,6 +40,8 @@ guards, access control or post-action verification.
 | 04 Sep, event period | Ignored `.env.ethonline` disposable Base Sepolia roles | Codex generated separate testnet-only owner and keeper/deployer accounts without printing or committing private keys | Human must fund only the public deployer address with faucet ETH; wallets must never receive real value |
 | 04 Sep, event period | `docs/ethonline/TESTNET_HANDOFF.md` | Codex recorded the verified state, safe funding steps, public addresses, and exact continuation checklist | Human requested a documented pause until the following day and must perform the wallet-authorized testnet transfer |
 
+| 05 Sep, event period | Base Sepolia deployment evidence, Subgraph manifest and handoff | Codex ran the existing deployment script, reconciled an empty immediate RPC read against successful receipts without rebroadcast, verified bytecode and roles, and configured the live contract address/start block | Human funded the disposable deployer and authorized deployment; Studio account connection and publication remain pending |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.

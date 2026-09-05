@@ -7,6 +7,26 @@ NexGuard Sentinel Subgraph.
 
 ## Current verified state
 
+### Update: 5 September 2026
+
+Funding and ES102 deployment are complete. Do not repeat the transfer or deployment.
+Public receipts and verified contract state are recorded in
+`deployments/base-sepolia.json`.
+
+- Guardian: `0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3`, block 46427864.
+- DemoVault: `0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13`, block 46427865.
+- Both receipts succeeded; bytecode, at least three confirmations, owner, keeper,
+  initial unpaused state, and Vault-to-Guardian link were verified.
+- An immediate Vault RPC call returned empty data; a later read verified the
+  existing deployment successfully, without sending any replacement transactions.
+- The Subgraph manifest now uses the verified address and start block.
+- Verification passed: 55 Python tests, 9 Solidity tests, 1 Matchstick test,
+  Graph codegen/build, Ruff, strict MyPy, and Compose configuration.
+- Next: connect the participant wallet to Subgraph Studio, create/select the
+  Subgraph, configure its deploy credential locally, and publish/query a live event.
+
+The funding instructions below are retained as the historical 4 September handoff.
+
 - ETHGlobal participation is confirmed and the Continuity Track is selected.
 - The event branch is `feature/ethonline-sentinel`.
 - Guardian and DemoVault are implemented and locally verified with 9 Foundry

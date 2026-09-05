@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-09-05T16:01:53.179651+00:00",
+  "chainId": 84532,
+  "deployer": "0x46C3a46Efd54f928707F83D9e3F5f87f0D420172",
+  "owner": "0xcF44200ba4024772acF529D87B758C4FCA6e7A15",
+  "keeper": "0x46C3a46Efd54f928707F83D9e3F5f87f0D420172",
+  "contracts": [
+    {
+      "name": "Guardian",
+      "address": "0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3",
+      "transaction_hash": "0x92ce8c8a0bb445d35dfd18aba65157f5e171011ebbc3c9a48d96b813d1ef148f",
+      "block_number": 46427864
+    },
+    {
+      "name": "DemoVault",
+      "address": "0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13",
+      "transaction_hash": "0x6cd86ee8d1224a4649ad79f30fcd78872e547896564af09e70a521d20fa606f5",
+      "block_number": 46427865
+    }
+  ],
+  "verification": {
+    "receiptsSuccessful": true,
+    "bytecodePresent": true,
+    "minimumConfirmations": 3,
+    "guardianOwner": true,
+    "keeperEnabled": true,
+    "guardianInitiallyUnpaused": true,
+    "vaultReadsGuardian": true
+  },
+  "recoveryNote": "Initial immediate DemoVault read returned empty RPC data; verified existing deployments without rebroadcast."
+}

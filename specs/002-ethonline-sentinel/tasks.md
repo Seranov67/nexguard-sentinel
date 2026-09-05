@@ -24,7 +24,8 @@ Status: `[ ]` todo, `[/]` in progress, `[x]` complete, `[d]` deferred.
 
 ### ES102 — contract tests and deployment
 
-**Status:** `[/]`
+**Status:** `[x]` — Base Sepolia receipts, bytecode, confirmations and roles verified;
+see `docs/ethonline/deployments/base-sepolia.json`.
 **Files:** `contracts/test/`, `contracts/script/`, contract configuration
 **Depends:** ES101
 **Acceptance:** EG-1 and recorded Base Sepolia evidence.

@@ -8,10 +8,10 @@ dataSources:
     name: DemoVault
     network: base-sepolia
     source:
-      # Replaced with the verified ES102 deployment address before publishing.
-      address: "0x0000000000000000000000000000000000000000"
+      # Verified ES102 deployment; see docs/ethonline/deployments/base-sepolia.json.
+      address: "0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13"
       abi: DemoVault
-      startBlock: 0
+      startBlock: 46427865
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

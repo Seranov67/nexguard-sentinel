@@ -33,5 +33,6 @@ record any version change with a fresh build and test result.
 4. Publish, then record the public-safe Subgraph ID/version, an indexed block,
    and a redacted query/response in `docs/ethonline/COMPLIANCE.md`.
 
-The checked-in zero address is a build-safe placeholder, not deployment
-evidence. A live provider deployment is required before ES201 can be complete.
+The manifest now targets the verified DemoVault deployment at block 46427865;
+see `../docs/ethonline/deployments/base-sepolia.json`. A live provider deployment
+is still required before ES201 can be complete.
