@@ -1,0 +1,62 @@
+{
+"$schema": "https://erc7730.org/schema/v1/erc7730.schema.json",
+  "context": {
+    "$id": "nexguard-sentinel-guardian-unpause",
+    "contract": {
+      "abi": [
+        {
+          "type": "function",
+          "name": "unpause",
+          "inputs": [
+            {
+              "name": "reason",
+              "type": "bytes32",
+              "description": "Keccak256 hash of the human-readable unpause reason"
+            }
+          ],
+          "outputs": [],
+          "stateMutability": "nonpayable"
+        }
+      ],
+      "deployments": [
+        {
+          "chainId": 84532,
+          "address": "0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "owner": "NexGuard Sentinel / ETHOnline 2026",
+    "info": {
+      "legalName": "NexGuard Sentinel Guardian Circuit Breaker",
+      "lastUpdate": "2026-09-05",
+      "url": "https://github.com/Seranov67/nexguard-edge-resilience"
+    }
+  },
+  "display": {
+    "formats": {
+      "unpause(bytes32)": {
+        "intent": "Unpause the NexGuard Vault circuit-breaker",
+        "fields": [
+          {
+            "path": "reason",
+            "label": "Unpause reason (keccak256)",
+            "format": "bytes32"
+          }
+        ],
+        "required": ["reason"],
+        "screenNote": [
+          "⚠️  HIGH-RISK ACTION",
+          "Network:  Base Sepolia (Chain 84532)",
+          "Contract: Guardian 0x8B7B...8Ed3",
+          "Action:   Unpause Circuit Breaker",
+          "Effect:   DemoVault withdrawals RE-ENABLED",
+          "",
+          "Only approve if you are the designated protocol owner",
+          "and have verified the incident has been resolved."
+        ]
+      }
+    }
+  }
+}

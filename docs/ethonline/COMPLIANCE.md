@@ -83,3 +83,22 @@ submission implementation.
 | | End-to-end run | incident ref/tx/final state | |
 | | Check-in | Dashboard confirmation | |
 | | Submission | Dashboard confirmation | |
+
+## Bazantic partner evidence
+
+| Item | Evidence | Status |
+|---|---|---|
+| Incident Evidence API | `sentinel/evidence_api.py` (FastAPI, x402/MPP payment gate, SHA-256 fingerprint) | verified |
+| Bazantic MCP Server | `sentinel/bazantic/mcp_server.py` (`get_latest_incident`, `verify_incident_evidence`) | verified |
+| Bazantic Recipe | `sentinel/bazantic/recipe.json` and `sentinel/bazantic/recipe_spec.md` | verified |
+| A/B Benchmark | `sentinel/bazantic/benchmark_ab.py` generates `docs/ethonline/BAZANTIC_AB_BENCHMARK.md` | verified |
+| Bazantic Tests | `sentinel/tests/test_evidence_api.py` & `sentinel/tests/test_bazantic_recipe.py` (34 tests passing) | verified |
+
+## Ledger partner evidence
+
+| Item | Evidence | Status |
+|---|---|---|
+| Key Ring secret management | `sentinel/ledger/keyring_helper.py` integrating `wallet-cli ring` | verified |
+| Clear Signing descriptor | `sentinel/ledger/erc7730_unpause.json` specifying `Guardian.unpause()` for Base Sepolia (84532) | verified |
+| Hardware confirmation gate | `sentinel/ledger/unpause_ledger.py` with `--simulate` and `--dry-run` modes | verified |
+| Ledger Tests | `sentinel/tests/test_ledger_unpause.py` (15 tests passing) | verified |

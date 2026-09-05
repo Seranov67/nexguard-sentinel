@@ -50,6 +50,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | `sentinel/ingestion.py`, tests, eligibility review and prompt register | Codex implemented strict Graph page validation with snapshot pagination and replay dedupe, and reviewed public eligibility requirements | Human requested development and a disqualification-risk review; 80 tests passed; live transport and nullable Graph metadata remain explicitly unresolved; no signer enabled |
 
+| 05 Sep, event period | Multi-partner expansion (Bazantic MCP/Recipe and Ledger Clear-Signing/Keyring) | AI drafted the Incident Evidence API, Bazantic MCP server, recipe schema, A/B benchmark runner, Ledger ERC-7730 descriptor, simulated unpause CLI, and keyring helper; implemented unit/integration tests and resolved lint/type errors | Human owner reviewed multi-partner strategy, confirmed no hardware device present (simulated mode accepted), and authorized test suite validation (74 tests passing, ruff and strict mypy clean) |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.
