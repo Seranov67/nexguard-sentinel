@@ -34,7 +34,8 @@ see `docs/ethonline/deployments/base-sepolia.json`.
 
 ### ES201 — Subgraph
 
-**Status:** `[/]`
+**Status:** `[x]` — Studio v0.1.0 returns a verified live Withdrawal and `_meta`;
+see `docs/ethonline/deployments/subgraph-studio.json` for query and latency evidence.
 **Files:** `subgraph/schema.graphql`, `subgraph/subgraph.yaml`, `subgraph/src/`, tests
 **Depends:** ES102
 **Acceptance:** ES-FR-003 and EG-2.

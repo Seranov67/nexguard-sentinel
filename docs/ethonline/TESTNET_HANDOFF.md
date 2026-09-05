@@ -22,8 +22,15 @@ Public receipts and verified contract state are recorded in
 - The Subgraph manifest now uses the verified address and start block.
 - Verification passed: 55 Python tests, 9 Solidity tests, 1 Matchstick test,
   Graph codegen/build, Ruff, strict MyPy, and Compose configuration.
-- Next: connect the participant wallet to Subgraph Studio, create/select the
-  Subgraph, configure its deploy credential locally, and publish/query a live event.
+- ES201 complete: Studio `nexguard-sentinel` v0.1.0 deployed and a real Withdrawal
+  was verified against its receipt, canonical ID, block hash and sequence.
+  Evidence: `deployments/subgraph-studio.json`. Query latency was 697 ms; first
+  observed appearance was at most 31 seconds after the event block (includes
+  verification delay; not an exact indexing latency).
+- Studio deployment is available for development queries; decentralized-network
+  publication via the Studio Publish button has not been performed.
+- Next implementation stage: ES301 durable state/configuration, then ES302 ingestion
+  and the safe action loop. Automatic pause and AI classification remain pending.
 
 The funding instructions below are retained as the historical 4 September handoff.
 

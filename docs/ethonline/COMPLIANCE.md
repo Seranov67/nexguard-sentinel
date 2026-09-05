@@ -52,10 +52,10 @@ submission implementation.
 | Event-only history | baseline tag and event branch exist; event commits/diff begin with ES000 | in progress |
 | Public repository | anonymous/incognito access test | pending |
 | Local Graph implementation | Graph codegen/build pass; Matchstick 0.6.0 Docker test 1/1 pass; deterministic tx-hash/log-index ID and sequence cursor | verified locally 2026-09-04 |
-| Live Graph provider | Subgraph ID, public-safe endpoint form, query and response metadata | pending |
+| Live Graph provider | Studio `nexguard-sentinel` v0.1.0; deployment/query/response/latency in `deployments/subgraph-studio.json` | verified 2026-09-05; decentralized publication not performed |
 | Meaningful AI use | schema, prompt/version, Graph-derived inputs, output and policy trace | pending |
 | Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
-| Testnet contracts | chain ID, addresses, deployment tx hashes, explorer links | pending |
+| Testnet contracts | chain ID, addresses, deployment tx hashes and state in `deployments/base-sepolia.json` | verified 2026-09-05 |
 | Contract implementation | Solc 0.8.24 compile; 9 Foundry tests; 5 deployment-tool tests; full 55-test Python suite; guarded EIP-1559 deploy tool | verified locally 2026-09-04; live deployment pending |
 | Disposable testnet roles | Keeper/deployer `0x46C3a46Efd54f928707F83D9e3F5f87f0D420172`; owner `0xcF44200ba4024772acF529D87B758C4FCA6e7A15`; secrets stored only in ignored `.env.ethonline` | generated locally 2026-09-04; deployer funding pending |
 | Base Sepolia faucet | ETHGlobal sent 0.1 test ETH to the participant's verified wallet in tx `0xce439e827fad4c0cb8b8735e3630e68c8dd25d6e08bf2c39c7de54b8f4cb7c0c` | verified onchain 2026-09-04; transfer to disposable deployer pending |

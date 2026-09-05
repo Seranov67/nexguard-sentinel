@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "slug": "nexguard-sentinel",
+  "version": "v0.1.0",
+  "deploymentId": "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ",
+  "queryUrl": "https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0",
+  "chainId": 84532,
+  "transactions": [
+    {
+      "name": "credit",
+      "transactionHash": "0x37512c799850a9471de220e5e5f4556091abe1e2fa845cf08b33e337b5787004",
+      "broadcastAt": "2026-09-05T16:20:37.710463+00:00",
+      "blockNumber": 46428476,
+      "status": 1
+    },
+    {
+      "name": "withdrawal",
+      "transactionHash": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed",
+      "broadcastAt": "2026-09-05T16:20:39.746595+00:00",
+      "blockNumber": 46428477,
+      "status": 1
+    }
+  ],
+  "verifiedAt": "2026-09-05T16:21:12.884Z",
+  "withdrawalBlockTimestamp": 1788625242,
+  "query": "{ _meta { deployment block { number hash } hasIndexingErrors } withdrawals(where: {transactionHash: \"0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed\"}) { id sequence blockNumber blockHash transactionHash logIndex timestamp who recipient triggeredBy amount remainingCredit } }",
+  "response": {
+    "data": {
+      "withdrawals": [
+        {
+          "id": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000",
+          "sequence": "46428477000202",
+          "blockNumber": "46428477",
+          "blockHash": "0x92984f94f4c7bcd126f9f0b5a9b7bcf3f4c795173cc452b95a8f02858219581a",
+          "transactionHash": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed",
+          "logIndex": "202",
+          "timestamp": "1788625242",
+          "who": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+          "recipient": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+          "triggeredBy": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+          "amount": "100",
+          "remainingCredit": "900"
+        }
+      ],
+      "_meta": {
+        "deployment": "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ",
+        "block": {
+          "number": 46428491,
+          "hash": "0x78378d87c623822ed90220e60b6cfc0ef4faeb6bc19469501240c0de7cd4d4b7"
+        },
+        "hasIndexingErrors": false
+      }
+    }
+  },
+  "queryLatencyMs": 697,
+  "observedAppearanceUpperBoundSeconds": 31,
+  "latencyNote": "First verification query after receipt; upper bound includes operator delay, not exact indexing latency."
+}

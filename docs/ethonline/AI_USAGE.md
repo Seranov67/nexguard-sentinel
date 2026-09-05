@@ -42,6 +42,8 @@ guards, access control or post-action verification.
 
 | 05 Sep, event period | Base Sepolia deployment evidence, Subgraph manifest and handoff | Codex ran the existing deployment script, reconciled an empty immediate RPC read against successful receipts without rebroadcast, verified bytecode and roles, and configured the live contract address/start block | Human funded the disposable deployer and authorized deployment; Studio account connection and publication remain pending |
 
+| 05 Sep, event period | Studio deployment, live event/query evidence and ES201 status | Codex deployed v0.1.0 with the installed CLI, generated a valueless demo withdrawal, checked the live entity against onchain evidence, and recorded query latency and an appearance upper bound | Human created the Studio Subgraph, supplied its credential and explicitly authorized its use; the credential stays outside Git |
+
 Add one row on every event day for every material code, test, documentation or
 visual area touched with AI assistance. Do not pre-fill future work as completed.
 The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.
