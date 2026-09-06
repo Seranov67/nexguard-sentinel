@@ -37,3 +37,24 @@ check-ins, prize selection, and submission.
 
 Feature freeze is 10 September. Internal submission target is 13 September 17:00
 Europe/Kyiv; the hard deadline is 19:00.
+
+## Current execution schedule (6 September audit)
+
+The IoT MVP T000–T027 is complete and remains a non-regression baseline. Sentinel
+ES000–ES402 and ES503 are implemented and locally checked. ES501/ES502 remain open.
+
+| Target | Work | Completion evidence |
+|---|---|---|
+| 6–7 September | ES504 documentation/CI; configure real model | Consistent records and remote CI diagnosis/result |
+| 7–9 September | ES501 live flow and restart; ES505 real A/B | Model trace, canonical action receipt, restart record, transcripts |
+| By 10 September | ES506 hardware decision; feature freeze | Hardware proof or explicit limitation; final regression checks |
+| 11–12 September | ES507 human video, anonymous links, final text | Reviewed export and submission-ready links |
+| 13 September, 17:00 Kyiv | ES502 final Dashboard delivery | Submission confirmation before the hard deadline |
+
+These are internal targets, not claims that external services or hardware are ready.
+The immediate dependency is a reachable model. Human narration and Ledger actions
+require the owner. Final form availability is controlled by ETHGlobal.
+
+No post-hackathon production roadmap is approved. Mainnet, real-value custody,
+web administration, cloud infrastructure and multi-protocol expansion remain out
+of scope; proposing them requires a separate SSD specification.

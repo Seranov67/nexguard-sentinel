@@ -7,10 +7,10 @@ Cursor, etc.) working on **NexGuard Sentinel** and the pre-existing
 ## Active Project Identity
 
 - Display/submission name: **NexGuard Sentinel**.
-- Primary workspace: `D:\nexguard-edge-resilience`.
+- Primary event workspace: `D:\NexGuard Sentinel`; preserve the separate legacy checkout at `D:\nexguard-edge-resilience`.
 - GitHub repository: `Seranov67/nexguard-sentinel`.
 - Event working branch: `feature/ethonline-sentinel`; verify before editing.
-- `D:\NexGuard Sentinel` contains preparation materials; implement event work here.
+- `D:\NexGuard Sentinel` contains the active event implementation and preparation history.
 - Keep the existing local workspace path and legacy runtime identifiers. The previous
   MVP retains its name and provenance.
 - See `docs/ethonline/PROJECT_IDENTITY.md` for the component map.

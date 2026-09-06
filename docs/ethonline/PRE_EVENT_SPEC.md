@@ -175,63 +175,23 @@ Python implementation are new work after hacking opens.
 
 ---
 
-## Bazantic integration (added 2026-09-05)
+## Partner integration planning record (updated 2026-09-06)
 
-The automated keeper pause creates an evidence record. An AI agent can query
-this record through the Bazantic MCP/Recipe interface:
+These extensions are implemented prototypes, with live qualification tracked in
+ES505 and ES506. They do not change the approved core Definition of Done.
 
-```
-GET /api/v1/incidents/latest  (sentinel/evidence_api.py)
-         |
-   Bazantic x402 / MPP Gateway
-         |
-   Bazantic Recipe + MCP Server  (sentinel/bazantic/)
-         |
-   AI Agent investigation:
-     "Find the incident, show tx, explain why Vault was paused."
-```
+### Bazantic
 
-### Incident Evidence API
+Evidence API and read-only MCP tools retrieve persisted incidents and recompute
+payload fingerprints. Recipe guidance and a real-model A/B runner exist. Gateway
+registration and actual A/B success are not verified. x402 is a prototype without
+payment settlement; local demo bypass requires explicit server opt-in.
 
-- `GET /api/v1/incidents/latest` — returns incident UUID, status, Guardian tx
-  hash, Base Sepolia block number, The Graph entity IDs, SHA-256 state
-  fingerprint, and a pre-composed agent_summary.
-- `GET /api/v1/incidents/{id}` — historical incident lookup.
-- x402/MPP middleware: returns 402 with payment details; bypassed in dev mode.
+### Ledger
 
-### Bazantic Recipe / MCP
-
-- `sentinel/bazantic/mcp_server.py` — stdio MCP server exposing two tools:
-  `get_latest_incident()` and `verify_incident_evidence(incident_id)`.
-- `sentinel/bazantic/recipe.json` — Bazantic Recipe spec registered in the
-  gateway; defines tool call order, field interpretation, and response format.
-- `sentinel/bazantic/benchmark_ab.py` — A/B comparison: same LLM, same task,
-  same API access; without Recipe vs with Recipe.
-
----
-
-## Ledger integration (added 2026-09-05)
-
-The keeper-cannot-unpause invariant is made hardware-enforceable:
-
-### Key Ring secret backend
-
-`sentinel/ledger/keyring_helper.py` integrates `wallet-cli ring` (Ledger
-Agent Stack). Before: keeper reads secrets from `.env.ethonline` (plaintext).
-After: secrets enrolled to Ledger Key Ring; retrieved at runtime without
-plaintext disk storage.
-
-### Clear Signing for unpause
-
-`sentinel/ledger/erc7730_unpause.json` — ERC-7730 Clear Signing descriptor
-for `Guardian.unpause(bytes32)`:
-- Displays the function name, reason hash, contract address, network, and
-  a WARNING screen on the Ledger device.
-- Eliminates blind-signing risk for the human owner.
-
-### Owner unpause CLI
-
-`sentinel/ledger/unpause_ledger.py` — owner-only recovery CLI:
-- `--simulate`: validates ERC-7730, builds calldata, prints expected Ledger
-  screen. No device required.
-- Hardware mode: invokes `cast send --ledger --hd-path m/44'/60'/0'/0/0`.
+An optional Key Ring helper exists; use by the running keeper is not established.
+The ERC-7730 descriptor passes the pinned official schema. Device rendering and
+Clear Signing have not been demonstrated, and no elimination of blind-signing risk
+is claimed. The owner CLI uses `cast --ledger --mnemonic-derivation-path` and checks
+the hardware-derived owner address before sending. `--simulate` is a terminal
+preview only. The keeper-cannot-unpause boundary is enforced by the contract.

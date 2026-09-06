@@ -87,8 +87,9 @@ is the on-chain Sentinel vertical slice:
 
 The repository preserves the pre-event history. The annotated tag
 `pre-ethonline-2026` resolves to the baseline above. The event branch was created
-after the confirmed 4 September 19:00 Kyiv start. Contracts, a live Subgraph and
-SQLite core are implemented; ingestion, AI and the full executor remain pending.
+after the confirmed 4 September 19:00 Kyiv start. Contracts, live Graph ingestion, durable state, the fail-closed AI transport and
+verified executor are implemented and locally tested as of 6 September. The final
+real-model end-to-end demonstration remains pending.
 See `COMPLIANCE.md` and `deployments/` for verified evidence.
 
 ## 6. Support communication
@@ -107,4 +108,4 @@ of 5 September 2026. Prepared wording is in `../../submission/FORM-DRAFT.md`.
 - Exact raw prompts from earlier Claude sessions are not present locally; see
   `AI_PROMPTS.md` and do not reconstruct them as verbatim history.
 - The new contract and Graph evidence is recorded in `deployments/`; this does
-  not prove the unfinished automated protection or AI classification.
+  not independently prove a real-model run of the repaired automated protection.

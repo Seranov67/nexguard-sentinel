@@ -61,9 +61,9 @@ see `docs/ethonline/deployments/subgraph-studio.json` for query and latency evid
 
 ### ES301 — package, configuration, and durable state
 
-**Status:** `[x]` — SQLite schema v1 and environment settings implemented;
-74 Python tests pass, including 19 Sentinel tests covering restart, process crash,
-replay, concurrent reservation and transactional rollback; Ruff and strict MyPy pass.
+**Status:** `[x]` — SQLite schema v2 and environment settings implemented; current complete suite has
+181 tests, including 126 Sentinel tests. Restart, process crash, replay, concurrent
+reservation and transactional rollback checks pass; Ruff and strict MyPy pass.
 **Files:** `sentinel/`, migrations, config loader, package/lock and unit tests
 **Depends:** ES000 approval
 **Acceptance:** durable schema covers cursor, dedupe, incidents, intents, tx data,
@@ -126,3 +126,48 @@ hardware proof; package all submodules/assets and pin direct runtime dependencie
 static causes and simulated benchmark scores as if verified; these must not be submitted.
 **Verify:** full pytest, Ruff, strict MyPy, package install/import, secret scans,
 contract/Subgraph/Compose checks and manual evidence-to-claim review.
+
+### ES504 — reconcile project plans and verify remote CI
+
+**Status:** `[/]`
+**Authorization:** Owner requested execution of the full-project plan review on 2026-09-06.
+**Files:** AGENTS.md, event identity/disclosure/preparation records, this task list,
+plan.md, submission checklist and evidence documents; CI configuration if diagnosis
+shows a necessary correction.
+**Depends:** ES503
+**Acceptance:** One current workspace and status map; historical records clearly
+labelled; remote CI outcome recorded separately from local checks.
+**Verify:** document cross-reference review, git diff --check, GitHub Actions API.
+
+### ES505 — real-model Bazantic comparison
+
+**Status:** `[ ]`
+**Files:** docs/ethonline/BAZANTIC_AB_BENCHMARK.md and sanitized transcript evidence.
+**Depends:** reachable model, persisted incident evidence; ES501 for live-action claims.
+**Acceptance:** Same model/task/tools/settings with and without Recipe; real tool
+transcripts, measured structural checks and human review of explanatory accuracy.
+No synthetic score, settled-payment claim or unverified gateway registration.
+**Verify:** python -m sentinel.bazantic.benchmark_ab --help; execute configured runner
+and inspect its transcript against the persisted incident.
+
+### ES506 — Ledger hardware qualification decision
+
+**Status:** `[ ]`
+**Files:** docs/ethonline/PRIZES.md, SUBMISSION_PACK.md and hardware evidence.
+**Depends:** owner-operated compatible Ledger and confirmed owner address.
+**Acceptance:** Record actual device behavior and recovery evidence if claiming
+hardware integration; otherwise explicitly retain the simulation limitation and
+omit unsupported prize claims. No terminal preview may count as hardware proof.
+**Verify:** official-schema validation; owner-observed device demonstration and
+receipt, or documented decision to retain prototype scope.
+
+### ES507 — narrated video and final delivery
+
+**Status:** `[/]` — script and Dashboard draft prepared; human recording pending.
+**Files:** video, docs/ethonline/SUBMISSION_PACK.md and submission evidence.
+**Depends:** ES501; ES505/ES506 for any corresponding prize claims.
+**Acceptance:** Human voice, 2–4 minutes, >=720p, anonymous video access; accurate
+partner choices; final Dashboard confirmation. Internal target: 13 September 17:00
+Europe/Kyiv. ES502 closes only when final delivery evidence exists.
+**Verify:** inspect exported media metadata and playback, anonymous links and
+Dashboard confirmation. Do not substitute AI/TTS narration.

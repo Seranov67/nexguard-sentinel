@@ -165,3 +165,9 @@ Official requirements checked 6 September:
 [ETHOnline submission rules](https://ethglobal.com/events/ethonline2026/info/details).
 Deadline is 13 September 2026, 12:00 EDT / 19:00 Europe/Kyiv. The official rules
 require a 2–4 minute video, at least 720p, and prohibit AI/TTS voiceover.
+
+## Owner dependencies confirmed 6 September
+
+The owner approved a local Docker Ollama installation. No Ledger is connected and
+no human voice recording is available. Hardware evidence and final video remain
+open; terminal simulation and AI-generated narration cannot close those tasks.

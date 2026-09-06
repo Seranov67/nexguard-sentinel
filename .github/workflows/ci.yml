@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, master, feature/ethonline-sentinel]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

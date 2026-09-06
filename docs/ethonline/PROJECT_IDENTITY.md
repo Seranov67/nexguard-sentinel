@@ -1,15 +1,15 @@
 # NexGuard Sentinel — project identity
 
-Confirmed for workspace preparation on 2026-09-05.
+Updated after owner-authorized plan reconciliation on 2026-09-06.
 
 | Item | Canonical value |
 |---|---|
 | Product / submission name | NexGuard Sentinel |
 | Event documentation title | NexGuard Sentinel — ETHOnline 2026 |
-| Primary code workspace | `D:\nexguard-edge-resilience` |
+| Primary event workspace | `D:\NexGuard Sentinel` |
 | GitHub repository | `Seranov67/nexguard-sentinel` |
 | Event branch | `feature/ethonline-sentinel` |
-| Preparation materials | `D:\NexGuard Sentinel` |
+| Separate legacy checkout | `D:\nexguard-edge-resilience` |
 | Previous IoT MVP | NexGuard Edge Resilience |
 
 Use **NexGuard Sentinel** in event-facing descriptions. The local folder retains its existing name. On 5 September the owner selected
@@ -33,9 +33,8 @@ Read the [event specification](../../specs/002-ethonline-sentinel/spec.md),
 [quality gates](../ssd/ETHONLINE_QUALITY_GATES.md) before implementation.
 The [Constitution](../ssd/CONSTITUTION.md) records the approved scope amendment.
 
-## Preparation boundary
+## Current delivery boundary
 
-This identity preparation changes documentation only. It does not certify final
-submission readiness. The task list records ES302 (ingestion/policy/execution),
-ES401 (AI), ES402 (notifications), and ES501–ES502 (live evidence and submission)
-as outstanding. Follow their gates and stage approval workflow before advancing.
+ES302, ES401 and ES402 are implemented and locally verified. ES501 live model-backed
+evidence and ES502 final submission remain open. Historical preparation records do
+not override the current task list or FINAL_AUDIT_2026-09-06.md.
