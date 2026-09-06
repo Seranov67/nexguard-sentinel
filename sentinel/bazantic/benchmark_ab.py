@@ -25,7 +25,11 @@ TASK_PROMPT = (
 )
 
 
-def run_agent(endpoint: str, model: str, recipe: str) -> dict[str, Any]:
+def run_agent(
+    endpoint: str, model: str, recipe: str, timeout: float = 30
+) -> dict[str, Any]:
+    if not 0 < timeout <= 120:
+        raise ValueError("Benchmark timeout must be within (0, 120] seconds")
     messages: list[dict[str, Any]] = [
         {
             "role": "system",
@@ -46,7 +50,7 @@ def run_agent(endpoint: str, model: str, recipe: str) -> dict[str, Any]:
     ]
     transcript: list[dict[str, Any]] = []
     for _ in range(6):
-        with httpx.Client(timeout=30) as client:
+        with httpx.Client(timeout=timeout) as client:
             response = client.post(
                 endpoint.rstrip("/") + "/api/chat",
                 json={
@@ -112,7 +116,10 @@ def main() -> None:
     parser.add_argument(
         "--output", type=Path, default=Path("docs/ethonline/BAZANTIC_AB_BENCHMARK.md")
     )
+    parser.add_argument("--timeout", type=float, default=30, help="Per-request seconds, max 120")
     args = parser.parse_args()
+    if not 0 < args.timeout <= 120:
+        parser.error("--timeout must be within (0, 120] seconds")
     if not args.model:
         parser.error("--model or OLLAMA_MODEL is required; simulated results are not supported")
     evidence = _get_latest_incident()
@@ -121,7 +128,8 @@ def main() -> None:
     recipe = Path(__file__).with_name("recipe.json").read_text(encoding="utf-8")
     results = {}
     for label, guidance in (("without_recipe", ""), ("with_recipe", recipe)):
-        result = run_agent(args.endpoint, args.model, guidance)
+        print(f"Running {label} with {args.model}", flush=True)
+        result = run_agent(args.endpoint, args.model, guidance, args.timeout)
         result["structural_checks"] = score(result, evidence)
         result["reason_accuracy"] = "pending human review of transcript"
         results[label] = result
@@ -131,6 +139,7 @@ def main() -> None:
         "run_at": datetime.now(UTC).isoformat(),
         "model": args.model,
         "temperature": 0,
+        "timeout_seconds": args.timeout,
         "task": TASK_PROMPT,
         "incident_id": evidence["incident_id"],
         "simulated": False,

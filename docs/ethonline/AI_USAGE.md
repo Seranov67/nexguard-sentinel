@@ -76,3 +76,16 @@ outbox and focused tests; evidence API/MCP, real-model benchmark, Ledger descrip
 validation and CLI; package/lock/CI fixes and submission documentation. Earlier
 simulated partner claims were corrected. Human model endpoint, hardware evidence,
 narration and Dashboard completion remain required; none is fabricated.
+
+## Evening execution, 6 September 2026
+
+Owner authorized all reviewed next steps, selected Docker Ollama, and confirmed
+no Ledger device or human voice recording is currently available. Codex reconciled
+plans, diagnosed/fixed Foundry CI permissions, installed the local model, generated
+a valueless Base Sepolia signal, ran the actual model-backed pause path and
+reconciled its initial RPC uncertainty without resending. The operator-attributed
+latch reset followed confirmed success. JSON evidence records exact model inputs,
+outputs and durable transitions; model wording inaccuracies are not hidden.
+
+Codex also added a bounded configurable benchmark timeout after the actual CPU
+run exceeded 30 seconds. Both comparison conditions use the same timeout.

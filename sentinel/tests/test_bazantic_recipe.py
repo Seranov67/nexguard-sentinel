@@ -176,3 +176,11 @@ def test_reason_hash_is_32_bytes() -> None:
     assert h.startswith("0x")
     # 32 bytes = 64 hex chars
     assert len(h) == 2 + 64
+
+
+@pytest.mark.parametrize("timeout", [0.0, -1.0, 121.0, float("nan"), float("inf")])
+def test_benchmark_rejects_unbounded_timeout(timeout: float) -> None:
+    from sentinel.bazantic.benchmark_ab import run_agent
+
+    with pytest.raises(ValueError, match="timeout"):
+        run_agent("http://127.0.0.1:11434", "unused", "", timeout)

@@ -96,10 +96,16 @@ outcomes, latch, and outbox.
 
 ### ES501 — live end-to-end evidence
 
-**Status:** `[/]` — live Graph preview and historical receipts verified. New real-model-to-pause rehearsal and live restart evidence remain pending.
+**Status:** `[x]` — new withdrawal 46474498 classified by real Qwen3; one pause
+at 46474539. Initial RPC uncertainty latched; no-send reconcile confirmed success,
+attributed reset and separate process replay produced no second action. Paused
+withdrawal eth_call reverted. See deployments/live-e2e-2026-09-06.json.
 **Depends:** ES102, ES201, ES302, ES401, ES402
 **Acceptance:** one live Graph event yields one verified pause; negative and
 restart paths are evidenced.
+**Files:** live evidence records and `scripts/trigger_exploit.py` demo instructions.
+**Justification:** Correct stale ETH-value terminology and Python 3.11 guidance;
+retain the valueless Base Sepolia demonstration behavior.
 
 ### ES502 — submission package
 
@@ -129,7 +135,7 @@ contract/Subgraph/Compose checks and manual evidence-to-claim review.
 
 ### ES504 — reconcile project plans and verify remote CI
 
-**Status:** `[/]`
+**Status:** `[x]` — plans reconciled; remote CI run 34049799940 passes all four jobs at 0eae479.
 **Authorization:** Owner requested execution of the full-project plan review on 2026-09-06.
 **Files:** AGENTS.md, event identity/disclosure/preparation records, this task list,
 plan.md, submission checklist and evidence documents; CI configuration if diagnosis
@@ -142,7 +148,11 @@ labelled; remote CI outcome recorded separately from local checks.
 ### ES505 — real-model Bazantic comparison
 
 **Status:** `[ ]`
-**Files:** docs/ethonline/BAZANTIC_AB_BENCHMARK.md and sanitized transcript evidence.
+**Files:** docs/ethonline/BAZANTIC_AB_BENCHMARK.md, sanitized transcript evidence,
+`sentinel/bazantic/benchmark_ab.py`, Recipe metadata and focused tests.
+**Justification:** CPU live run exceeded the fixed 30-second benchmark timeout.
+Allow an explicit bounded 1–120 second request timeout, identical in both variants
+and recorded in the report; keep signing runtime timeout unchanged.
 **Depends:** reachable model, persisted incident evidence; ES501 for live-action claims.
 **Acceptance:** Same model/task/tools/settings with and without Recipe; real tool
 transcripts, measured structural checks and human review of explanatory accuracy.
@@ -152,7 +162,9 @@ and inspect its transcript against the persisted incident.
 
 ### ES506 — Ledger hardware qualification decision
 
-**Status:** `[ ]`
+**Status:** `[x]` — owner confirmed no device on 6 September. Retain simulation
+limitation; no hardware/Clear Signing qualification claim or Ledger prize selection
+is authorized by this evidence. Hardware demonstration itself remains unperformed.
 **Files:** docs/ethonline/PRIZES.md, SUBMISSION_PACK.md and hardware evidence.
 **Depends:** owner-operated compatible Ledger and confirmed owner address.
 **Acceptance:** Record actual device behavior and recovery evidence if claiming

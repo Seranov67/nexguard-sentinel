@@ -28,8 +28,9 @@ an action. Only the separate human owner can unpause.
 
 An Evidence API and MCP tools expose recorded incident data and payload integrity
 checks. A Ledger recovery CLI and schema-validated ERC-7730 descriptor support
-recovery preparation. Payment settlement, hardware Clear Signing demonstration,
-and final live AI-to-pause evidence are not yet verified.
+recovery preparation. A new real-model live pause and no-resend reconciliation
+were verified on 6 September. Payment settlement and hardware Clear Signing
+remain unverified.
 
 **How it is built:**
 
@@ -46,8 +47,10 @@ Graph Studio is the runtime source for withdrawal entities. Sentinel validates
 provider deployment, snapshot metadata, canonical block hash, confirmation window,
 ordering and entity identity before persistence. Removing Graph ingestion removes
 the live signal. The Ollama classification path consumes only bounded features
-computed from this data. Live Graph queries and historical pause receipts are
-verified; the final real-model classification-to-pause rehearsal remains pending.
+computed from this data. On 6 September, a new indexed withdrawal was classified
+by Qwen3, producing one pause transaction. Initial RPC uncertainty triggered a latch;
+separate reconciliation verified receipt, confirmations and paused state without
+a second send. Restart produced no additional action.
 
 **Bazantic partner description:**
 
@@ -71,6 +74,11 @@ qualification requirements. No partner selection is recorded as complete.
 
 ## Public onchain references
 
+New real-model rehearsal: withdrawal `0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe31`
+at block 46474498; pause `0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750`
+at block 46474539. The Guardian is currently paused; owner recovery is separate.
+
+
 - Guardian: `0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3`
 - DemoVault: `0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13`
 - Withdrawal: `0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e`
@@ -92,7 +100,7 @@ valueless demo credits”. Cut waiting periods; do not speed up narration.
 |---|---|---|
 | 0:00–0:25 | README flow and testnet label | Problem and pause-only design |
 | 0:25–1:00 | Graph query plus withdrawal receipt | Real source; explain demo credits |
-| 1:00–1:50 | CLI preview/classification and historical pause receipt | AI boundary, reservations, confirmation checks; identify historical vs new evidence |
+| 1:00–1:50 | Recorded live classification and new pause receipt | AI boundary, reservations, confirmation checks; show the recorded latch and successful reconciliation |
 | 1:50–2:25 | Evidence API/MCP response | Recorded cause and integrity; disclose payment prototype |
 | 2:25–2:55 | Ledger `--simulate` | Owner-only recovery; clearly label terminal simulation |
 | 2:55–3:20 | Tests, repository and limitations | What is implemented; what still needs live evidence |
@@ -118,8 +126,9 @@ The AI client requests a bounded, structured assessment. Missing or malformed ou
 cannot authorize a transaction. Deterministic policy then checks the latch, action
 limits and durable reservation. The signer stores its transaction hash before
 broadcast. A success requires a canonical receipt, sufficient confirmations and a
-fresh paused-state read. Here is the historical pause receipt. It demonstrates the
-contract action; a new live AI-to-pause rehearsal is still pending.
+fresh paused-state read. Here is the new live pause receipt at block 46474539. The first RPC verification
+was uncertain, so the system latched. Reconciliation confirmed the same transaction
+without another send, and a separate process restart produced no new action.
 
 For investigation, the Evidence API exposes the recorded incident and its transaction
 reference. MCP tools let an agent retrieve the record and recompute its fingerprint.
@@ -152,8 +161,8 @@ state. Do not present a historical transaction as a result of the repaired code.
 
 ## Submission completion checklist
 
-- [ ] Real model endpoint/name configured and live trace reviewed.
-- [ ] Final safe Graph-to-AI-to-pause rehearsal and restart evidence recorded.
+- [x] Real model endpoint/name configured and live trace recorded; numeric wording limitations documented.
+- [x] Final Graph-to-AI-to-pause rehearsal and restart evidence recorded.
 - [ ] Real-model A/B transcript reviewed; unsupported partner claims excluded.
 - [ ] Ledger hardware evidence obtained, or simulation limitation retained.
 - [ ] Human voice recorded, desktop footage captured, exported at 720p or higher.
@@ -171,3 +180,7 @@ require a 2–4 minute video, at least 720p, and prohibit AI/TTS voiceover.
 The owner approved a local Docker Ollama installation. No Ledger is connected and
 no human voice recording is available. Hardware evidence and final video remain
 open; terminal simulation and AI-generated narration cannot close those tasks.
+
+Evening Dashboard update could not be applied: browser automation failed to start
+with a local kernel-assets error, including after reset. The earlier saved draft
+remains; paste the current descriptions above before final submission.

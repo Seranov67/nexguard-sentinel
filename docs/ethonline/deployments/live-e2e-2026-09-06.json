@@ -1,0 +1,232 @@
+{
+  "verified_at": "2026-09-06T17:58:01.045272+00:00",
+  "chain_id": 84532,
+  "credit_tx": "0x490df69a85df035a80eae9399b470424e0fae525378e20b41360d96de6957726",
+  "withdrawal_tx": "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe31",
+  "withdrawal_block": 46474498,
+  "pause_tx": "0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750",
+  "pause_block": 46474539,
+  "pause_block_hash": "0x245269585b9e56cf2aef5b27bd7c49f7a64a6fe6f17464f692955beaf006137b",
+  "confirmations": 60,
+  "paused": true,
+  "paused_withdrawal_eth_call_reverted": true,
+  "new_transactions": 3,
+  "pause_transactions": 1,
+  "model": {
+    "name": "qwen3:4b-instruct-2507-q4_K_M",
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "modified_at": "2026-09-06T17:51:09.310375892Z",
+    "size": 2497293803,
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen3",
+      "families": [
+        "qwen3"
+      ],
+      "parameter_size": "4.0B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144,
+      "embedding_length": 2560
+    },
+    "capabilities": [
+      "completion",
+      "tools"
+    ]
+  },
+  "runtime_python": "3.12.14",
+  "initial_run": {
+    "at": "2026-09-06T17:56:02.163008+00:00",
+    "mode": "live",
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "python": "3.12.14",
+    "result": {
+      "events_polled": 5,
+      "new_events": 5,
+      "is_latched": true,
+      "features": {
+        "event_count": 1,
+        "total_amount_wei": 25000000000000000000,
+        "unique_actors": 1,
+        "window_seconds": 300,
+        "velocity_bps": 833333,
+        "max_single_amount_wei": 25000000000000000000,
+        "latest_block": 46474498,
+        "latest_timestamp": 1788717284
+      },
+      "classification": {
+        "severity": "critical",
+        "recommended_action": "pause",
+        "confidence": 1.0,
+        "rationale": "Critical pause triggered: total_amount_wei (25e18) exceeds 10000000000000000000 accounting units. Velocity_bps (833333) is extremely high, indicating rapid, large-scale withdrawal. Signal confirms anomalous, high-value transaction flow.",
+        "is_catastrophic_override": false,
+        "error": null
+      },
+      "decision": {
+        "status": "allowed",
+        "allowed": true,
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "incident_id": "0x498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "reason": "Action reserved successfully for 5 events."
+      },
+      "execution": {
+        "outcome": "indeterminate",
+        "tx_hash": "0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750",
+        "block_number": null,
+        "evidence": "{\"error\": \"RPC verification failed or disagreed\", \"tx_hash\": \"0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750\"}",
+        "error": "RPC verification failed or disagreed"
+      },
+      "cursor_advanced": true
+    }
+  },
+  "restart": {
+    "at": "2026-09-06T17:56:47.318239+00:00",
+    "mode": "restart",
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "python": "3.12.14",
+    "result": {
+      "events_polled": 0,
+      "new_events": 0,
+      "is_latched": false,
+      "features": null,
+      "classification": null,
+      "decision": null,
+      "execution": null,
+      "cursor_advanced": false
+    }
+  },
+  "durable_records": {
+    "intents": [
+      {
+        "id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "incident_id": "0x498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "status": "success",
+        "created_at": "2026-09-06T17:55:57.618692+00:00",
+        "nonce": 14,
+        "tx_hash": "0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750",
+        "fee_data": "{\"gasPrice\": 6000000}",
+        "outcome_evidence": "{\"tx_hash\": \"0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750\", \"block_number\": 46474539, \"block_hash\": \"0x245269585b9e56cf2aef5b27bd7c49f7a64a6fe6f17464f692955beaf006137b\", \"status\": 1, \"confirmations\": 7, \"simulated\": false}"
+      }
+    ],
+    "classification_traces": [
+      {
+        "id": 1,
+        "at": "2026-09-06T17:55:57.328343+00:00",
+        "source_ids": "[\"0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000\", \"0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f85238000000\", \"0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d03f000000\", \"0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000\", \"0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe314b000000\"]",
+        "features": "{\"event_count\": 1, \"total_amount_wei\": \"25000000000000000000\", \"unique_actors\": 1, \"window_seconds\": 300, \"velocity_bps\": 833333, \"max_single_amount_wei\": \"25000000000000000000\", \"latest_block\": 46474498, \"latest_timestamp\": 1788717284}",
+        "result": "{\"severity\": \"critical\", \"recommended_action\": \"pause\", \"confidence\": 1.0, \"rationale\": \"Critical pause triggered: total_amount_wei (25e18) exceeds 10000000000000000000 accounting units. Velocity_bps (833333) is extremely high, indicating rapid, large-scale withdrawal. Signal confirms anomalous, high-value transaction flow.\", \"is_catastrophic_override\": false, \"error\": null}",
+        "model": "qwen3:4b-instruct-2507-q4_K_M",
+        "prompt_version": "sentinel-classifier-v1",
+        "prompt_hash": "7850963911b3f56afe5248a1ed82a8039becd00505c0efc54674061ebdc26634"
+      }
+    ],
+    "audit": [
+      {
+        "id": 1,
+        "at": "2026-09-06T17:55:57.623010+00:00",
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "transition": "reserved",
+        "detail": "storage exclusivity passed; policy is external"
+      },
+      {
+        "id": 2,
+        "at": "2026-09-06T17:55:59.765437+00:00",
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "transition": "prepared",
+        "detail": "nonce and fee data persisted"
+      },
+      {
+        "id": 3,
+        "at": "2026-09-06T17:55:59.826044+00:00",
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "transition": "broadcast",
+        "detail": "0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750"
+      },
+      {
+        "id": 4,
+        "at": "2026-09-06T17:56:02.093396+00:00",
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "transition": "indeterminate",
+        "detail": "{\"error\": \"RPC verification failed or disagreed\", \"tx_hash\": \"0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750\"}"
+      },
+      {
+        "id": 5,
+        "at": "2026-09-06T17:56:16.215772+00:00",
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "transition": "success",
+        "detail": "{\"tx_hash\": \"0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750\", \"block_number\": 46474539, \"block_hash\": \"0x245269585b9e56cf2aef5b27bd7c49f7a64a6fe6f17464f692955beaf006137b\", \"status\": 1, \"confirmations\": 7, \"simulated\": false}"
+      },
+      {
+        "id": 6,
+        "at": "2026-09-06T17:56:43.032511+00:00",
+        "intent_id": "latch",
+        "transition": "latch_reset",
+        "detail": "{\"operator\": \"codex-owner-authorized\", \"reason\": \"Owner-authorized rehearsal: persisted pause reconciled successfully; canonical receipt and paused state verified; no resend.\"}"
+      }
+    ],
+    "outbox": [
+      {
+        "id": 1,
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "payload": "{\"intent\": \"intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3\", \"outcome\": \"indeterminate\"}",
+        "status": "delivered",
+        "attempts": 1,
+        "next_attempt_at": "1788717410.5961936",
+        "last_error": null
+      },
+      {
+        "id": 2,
+        "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+        "payload": "{\"intent\": \"intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3\", \"outcome\": \"success\"}",
+        "status": "delivered",
+        "attempts": 1,
+        "next_attempt_at": "1788717433.3806264",
+        "last_error": null
+      }
+    ]
+  },
+  "api_evidence": {
+    "incident_id": "0x498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+    "intent_id": "intent_pause_498491d3b774aefc0a0940c0e71fceb842fc1b8cee087876e850842eeb4743c3",
+    "created_at": "2026-09-06T17:55:57.618692+00:00",
+    "status": "success",
+    "trigger_cause": "Recorded classification: severity=critical, confidence=1.0; Critical pause triggered: total_amount_wei (25e18) exceeds 10000000000000000000 accounting units. Velocity_bps (833333) is extremely high, indicating rapid, large-scale withdrawal. Signal confirms anomalous, high-value transaction flow.",
+    "source_event_ids": [
+      "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000",
+      "0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f85238000000",
+      "0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d03f000000",
+      "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+      "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe314b000000"
+    ],
+    "pause_evidence": {
+      "tx_hash": "0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750",
+      "block_number": 46474539,
+      "explorer_url": "https://sepolia.basescan.org/tx/0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750",
+      "nonce": 14,
+      "status": "success"
+    },
+    "guardian": {
+      "name": "Guardian",
+      "address": "0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3",
+      "chain_id": 84532,
+      "explorer_url": "https://sepolia.basescan.org/address/0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3"
+    },
+    "vault": {
+      "name": "DemoVault",
+      "address": "0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13",
+      "chain_id": 84532,
+      "explorer_url": "https://sepolia.basescan.org/address/0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13"
+    },
+    "chain_id": 84532,
+    "sha256_state_fingerprint": "09a8d2ec0e6d04257136cf096209c60585592414f72fec1c5b03b1010d4b0fef",
+    "schema_version": 1,
+    "agent_summary": "Incident 0x498491... detected at 2026-09-06T17:55:57.618692+00:00. Vault 0xF1683d32... on Base Sepolia (chain 84532) was automatically paused via Guardian 0x8B7B1Ee7... Status: paused and verified on-chain. Pause tx: https://sepolia.basescan.org/tx/0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750 "
+  },
+  "limitations": [
+    "Initial RPC verification was indeterminate; separate no-send reconciliation confirmed success.",
+    "Source IDs cover five pending entities; the bounded classification window contains only the new withdrawal.",
+    "A small model rationale may contain numerical or terminology inaccuracies; recorded inputs and deterministic policy remain authoritative.",
+    "No hardware unpause or payment settlement demonstrated."
+  ]
+}

@@ -16,8 +16,10 @@ valueless accounting credits; it holds no Ether or tokens.
   Payment settlement is **not implemented**. Demo bypass requires server opt-in.
 - Ledger descriptor passes the vendored official ERC-7730 v1 schema. Hardware
   Clear Signing and a Ledger-originated recovery have **not been demonstrated**.
-- Final live AI rehearsal, real-model A/B comparison, video and Dashboard submission
-  remain pending. Historical onchain receipts do not prove AI or hardware use.
+- A new live Graph-to-Qwen3-to-pause rehearsal is verified, including initial RPC
+  uncertainty, no-send reconciliation and restart without a second action.
+- GitHub CI passes all four jobs at 0eae479; latest local suite has 186 tests.
+- Real-model A/B review, human video and final Dashboard submission remain open.
 
 See [current verification and blockers](docs/ethonline/FINAL_AUDIT_2026-09-06.md)
 and the [submission and recording pack](docs/ethonline/SUBMISSION_PACK.md).

@@ -59,3 +59,22 @@ Generated environments and binaries are ignored: `.venv`, `node_modules`,
 requirement files, `package.json`, `package-lock.json`, source files and setup
 instructions. Final product dependencies require their own event-period lock and
 clean-clone verification.
+
+## Real-model rehearsal runtime, evening 6 September
+
+- Ollama 0.33.3, local Docker CPU execution.
+- Image digest: `ollama/ollama@sha256:32931b46719f673c05fdbaa81ccb26da18ea4a1c57590a754874ab28ba269eb2`.
+- Model: `qwen3:4b-instruct-2507-q4_K_M`, 2,497,293,803 bytes, Apache-2.0.
+- Model digest: `0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`.
+- Python 3.12.14 with the committed requirements lock.
+- Local model port: 127.0.0.1:11434; evidence demo API: 127.0.0.1:8088.
+- Benchmark request timeout can be explicitly set to 120 seconds for CPU runs;
+  this does not modify the action classifier's timeout.
+
+Official model metadata: https://ollama.com/library/qwen3:4b-instruct-2507-q4_K_M
+Official container instructions: https://docs.ollama.com/docker
+
+The owner approved the local installation. Model files persist in the
+`nexguard-sentinel-ollama` Docker volume. Containers are local development tools,
+not a production deployment. Keep a WSL session active while recording on this
+host; WSL shutdown stops these non-restarting demo services.

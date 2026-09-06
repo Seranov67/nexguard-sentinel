@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "name": "nexguard-sentinel-incident-investigator",
-  "displayName": "NexGuard Sentinel \u0432\u0402\u201d Incident Investigator",
+  "displayName": "NexGuard Sentinel - Incident Investigator",
   "description": "Retrieve and explain the latest NexGuard Sentinel circuit-breaker incident. The agent will find the most recent automatic Vault pause event, show the Base Sepolia transaction, cross-reference The Graph entity evidence, and explain in plain language why the system stopped the Vault.",
   "version": "1.0.0",
   "author": "NexGuard Sentinel / ETHOnline 2026",

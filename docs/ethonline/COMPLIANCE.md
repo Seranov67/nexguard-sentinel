@@ -1,5 +1,14 @@
 # Compliance evidence register
 
+> **Evening update, 6 September:** A new real-model live rehearsal now passes
+> after no-send reconciliation. New withdrawal block 46474498; pause block
+> 46474539; one pause transaction; restart produces no second action.
+> See [live evidence](deployments/live-e2e-2026-09-06.json).
+> Remote CI run 34049799940 passes all four jobs at commit 0eae479.
+> Earlier same-day unavailable-model/no-new-transaction statements below describe
+> the morning audit snapshot, not the current state. Ledger hardware and human
+> video remain unavailable. Final submission is not complete.
+
 > **2026-09-06 correction:** Historical entries below are retained for chronology.
 > Current status is in [FINAL_AUDIT_2026-09-06.md](FINAL_AUDIT_2026-09-06.md).
 > Earlier claims of real AI, settled x402 payment, measured A/B improvement and
