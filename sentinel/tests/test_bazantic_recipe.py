@@ -128,13 +128,11 @@ def test_erc7730_unpause_format_present() -> None:
     assert any("unpause" in k.lower() for k in keys), f"No unpause format in {keys}"
 
 
-def test_erc7730_screen_note_present() -> None:
+def test_erc7730_uses_schema_supported_fields() -> None:
     descriptor = json.loads(ERC7730_PATH.read_text(encoding="utf-8"))
-    formats = descriptor["display"]["formats"]
-    unpause = next(v for k, v in formats.items() if "unpause" in k.lower())
-    screen = unpause.get("screenNote", [])
-    assert len(screen) >= 3
-    assert any("Guardian" in line or "Base Sepolia" in line for line in screen)
+    unpause = descriptor["display"]["formats"]["unpause(bytes32)"]
+    assert "screenNote" not in unpause
+    assert unpause["fields"][0]["format"] == "raw"
 
 
 # ---------------------------------------------------------------------------

@@ -51,13 +51,31 @@ def ingest_live(settings: Settings, store: StateStore, actuator: Actuator) -> in
 
     from sentinel.ingestion import Ingestor, natural
 
+    snapshot_hashes: dict[int, str] = {}
+
     def fetch(query: str, variables: dict[str, object]) -> dict[str, Any]:
+        request_variables = dict(variables)
+        if "block" in variables:
+            number = int(str(variables["block"]))
+            observed = actuator._rpc_call("eth_getBlockByNumber", [hex(number), False])
+            if observed is None:
+                raise ValueError("Snapshot block unavailable")
+            block_hash = str(observed["hash"])
+            if snapshot_hashes.setdefault(number, block_hash) != block_hash:
+                raise ValueError("Canonical snapshot changed while paginating")
+            # Historical number queries return null hashes in Studio; hash-pinned
+            # queries retain explicit metadata without relaxing validation.
+            query = query.replace("$block: Int!", "$hash: Bytes!").replace(
+                "number: $block", "hash: $hash"
+            )
+            request_variables.pop("block")
+            request_variables["hash"] = block_hash
         with httpx.Client(timeout=15) as client:
             response = client.post(
                 settings.subgraph_url,
                 json={
                     "query": query,
-                    "variables": variables,
+                    "variables": request_variables,
                 },
             )
             response.raise_for_status()
@@ -150,7 +168,8 @@ def run_loop_step(
         raw_events = store.pending_events(source)
         if not raw_events:
             return LoopStepResult(inserted, 0, False)
-        features = extract_features(raw_events)
+        latest_timestamp = max(int(str(event["timestamp"])) for event in raw_events)
+        features = extract_features(store.feature_window(source, latest_timestamp))
         classification = classify_features(features, llm_evaluator=llm_evaluator)
         from sentinel.ai import PROMPT_HASH, PROMPT_VERSION
 

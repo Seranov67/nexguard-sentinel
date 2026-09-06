@@ -1,0 +1,31 @@
+{
+  "verified_at": "2026-09-06T10:50:22.369262+00:00",
+  "mode": "read_only_preview",
+  "new_transactions": 0,
+  "result": {
+    "events_polled": 4,
+    "new_events": 4,
+    "is_latched": false,
+    "features": {
+      "event_count": 3,
+      "total_amount_wei": 75000000000000000000,
+      "unique_actors": 3,
+      "window_seconds": 300,
+      "velocity_bps": 2500000,
+      "max_single_amount_wei": 25000000000000000000,
+      "latest_block": 46433924,
+      "latest_timestamp": 1788636136
+    },
+    "classification": {
+      "severity": "info",
+      "recommended_action": "none",
+      "confidence": 0.0,
+      "rationale": "No AI evaluator configured",
+      "is_catastrophic_override": false,
+      "error": "AI unavailable"
+    },
+    "decision": null,
+    "execution": null,
+    "cursor_advanced": false
+  }
+}

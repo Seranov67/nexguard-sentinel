@@ -5,7 +5,7 @@ INVARIANT: The automated keeper can ONLY pause. Only the human owner with
 Ledger hardware confirmation may unpause the Guardian circuit-breaker.
 
 This CLI enforces that invariant by:
-1. Verifying the caller is the designated owner (via derivation path check).
+1. Verifying the hardware-derived address is the designated owner.
 2. Constructing the unpause() calldata with a mandatory reason hash.
 3. In simulate mode: printing the expected Ledger confirmation screen
    and validating the ERC-7730 descriptor.
@@ -26,13 +26,16 @@ Environment:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import textwrap
 from pathlib import Path
 from typing import Any, cast
+
+from eth_hash.auto import keccak
+from jsonschema import Draft4Validator
 
 # ---------------------------------------------------------------------------
 # Constants (Base Sepolia deployment -- verified 2026-09-05)
@@ -48,11 +51,7 @@ UNPAUSE_SELECTOR = "0x2f4dae9f"
 
 
 def _keccak_bytes(data: bytes) -> bytes:
-    try:
-        from eth_hash.auto import keccak
-        return bytes(keccak(data))
-    except Exception:
-        return hashlib.new("sha3_256", data).digest()
+    return bytes(keccak(data))
 
 
 def _function_selector(signature: str) -> str:
@@ -75,7 +74,8 @@ def _load_erc7730() -> dict[str, Any]:
 
 def _validate_erc7730(descriptor: dict) -> list[str]:  # type: ignore[type-arg]
     """Validate the ERC-7730 descriptor structure. Return list of issues."""
-    issues: list[str] = []
+    schema = json.loads((ERC7730_PATH.parent / "erc7730-v1.schema.json").read_text())
+    issues = [error.message for error in Draft4Validator(schema).iter_errors(descriptor)]
     context = descriptor.get("context", {})
     if not context.get("contract", {}).get("deployments"):
         issues.append("No contract deployments in ERC-7730 context")
@@ -100,7 +100,11 @@ def _print_ledger_screen(reason: str, reason_hash: str) -> None:
     unpause_format: dict[str, Any] = next(
         (v for k, v in formats.items() if "unpause" in k.lower()), {}
     )
-    screen_note = unpause_format.get("screenNote", [])
+    screen_note = [
+        "Base Sepolia (84532)",
+        f"Guardian {GUARDIAN_ADDRESS}",
+        "Recovery preview only; hardware Clear Signing has not been demonstrated.",
+    ]
 
     print()
     print("=" * 62)
@@ -123,7 +127,11 @@ def _print_ledger_screen(reason: str, reason_hash: str) -> None:
 def _build_calldata(reason_hash: str) -> str:
     """Build the unpause(bytes32) calldata hex."""
     selector = UNPAUSE_SELECTOR.removeprefix("0x")
-    reason_bytes = reason_hash[2:].zfill(64)
+    if not reason_hash.startswith("0x") or len(reason_hash) != 66:
+        raise ValueError("Reason hash must be bytes32")
+    if int(reason_hash[2:], 16) == 0:
+        raise ValueError("Reason hash cannot be zero")
+    reason_bytes = reason_hash[2:]
     return "0x" + selector + reason_bytes
 
 
@@ -142,11 +150,11 @@ def simulate(reason: str) -> None:
         for issue in issues:
             print(f"  [X] {issue}")
         sys.exit(1)
-    print("[ledger-unpause] [OK] ERC-7730 descriptor valid")
+    print("[ledger-unpause] [OK] ERC-7730 schema valid; device rendering not verified")
 
     # 2. Compute reason hash
     reason_hash = _keccak256_reason(reason)
-    print(f"[ledger-unpause] reason hash (sha3-256): {reason_hash}")
+    print(f"[ledger-unpause] reason hash (keccak256): {reason_hash}")
 
     # 3. Build calldata
     calldata = _build_calldata(reason_hash)
@@ -157,26 +165,42 @@ def simulate(reason: str) -> None:
 
     # 5. Show the cast command that would be run with a real device
     print("[ledger-unpause] Command that would run with a connected Ledger device:")
-    print(textwrap.dedent(f"""\
+    print(
+        textwrap.dedent(f"""\
         cast send \\
           --ledger \\
-          --hd-path "{DEFAULT_DERIV_PATH}" \\
+          --mnemonic-derivation-path "{DEFAULT_DERIV_PATH}" \\
           --rpc-url $RPC_HTTP \\
           --chain {CHAIN_ID} \\
           {GUARDIAN_ADDRESS} \\
           "{calldata}"
-    """))
+    """)
+    )
     print("[ledger-unpause] Simulate complete. No transaction was sent.")
 
 
 def dry_run(reason: str) -> None:
     """Dry-run: validate all preconditions and print calldata, no tx."""
     simulate(reason)
-    print("[ledger-unpause] DRY-RUN: all preconditions satisfied. No tx sent.")
+    print(
+        "[ledger-unpause] DRY-RUN: local descriptor/calldata checked. No hardware or tx verified."
+    )
 
 
 def send(reason: str, rpc_http: str, deriv_path: str) -> None:
     """Send the actual unpause transaction via Ledger hardware (requires device)."""
+    # Derivation path alone does not prove owner identity.
+    cast_path = shutil.which("cast")
+    if cast_path is None:
+        raise RuntimeError("Foundry cast is required for hardware signing")
+    owner = subprocess.run(  # noqa: S603
+        [cast_path, "wallet", "address", "--ledger", f"--mnemonic-derivation-path={deriv_path}"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    if owner.stdout.strip().lower() != OWNER_ADDRESS.lower():
+        raise ValueError("Connected Ledger account is not the deployed Guardian owner")
     reason_hash = _keccak256_reason(reason)
     calldata = _build_calldata(reason_hash)
 
@@ -197,7 +221,7 @@ def send(reason: str, rpc_http: str, deriv_path: str) -> None:
         "cast",
         "send",
         "--ledger",
-        f"--hd-path={deriv_path}",
+        f"--mnemonic-derivation-path={deriv_path}",
         f"--rpc-url={rpc_http}",
         f"--chain={CHAIN_ID}",
         GUARDIAN_ADDRESS,

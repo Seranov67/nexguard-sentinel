@@ -9,8 +9,9 @@ SQLite state store and supplemented with known deployment constants.
 
 from __future__ import annotations
 
-import hashlib
 import json
+import os
+import re
 import sqlite3
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ from typing import Annotated
 from fastapi import FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+from sentinel.proof import evidence_fingerprint
 
 # ---------------------------------------------------------------------------
 # Deployment constants (Base Sepolia, verified 2026-09-05)
@@ -110,7 +113,8 @@ def _mpp_402_response() -> Response:
         "network": MPP_NETWORK,
         "price": MPP_PRICE_USDC,
         "asset": "USDC",
-        "description": "Sentinel incident evidence read",
+        "description": "Payment prototype only; settlement is not implemented",
+        "implemented": False,
         "payTo": GUARDIAN_ADDRESS,  # testnet: use Guardian address as placeholder
     }
     return JSONResponse(
@@ -135,6 +139,7 @@ class _IncidentRow:
     nonce: int | None
     tx_hash: str | None
     outcome_evidence: str | None
+    classification: str | None = None
 
 
 def _db_path() -> Path:
@@ -142,6 +147,24 @@ def _db_path() -> Path:
     import os
 
     return Path(os.environ.get("SENTINEL_STATE_PATH", ".sentinel/state.sqlite3"))
+
+
+def _classification_cause(conn: sqlite3.Connection, source_ids: list[str]) -> str | None:
+    if not conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='classification_traces'"
+    ).fetchone():
+        return None
+    rows = conn.execute(
+        "SELECT source_ids,result FROM classification_traces ORDER BY id DESC LIMIT 100"
+    ).fetchall()
+    for row in rows:
+        if sorted(json.loads(row[0])) == sorted(source_ids):
+            result = json.loads(row[1])
+            return (
+                f"Recorded classification: severity={result['severity']}, "
+                f"confidence={result['confidence']}; {result['rationale']}"
+            )
+    return None
 
 
 def _fetch_latest_incident(db_path: Path) -> _IncidentRow | None:
@@ -179,6 +202,7 @@ def _fetch_latest_incident(db_path: Path) -> _IncidentRow | None:
             nonce=row["nonce"],
             tx_hash=row["tx_hash"],
             outcome_evidence=row["outcome_evidence"],
+            classification=_classification_cause(conn, json.loads(row["source_ids"])),
         )
     finally:
         conn.close()
@@ -220,6 +244,7 @@ def _fetch_incident_by_id(db_path: Path, incident_id: str) -> _IncidentRow | Non
             nonce=row["nonce"],
             tx_hash=row["tx_hash"],
             outcome_evidence=row["outcome_evidence"],
+            classification=_classification_cause(conn, json.loads(row["source_ids"])),
         )
     finally:
         conn.close()
@@ -232,18 +257,6 @@ def _fetch_incident_by_id(db_path: Path, incident_id: str) -> _IncidentRow | Non
 
 def _build_response(row: _IncidentRow) -> IncidentResponse:
     """Transform a DB row into a structured agent-readable evidence response."""
-    fingerprint_data = json.dumps(
-        {
-            "incident_id": row.incident_id,
-            "intent_id": row.intent_id,
-            "source_ids": sorted(row.source_ids),
-            "tx_hash": row.tx_hash,
-            "created_at": row.created_at,
-        },
-        sort_keys=True,
-    ).encode()
-    sha256 = hashlib.sha256(fingerprint_data).hexdigest()
-
     pause_ev = PauseEvidence(
         tx_hash=row.tx_hash,
         block_number=None,  # populated from outcome_evidence if available
@@ -262,10 +275,8 @@ def _build_response(row: _IncidentRow) -> IncidentResponse:
         except (json.JSONDecodeError, AttributeError):
             pass
 
-    trigger_cause = (
-        "Three consecutive Vault withdrawal events above the anomaly threshold "
-        "triggered the AI classifier (severity=critical, confidence>=0.8). "
-        "Deterministic ActionPolicy authorized keeper pause."
+    trigger_cause = row.classification or (
+        "Historical incident: no persisted AI classification trace is available."
     )
 
     status_label = {
@@ -289,10 +300,9 @@ def _build_response(row: _IncidentRow) -> IncidentResponse:
         f"automatically paused via Guardian {GUARDIAN_ADDRESS[:10]}... "
         f"Status: {status_label}. "
         f"{pause_msg}"
-        f"SHA-256 evidence fingerprint: {sha256[:16]}..."
     )
 
-    return IncidentResponse(
+    result = IncidentResponse(
         incident_id=row.incident_id,
         intent_id=row.intent_id,
         created_at=row.created_at,
@@ -313,8 +323,13 @@ def _build_response(row: _IncidentRow) -> IncidentResponse:
             explorer_url=BASESCAN_ADDR.format(address=VAULT_ADDRESS),
         ),
         chain_id=CHAIN_ID,
-        sha256_state_fingerprint=sha256,
+        sha256_state_fingerprint="",
         agent_summary=agent_summary,
+    )
+    return result.model_copy(
+        update={
+            "sha256_state_fingerprint": evidence_fingerprint(result.model_dump()),
+        }
     )
 
 
@@ -335,10 +350,9 @@ async def x402_payment_gate(
     """
     if request.url.path.startswith("/api/v1/incidents"):
         dev_mode = request.headers.get("X-Dev-Mode", "")
-        payment_proof = request.headers.get("X-Payment-Proof", "")
-        # In dev/testnet mode or when a proof is supplied, allow through.
-        # Production would verify the proof cryptographically.
-        if not dev_mode and not payment_proof:
+        demo_enabled = os.environ.get("SENTINEL_EVIDENCE_DEMO", "") == "1"
+        # No payment verifier is implemented. Never accept an unverified proof.
+        if not (demo_enabled and dev_mode == "1"):
             return _mpp_402_response()
     return await call_next(request)
 
@@ -411,7 +425,7 @@ async def get_incident(
     x_payment_proof: Annotated[str | None, Header(alias="X-Payment-Proof")] = None,
 ) -> IncidentResponse:
     """Return evidence for a specific incident by its UUID."""
-    if len(incident_id) > 128 or not incident_id.replace("-", "").isalnum():
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", incident_id):
         raise HTTPException(status_code=400, detail={"error": "invalid_incident_id"})
     row = _fetch_incident_by_id(_db_path(), incident_id)
     if row is None:

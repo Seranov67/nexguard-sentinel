@@ -63,6 +63,22 @@ def test_feature_window_is_bounded() -> None:
         extract_features([{"amount": "1"}] * 1001)
 
 
+def test_feature_window_survives_completed_poll(tmp_path: Path) -> None:
+    store = StateStore(tmp_path / "state.db")
+    for index in (1, 2, 3):
+        store.ingest(
+            "vault",
+            f"e{index}",
+            index,
+            index,
+            json.dumps({"timestamp": 100 + index, "amount": "7"}),
+        )
+    store.mark_processed(["e1", "e2"], "normal at earlier poll")
+    features = extract_features(StateStore(store.path).feature_window("vault", 103))
+    assert features.event_count == 3
+    assert features.total_amount_wei == 21
+
+
 def test_ollama_transport(monkeypatch: pytest.MonkeyPatch) -> None:
     original = httpx.Client
 

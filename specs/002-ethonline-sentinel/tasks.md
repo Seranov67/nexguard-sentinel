@@ -71,8 +71,7 @@ outcomes, latch, and outbox.
 
 ### ES302 — ingestion, policy, executor, and reconciliation
 
-**Status:** `[/]` — validated Graph snapshot pagination and replay ingestion started;
-transport integration, policy, executor, reconciliation and EG-3 remain incomplete.
+**Status:** `[x]` — durable ingestion, policy and canonical receipt reconciliation implemented; safety/restart/concurrency gates pass. See final audit report.
 **Files:** Sentinel source modules and focused tests
 **Depends:** ES201, ES301
 **Acceptance:** ES-FR-004 and ES-FR-007 through ES-FR-011; EG-3.
@@ -81,14 +80,14 @@ transport integration, policy, executor, reconciliation and EG-3 remain incomple
 
 ### ES401 — feature extraction and AI classifier
 
-**Status:** `[ ]`
+**Status:** `[x]` — bounded features, fail-closed Ollama transport, strict schema and persisted traces implemented and tested. Real-model live demonstration remains ES501 work.
 **Files:** detector/classifier modules, bounded prompt, schema and tests
 **Depends:** ES301
 **Acceptance:** ES-FR-005, ES-FR-006 and EG-4.
 
 ### ES402 — durable notification outbox
 
-**Status:** `[ ]`
+**Status:** `[x]` — durable leased outbox with retries and terminal failure recording implemented; restart tests pass.
 **Files:** outbox/notifier modules and restart/retry tests
 **Depends:** ES301
 **Acceptance:** ES-FR-012.
@@ -97,14 +96,33 @@ transport integration, policy, executor, reconciliation and EG-3 remain incomple
 
 ### ES501 — live end-to-end evidence
 
-**Status:** `[ ]`
+**Status:** `[/]` — live Graph preview and historical receipts verified. New real-model-to-pause rehearsal and live restart evidence remain pending.
 **Depends:** ES102, ES201, ES302, ES401, ES402
 **Acceptance:** one live Graph event yields one verified pause; negative and
 restart paths are evidenced.
 
 ### ES502 — submission package
 
-**Status:** `[ ]`
+**Status:** `[/]` — submission pack and narration script prepared; Dashboard draft saved on 2026-09-06. Video, partner selection and final confirmation remain pending; final submission is currently disabled.
 **Files:** README, architecture/demo docs, disclosure/evidence, video and form
 **Depends:** ES501
 **Acceptance:** EG-5 and Dashboard confirmation before the deadline.
+
+
+### ES503 — owner-authorized final audit repairs (2026-09-06)
+
+**Status:** `[x]` — 181 Python tests, Ruff, strict Sentinel MyPy and package checks pass; contract/Subgraph/isolated Compose and secret scans pass. Unsupported claims corrected; live evidence remains explicitly pending.
+**Authorization:** Owner instructed execution of the 2026-09-06 audit next steps.
+**Files:** `sentinel/evidence_api.py`, `sentinel/bazantic/`, `sentinel/ledger/`,
+focused Sentinel tests; `pyproject.toml`, `sentinel/requirements.lock`,
+`scripts/trigger_exploit.py`, `.github/workflows/ci.yml`, README and submission docs.
+**Locked acceptance:** Reject unverified payment proofs; require explicit server demo
+mode for payment bypass; accept generated incident IDs; report recorded classification
+rather than invented causes; independently recompute evidence fingerprints; replace
+simulated A/B results with an executable real-model comparison and label unrun evidence
+pending; remove incorrect SHA3 fallback; clearly distinguish Ledger simulation from
+hardware proof; package all submodules/assets and pin direct runtime dependencies.
+**Justification:** Existing partner claims and tests assert mock payment acceptance,
+static causes and simulated benchmark scores as if verified; these must not be submitted.
+**Verify:** full pytest, Ruff, strict MyPy, package install/import, secret scans,
+contract/Subgraph/Compose checks and manual evidence-to-claim review.

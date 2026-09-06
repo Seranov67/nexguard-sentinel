@@ -53,3 +53,16 @@ For every material AI-assisted event change, append:
 - what the human reviewed, changed or verified;
 - test/live evidence;
 - whether generated output was accepted, modified or rejected.
+
+
+## 2026-09-06 owner instruction and runtime prompt
+
+Owner supplied the project identity and claimed completion list, asked an audit of
+actual implementation/stage/next steps, then instructed: “âèêîíóé”. The accepted
+work sequence was ES302 safety repairs, ES401/ES402, truthful partner evidence,
+final gates, recording/submission preparation and branch synchronization.
+
+The executable classification prompt, JSON schema, version and SHA-256 are in
+`sentinel/ai.py`; bounded feature construction is in `sentinel/classifier.py`.
+Every live classification records the prompt hash/version, model, inputs and
+validated result in SQLite. No successful live-model run is claimed yet.

@@ -65,3 +65,14 @@ The exact prompt register and known evidence gap are in `AI_PROMPTS.md`.
 - `latch-agent` durable ActionPolicy design — pre-event reference source; see
   `DISCLOSURE.md`.
 - Demo narration remains human; no text-to-speech or AI voiceover.
+
+
+## 6 September audit and owner-authorized repairs
+
+Codex inspected the implementation, repeated tests and checked public Graph/RPC
+records. The owner instructed execution of the audit next steps. AI-assisted changes:
+`sentinel/` safety loop, policy, execution, migration, proof, classifier, AI transport,
+outbox and focused tests; evidence API/MCP, real-model benchmark, Ledger descriptor
+validation and CLI; package/lock/CI fixes and submission documentation. Earlier
+simulated partner claims were corrected. Human model endpoint, hardware evidence,
+narration and Dashboard completion remain required; none is fabricated.

@@ -1,126 +1,167 @@
-# NexGuard Sentinel ? ETHOnline 2026 Submission Pack
+# NexGuard Sentinel — submission and recording pack
 
-This document contains all verified text, onchain links, and partner details required for the **ETHGlobal Hacker Dashboard** submission and the **2?4 minute Demo Video**.
+Status: reviewable draft, not a submitted project. Updated 6 September 2026 after
+code audit. Claims below distinguish implementation, historical receipts and pending
+live demonstrations. Do not add AI, payment or hardware claims without new evidence.
 
----
+## Dashboard text
 
-## 1. Project Information for ETHGlobal Dashboard
+**Title:** NexGuard Sentinel
 
-- **Project Title:** `NexGuard Sentinel`
-- **Tagline:** Autonomous Circuit Breaker with Verifiable AI, The Graph Observability, and Ledger Clear Signing
-- **Category:** Security / Continuity
-- **Repository URL:** `https://github.com/Seranov67/nexguard-sentinel` (branch: `feature/ethonline-sentinel`)
-- **Demo Video URL:** *[Insert YouTube / Loom link here: 2?4 min, >=720p, human narration]*
+**Tagline:** Testnet circuit breaker with Graph observability and auditable pause-only automation.
 
-### Short Description (Markdown for Dashboard)
-```markdown
-NexGuard Sentinel is an autonomous, fail-closed incident response circuit breaker for DeFi vaults on Base Sepolia. It continuously monitors onchain withdrawals via The Graph Studio, extracts behavioral anomaly features, classifies exploits with a fail-closed AI classifier, and triggers onchain emergency pausing via Guardian.sol through a deterministic ActionPolicy.
+**Track:** Continuity; pre-existing work is disclosed in DISCLOSURE.md.
 
-Following an incident, an AI agent investigates the root cause via Bazantic MCP tools and the x402 Incident Evidence API, generating verifiable cryptographic proofs. Safe protocol recovery is guarded by human protocol owners using Ledger ERC-7730 Clear Signing, ensuring that automated keepers can only pause, never unpause.
-```
+**Repository:** https://github.com/Seranov67/nexguard-sentinel/tree/feature/ethonline-sentinel
 
----
+**Demo video:** PENDING — requires human narration, recording and a public/unlisted URL.
 
-## 2. Selected Partner Tracks & Submission Details
+**Short description:**
 
-### Partner 1: The Graph
-- **Prize Track:** *Best AI Tooling or AI Use Case with The Graph (Continuity)* ($15,000 pool)
-- **Why it's load-bearing:** The Graph is the real-time observability backbone. Without the Subgraph, Sentinel has no awareness of onchain state.
-- **Studio Subgraph Endpoint:** `https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0`
-- **Deployment ID:** `QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ`
-- **Indexed Contract:** `DemoVault.sol` (`0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13` on Base Sepolia)
-- **Partner Description for Form:**
-```markdown
-The Graph Studio provides real-time, low-latency (<3s) event indexing for NexGuard Sentinel. Our custom Subgraph tracks all withdrawal events from DemoVault on Base Sepolia. The Sentinel event loop ingests confirmed Graph entities, feeds sliding-window velocity and volume features into our AI classifier, and advances a deterministic, durable SQLite cursor. Removing The Graph completely breaks the automated detection and response pipeline.
-```
+NexGuard Sentinel is a Base Sepolia incident-response prototype. A live The Graph
+Subgraph indexes withdrawals from a deliberately vulnerable, valueless DemoVault.
+Sentinel extracts bounded rolling features, requests a structured AI assessment,
+and applies deterministic pause-only policy. SQLite reservations, persisted signed
+transaction hashes, canonical receipts and confirmation checks make the action
+path auditable and prevent blind resends. Missing or invalid AI cannot authorize
+an action. Only the separate human owner can unpause.
 
-### Partner 2: Bazantic
-- **Prize Track:** *Help an Agent Use Your Hackathon Project (Continuity)* ($1,000 pool)
-- **Why it's load-bearing:** After the circuit breaker pauses the protocol, third-party agents and protocols need to know why. Bazantic tools provide this bridge.
-- **Artifacts:**
-  - `sentinel/evidence_api.py` (FastAPI with x402/MPP payment gate and SHA-256 state fingerprinting)
-  - `sentinel/bazantic/mcp_server.py` (MCP tools: `get_latest_incident`, `verify_incident_evidence`)
-  - `sentinel/bazantic/recipe.json` (Bazantic Recipe guiding agents through investigation)
-  - `docs/ethonline/BAZANTIC_AB_BENCHMARK.md` (A/B Benchmark showing +3 quality improvement)
-- **Partner Description for Form:**
-```markdown
-We built a complete Bazantic agent integration to enable autonomous post-incident investigation. Sentinel exposes an Incident Evidence API protected by an x402 micro-payment gate. Through our Bazantic MCP Server and structured Recipe, AI agents can pay for, query, and verify cryptographic SHA-256 proof of why the circuit breaker was triggered, explaining the exploit mechanism in plain English with 4/4 benchmark accuracy.
-```
+An Evidence API and MCP tools expose recorded incident data and payload integrity
+checks. A Ledger recovery CLI and schema-validated ERC-7730 descriptor support
+recovery preparation. Payment settlement, hardware Clear Signing demonstration,
+and final live AI-to-pause evidence are not yet verified.
 
-### Partner 3: Ledger
-- **Prize Track:** *Continuity* ($1,500 pool)
-- **Why it's load-bearing:** Enforces the fundamental security invariant: keepers can only pause; only the human owner with hardware confirmation can unpause.
-- **Artifacts:**
-  - `sentinel/ledger/erc7730_unpause.json` (ERC-7730 Clear Signing metadata descriptor for `Guardian.unpause(bytes32)` on Base Sepolia)
-  - `sentinel/ledger/unpause_ledger.py` (CLI with `--simulate` and `--dry-run` modes)
-  - `sentinel/ledger/keyring_helper.py` (`wallet-cli ring` Ledger Agent Stack integration)
-- **Partner Description for Form:**
-```markdown
-Ledger provides the critical recovery anchor for NexGuard Sentinel. While automated keepers can rapidly pause a compromised vault, they are strictly forbidden from unpausing. We implemented an ERC-7730 Clear Signing descriptor for Guardian.unpause(bytes32) on Base Sepolia (Chain 84532), enabling human protocol owners to visually verify the incident resolution on their Ledger hardware screen before restoring liquidity.
-```
+**How it is built:**
 
----
+Python 3.12, SQLite, httpx, FastAPI, web3/eth-account, Ollama structured output,
+Solidity Guardian/DemoVault on Base Sepolia, and a Graph Studio Subgraph.
+The pre-existing IoT resilience MVP is preserved alongside the new Sentinel
+module. New event work and AI assistance are documented in the SSD and disclosure
+records. Tests exercise duplicate/concurrent delivery, restart, failed AI,
+confirmation timeout, reorg, state mismatch and durable notification retries.
 
-## 3. Verified Base Sepolia Onchain Evidence
+**The Graph partner description:**
 
-| Asset / Action | Address or Transaction Hash | Basescan Link |
+Graph Studio is the runtime source for withdrawal entities. Sentinel validates
+provider deployment, snapshot metadata, canonical block hash, confirmation window,
+ordering and entity identity before persistence. Removing Graph ingestion removes
+the live signal. The Ollama classification path consumes only bounded features
+computed from this data. Live Graph queries and historical pause receipts are
+verified; the final real-model classification-to-pause rehearsal remains pending.
+
+**Bazantic partner description:**
+
+We provide a Recipe, stdio MCP tools and an Incident Evidence API for agent
+investigation. Tools retrieve persisted incidents and independently recompute
+payload fingerprints. The A/B runner uses a real model, identical task/settings
+and the same read-only tools; only Recipe guidance differs. Its real-model run
+is pending. x402 is a payment prototype, not settled payment infrastructure;
+unverified proofs are rejected and local demo access requires server opt-in.
+
+**Ledger partner description:**
+
+Our ERC-7730 descriptor for Guardian.unpause(bytes32) validates against a pinned
+official schema. The CLI constructs Ethereum Keccak-256 calldata and checks the
+hardware-derived address against the deployed owner before using cast --ledger.
+Terminal previews are explicitly simulations. Device rendering, Clear Signing
+support and a hardware-signed recovery are not yet demonstrated.
+
+Select partner prizes only after reviewing these limitations against current
+qualification requirements. No partner selection is recorded as complete.
+
+## Public onchain references
+
+- Guardian: `0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3`
+- DemoVault: `0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13`
+- Withdrawal: `0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e`
+- Historical pause: `0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75`, block **46433932**
+- Historical owner unpause: `0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070`, block **46434002**
+- Graph endpoint: https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0
+
+Use https://sepolia.basescan.org/tx/ followed by the full transaction hash.
+These receipts are historical and do not independently prove AI or Ledger use.
+The 25 units consumed by the demo are valueless accounting credits, not Ether.
+
+## Recording plan — target 3:00–3:30
+
+Record desktop capture at 1080p with your own voice. Do not show environment
+files, private keys or wallet secret screens. Keep the visible label “Base Sepolia —
+valueless demo credits”. Cut waiting periods; do not speed up narration.
+
+| Time | Screen | Narration topic |
 |---|---|---|
-| **Guardian Contract** | `0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3` | [View Guardian on Basescan](https://sepolia.basescan.org/address/0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3) |
-| **DemoVault Contract** | `0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13` | [View DemoVault on Basescan](https://sepolia.basescan.org/address/0xF1683d32fEF59BBB95483561aBa62a1bdA65Cd13) |
-| **Exploited Withdrawal** | `0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e` | [View Exploit Tx](https://sepolia.basescan.org/tx/0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e) |
-| **Autonomous Pause Tx** | `0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75` | [View Pause Tx](https://sepolia.basescan.org/tx/0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75) |
-| **Owner Recovery Unpause** | `0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070` | [View Unpause Tx](https://sepolia.basescan.org/tx/0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070) |
+| 0:00–0:25 | README flow and testnet label | Problem and pause-only design |
+| 0:25–1:00 | Graph query plus withdrawal receipt | Real source; explain demo credits |
+| 1:00–1:50 | CLI preview/classification and historical pause receipt | AI boundary, reservations, confirmation checks; identify historical vs new evidence |
+| 1:50–2:25 | Evidence API/MCP response | Recorded cause and integrity; disclose payment prototype |
+| 2:25–2:55 | Ledger `--simulate` | Owner-only recovery; clearly label terminal simulation |
+| 2:55–3:20 | Tests, repository and limitations | What is implemented; what still needs live evidence |
 
----
+### Human narration draft
 
-## 4. 3-Minute Demo Video Script (Storyboard)
+Hello, I am presenting NexGuard Sentinel, a testnet circuit breaker for smart
+contracts. It explores how automated incident response can stop activity quickly
+while leaving a record that an operator can inspect. Automated keepers may pause,
+but they can never restore activity themselves.
 
-**Rules Reminder:**
-- Length: strictly between **2:00 and 4:00 minutes** (aim for ~3:00).
-- Resolution: >= 720p (recommend 1080p).
-- Voice: **Human narration only** (no AI voice / TTS allowed by ETHGlobal).
-- Screen: Hide all private keys or `.env` files.
+This DemoVault is deployed on Base Sepolia and deliberately contains an unsafe
+withdrawal method. It uses valueless accounting credits. No Ether or user tokens
+are held in the vault. Here is a real withdrawal event indexed by our Graph Studio
+Subgraph. The Graph provides the structured event stream used by Sentinel.
 
-### Scene 1: Introduction & The Problem (0:00 ? 0:40)
-- **Screen:** Title slide or IDE showing architecture diagram: `WATCH -> DETECT -> DECIDE -> ACT -> PROVE -> RECOVER`.
-- **Narration:**
-  > "Hello! Today DeFi protocols lose billions because onchain exploits unfold in seconds, while human emergency response takes hours.
-  > 
-  > Introducing **NexGuard Sentinel** ? an autonomous, verifiable circuit-breaker system for smart contracts built for ETHOnline 2026.
-  > Sentinel unites three load-bearing partners: **The Graph** for real-time observability, **Bazantic** for agentic incident investigation, and **Ledger** for hardware-secured recovery."
+The ingestion path checks the deployment identity, canonical snapshot, confirmation
+window and event ordering. It stores events separately from their processing state,
+so a restart after ingestion does not silently lose work. Rolling features summarize
+volume, velocity and actor diversity without sending arbitrary event text to a model.
 
-### Scene 2: Live Exploit & The Graph Indexing (0:40 ? 1:20)
-- **Screen:** Terminal running `python scripts/trigger_exploit.py` and The Graph Studio dashboard.
-- **Narration:**
-  > "Here on Base Sepolia, we have our DemoVault contract protected by Guardian.sol.
-  > An attacker initiates an unauthorized flash withdrawal draining 25 ETH.
-  > Notice how immediately **The Graph Studio** indexes this confirmed event with sub-3-second latency. The Graph gives Sentinel the clean, structured entity stream necessary for real-time detection."
+The AI client requests a bounded, structured assessment. Missing or malformed output
+cannot authorize a transaction. Deterministic policy then checks the latch, action
+limits and durable reservation. The signer stores its transaction hash before
+broadcast. A success requires a canonical receipt, sufficient confirmations and a
+fresh paused-state read. Here is the historical pause receipt. It demonstrates the
+contract action; a new live AI-to-pause rehearsal is still pending.
 
-### Scene 3: AI Classification & Autonomous Pause (1:20 ? 2:00)
-- **Screen:** Terminal running `python -m sentinel.cli run --once` and then Basescan showing `Guardian.pause()`.
-- **Narration:**
-  > "Now our Sentinel event loop ingests the Graph event.
-  > Our fail-closed AI classifier extracts velocity and volume features and flags the transaction as a critical threat.
-  > Our deterministic ActionPolicy authorizes the emergency action, and Sentinel broadcasts `Guardian.pause()` directly on Base Sepolia.
-  > Let's check Basescan: Guardian is now PAUSED, and any subsequent withdrawal is blocked with the `GuardianPaused` error. The vault funds are saved!"
+For investigation, the Evidence API exposes the recorded incident and its transaction
+reference. MCP tools let an agent retrieve the record and recompute its fingerprint.
+This checks payload integrity, not independent chain authenticity. Payment settlement
+is a prototype and is not claimed as completed. The comparison runner records actual
+model tool calls rather than inventing a score improvement.
 
-### Scene 4: Bazantic Agent Investigation (2:00 ? 2:40)
-- **Screen:** Terminal showing Bazantic Recipe and MCP response or running `python -m sentinel.bazantic.benchmark_ab`.
-- **Narration:**
-  > "Now that the vault is paused, how do external agents know what happened?
-  > Here comes **Bazantic**. Sentinel exposes an Incident Evidence API behind an x402 payment gate.
-  > Using our Bazantic Recipe and MCP server, an autonomous AI agent pays for the incident evidence, verifies the SHA-256 state fingerprint, and produces a plain-English incident post-mortem explaining the exploit vector with 100% benchmark fidelity."
+Recovery belongs to the human owner. This terminal view is a simulation of our Ledger
+recovery preparation. The descriptor passes the official schema, and the CLI checks
+the hardware-derived owner address before sending. A real device Clear Signing
+demonstration still needs to be recorded.
 
-### Scene 5: Ledger Clear Signing & Recovery (2:40 ? 3:20)
-- **Screen:** Terminal running `python -m sentinel.ledger.unpause_ledger --simulate` showing the simulated Ledger screen.
-- **Narration:**
-  > "Finally, protocol recovery. In Sentinel, automated keepers can only pause ? they can NEVER unpause.
-  > Only the human owner can restore protocol liquidity.
-  > Using **Ledger ERC-7730 Clear Signing**, the owner verifies the contract address, action, and verified resolution hash directly on their hardware wallet screen before broadcasting `Guardian.unpause()`.
-  > Sentinel brings together speed for safety, and hardware human verification for recovery."
+The repository includes safety tests, reproducible dependencies and a disclosure of
+the older IoT project. Sentinel is an inspectable testnet prototype, with its remaining
+live evidence clearly identified. Thank you.
 
-### Scene 6: Conclusion (3:20 ? 3:30)
-- **Screen:** GitHub repository, test suite passing (102/102 tests).
-- **Narration:**
-  > "All 102 tests are passing, and all contracts are verified on Base Sepolia.
-  > Thank you, and welcome to the future of onchain autonomous resilience with NexGuard Sentinel!"
+### Commands to capture
+
+```bash
+python -m sentinel.cli status
+python -m sentinel.cli run --once --dry-run
+python -m sentinel.ledger.unpause_ledger --simulate --reason "Incident reviewed"
+python -m pytest -q
+```
+
+After the model is available, record the real classification trace and replace only
+the corresponding pending statement. For a new onchain rehearsal use `run --once`
+without `--dry-run` only with the approved disposable keeper and a reviewed live
+state. Do not present a historical transaction as a result of the repaired code.
+
+## Submission completion checklist
+
+- [ ] Real model endpoint/name configured and live trace reviewed.
+- [ ] Final safe Graph-to-AI-to-pause rehearsal and restart evidence recorded.
+- [ ] Real-model A/B transcript reviewed; unsupported partner claims excluded.
+- [ ] Ledger hardware evidence obtained, or simulation limitation retained.
+- [ ] Human voice recorded, desktop footage captured, exported at 720p or higher.
+- [ ] Video duration is 2–4 minutes and link opens without authentication.
+- [ ] Dashboard fields and up to three partner choices reviewed by owner.
+- [ ] Dashboard submission confirmation and URL recorded.
+
+Official requirements checked 6 September:
+[ETHOnline submission rules](https://ethglobal.com/events/ethonline2026/info/details).
+Deadline is 13 September 2026, 12:00 EDT / 19:00 Europe/Kyiv. The official rules
+require a 2–4 minute video, at least 720p, and prohibit AI/TTS voiceover.

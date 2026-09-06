@@ -285,6 +285,20 @@ class StateStore:
                 ),
             )
 
+    def feature_window(self, source: str, latest_timestamp: int) -> list[dict[str, object]]:
+        """Include previously assessed events so risk does not reset at each poll."""
+        with self._connection() as db:
+            rows = db.execute(
+                "SELECT payload FROM events WHERE source=? "
+                "AND CAST(json_extract(payload,'$.timestamp') AS INTEGER)>? "
+                "AND CAST(json_extract(payload,'$.timestamp') AS INTEGER)<=? "
+                "ORDER BY length(sequence),sequence LIMIT 1001",
+                (source, latest_timestamp - 300, latest_timestamp),
+            ).fetchall()
+            if len(rows) > 1000:
+                raise ValueError("Feature window exceeds event budget")
+            return [dict(json.loads(row[0])) for row in rows]
+
     def outbox_counts(self) -> dict[str, int]:
         with self._connection() as db:
             return {

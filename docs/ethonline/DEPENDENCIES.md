@@ -1,5 +1,17 @@
 # Toolchain and dependency record
 
+## Current event runtime — 6 September 2026
+
+Python 3.12.14 is the verified runtime. `pyproject.toml` pins direct runtime
+dependencies and `sentinel/requirements.lock` pins the complete Linux verification
+environment. Install the lock before installing the project with `--no-deps`.
+Subgraph tooling remains pinned by its npm lockfile; Solidity uses 0.8.24.
+The wheel includes all Sentinel submodules, Recipe JSON and the pinned official
+ERC-7730 schema/license. See FINAL_AUDIT_2026-09-06.md for gate results.
+
+The older preparation record below is retained as historical evidence.
+
+
 > Verified locally on 3 September 2026. These are preparation-spike versions,
 > not yet the final submission lock.
 

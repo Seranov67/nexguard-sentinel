@@ -51,7 +51,9 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install development dependencies
-        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+        run: |
+          python -m pip install --disable-pip-version-check -r sentinel/requirements.lock
+          python -m pip install --no-deps -e ".[dev]"
       - name: Ruff
         run: ruff check .
       - name: MyPy gateway simulator
@@ -61,7 +63,7 @@ jobs:
       - name: MyPy contract deployment tool
         run: mypy contracts/deploy.py
       - name: MyPy Sentinel durable core
-        run: mypy sentinel --exclude tests
+        run: mypy sentinel
       - name: Tests without Telegram credentials
         env:
           TELEGRAM_BOT_TOKEN: ""

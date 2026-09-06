@@ -6,11 +6,27 @@ build-backend = "setuptools.build_meta"
 name = "nexguard"
 version = "0.1.0"
 description = "NexGuard Edge Resilience — IoT gateway supervisor (hackathon MVP)"
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "httpx==0.28.1",
+    "fastapi==0.141.1",
+    "pydantic==2.13.5",
+    "python-dotenv==1.2.3",
+    "web3==7.16.0",
+    "uvicorn==0.52.4",
+    "jsonschema==4.26.0",
+    "eth-account==0.13.7",
+    "eth-utils==5.3.1",
+    "eth-hash[pycryptodome]==0.7.1",
+]
 
-[tool.setuptools]
-packages = ["sentinel"]
+[tool.setuptools.packages.find]
+include = ["sentinel*"]
+exclude = ["sentinel.tests*"]
+
+[tool.setuptools.package-data]
+"sentinel.ledger" = ["*.json", "*.md"]
+"sentinel.bazantic" = ["*.json", "*.md"]
 
 [project.optional-dependencies]
 dev = [
@@ -27,6 +43,7 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML>=6.0",
     "types-requests>=2.31",
+    "types-jsonschema==4.26.0.20260518",
     "uvicorn>=0.32",
     "python-dotenv==1.2.3",
     "web3==7.16.0",

@@ -19,11 +19,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import textwrap
 from typing import Any
 
 import httpx
+
+from sentinel.proof import evidence_fingerprint
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -85,7 +88,7 @@ def _get_latest_incident() -> dict[str, Any]:
 
 def _verify_incident_evidence(incident_id: str) -> dict[str, Any]:
     """Verify a specific incident and cross-reference its evidence fields."""
-    if not incident_id or len(incident_id) > 128:
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", incident_id):
         return {"verified": False, "error": "invalid_incident_id"}
     with httpx.Client(timeout=10) as client:
         resp = client.get(
@@ -99,8 +102,8 @@ def _verify_incident_evidence(incident_id: str) -> dict[str, Any]:
 
     # Cross-reference evidence consistency
     issues: list[str] = []
-    if not data.get("sha256_state_fingerprint"):
-        issues.append("missing SHA-256 fingerprint")
+    if data.get("sha256_state_fingerprint") != evidence_fingerprint(data):
+        issues.append("SHA-256 fingerprint mismatch")
     pause_ev = data.get("pause_evidence", {})
     if data["status"] == "success" and not pause_ev.get("tx_hash"):
         issues.append("status=success but no tx_hash in pause evidence")
@@ -109,6 +112,7 @@ def _verify_incident_evidence(incident_id: str) -> dict[str, Any]:
 
     return {
         "verified": len(issues) == 0,
+        "verification_scope": "payload integrity only; not independent chain verification",
         "incident_id": data["incident_id"],
         "status": data["status"],
         "tx_hash": pause_ev.get("tx_hash"),
@@ -160,18 +164,20 @@ TOOL_DEFINITIONS = [
 
 
 def _handle_initialize(req_id: str | int | None) -> None:
-    _send({
-        "jsonrpc": "2.0",
-        "id": req_id,
-        "result": {
-            "protocolVersion": "2024-11-05",
-            "serverInfo": {
-                "name": "nexguard-sentinel-mcp",
-                "version": "1.0.0",
+    _send(
+        {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "serverInfo": {
+                    "name": "nexguard-sentinel-mcp",
+                    "version": "1.0.0",
+                },
+                "capabilities": {"tools": {}},
             },
-            "capabilities": {"tools": {}},
-        },
-    })
+        }
+    )
 
 
 def _handle_tools_list(req_id: str | int | None) -> None:

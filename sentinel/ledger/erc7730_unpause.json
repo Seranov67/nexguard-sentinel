@@ -1,5 +1,5 @@
 {
-"$schema": "https://erc7730.org/schema/v1/erc7730.schema.json",
+  "$schema": "https://raw.githubusercontent.com/LedgerHQ/clear-signing-erc7730-registry/0318f9a51ec4fc7ba4aed6de5e315c8884d1fe38/specs/erc7730-v1.schema.json",
   "context": {
     "$id": "nexguard-sentinel-guardian-unpause",
     "contract": {
@@ -10,8 +10,7 @@
           "inputs": [
             {
               "name": "reason",
-              "type": "bytes32",
-              "description": "Keccak256 hash of the human-readable unpause reason"
+              "type": "bytes32"
             }
           ],
           "outputs": [],
@@ -30,8 +29,7 @@
     "owner": "NexGuard Sentinel / ETHOnline 2026",
     "info": {
       "legalName": "NexGuard Sentinel Guardian Circuit Breaker",
-      "lastUpdate": "2026-09-05",
-      "url": "https://github.com/Seranov67/nexguard-edge-resilience"
+      "url": "https://github.com/Seranov67/nexguard-sentinel"
     }
   },
   "display": {
@@ -42,19 +40,11 @@
           {
             "path": "reason",
             "label": "Unpause reason (keccak256)",
-            "format": "bytes32"
+            "format": "raw"
           }
         ],
-        "required": ["reason"],
-        "screenNote": [
-          "⚠️  HIGH-RISK ACTION",
-          "Network:  Base Sepolia (Chain 84532)",
-          "Contract: Guardian 0x8B7B...8Ed3",
-          "Action:   Unpause Circuit Breaker",
-          "Effect:   DemoVault withdrawals RE-ENABLED",
-          "",
-          "Only approve if you are the designated protocol owner",
-          "and have verified the incident has been resolved."
+        "required": [
+          "reason"
         ]
       }
     }

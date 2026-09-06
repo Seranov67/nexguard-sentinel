@@ -1,22 +1,30 @@
-# Sentinel durable core (ES301)
+# Sentinel runtime
 
-Requires Python 3.12. The ES301 runtime uses only the standard library and adds
-no third-party runtime dependencies. `Settings.from_env` accepts the public
-runtime fields from `.env.ethonline`; loading that file is the caller's job.
-The pre-event YAML file remains an architectural template, not an executable
-runtime configuration. No signer, AI client or executor is implemented here.
+See the root README for installation and CLI examples. Python 3.12 is required;
+`requirements.lock` records the complete tested environment.
 
-SQLite uses WAL, FULL synchronous writes, foreign keys and immediate write
-transactions. Event/cursor updates and reservation/source-event ownership are
-atomic. Unfinished intents block additional reservations after restart. Conflicting
-event replays and storage errors raise and must stop processing. Sequence values
-are decimal strings in storage to avoid SQLite's signed 64-bit limit.
+The Graph Ingestor validates deployment, canonical snapshot hash, confirmation
+window, ordering and entity identity before persistence. The read cursor and
+processed-event bookkeeping are separate, so a crash after ingest does not lose
+work. A historical `the_graph_withdrawals` source is normalized on migration;
+existing intent ownership continues to prevent repeat actions.
 
-`reserve` enforces storage exclusivity only; ES302 must perform cooldown, budget,
-chain, contract and action policy checks in the same reservation transaction.
-`finish` records evidence supplied by the future verifier; it does not establish
-onchain success itself. Latch reset and notification delivery are not implemented.
-An indeterminate latch remains set even when a later reconciliation resolves an
-intent, until an attributed operator reset is implemented.
+The rolling feature window includes previously assessed events. Only newly pending
+events enter a new reservation. AI receives numeric features, has no signer access,
+and must produce strict validated output. Classification traces record model,
+prompt version/hash, inputs and result. No model means no action.
 
-Run: `python -m pytest sentinel/tests` and `python -m mypy sentinel --exclude tests`.
+Reservations serialize deduplication, cooldown (300 seconds) and budget (3 per
+600 seconds). An unfinished intent blocks further action. The signed transaction
+hash is durable before broadcast; receipt verification checks canonical block,
+confirmation depth, intended call and final state. Reconciliation never resends.
+A reset is attributed and does not erase event ownership or action limits.
+
+Dry-run creates an isolated preview store. It cannot consume live pending events
+or create simulated success records in the live database. Storage failures stop
+the process. Outbox worker failures are independent; delivery is leased,
+at-least-once, and bounded to three attempts with terminal status visible in CLI.
+
+Evidence/MCP verify payload consistency, not provider authenticity. Payment is a
+prototype; fake proofs are rejected. Ledger simulation is explicitly labelled;
+no hardware Clear Signing claim is made without device evidence.

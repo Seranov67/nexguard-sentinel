@@ -72,7 +72,10 @@ def client(tmp_db: Path) -> Generator[TestClient, None, None]:
     """Create a test client with the DB path patched."""
     from sentinel.evidence_api import app
 
-    with patch("sentinel.evidence_api._db_path", return_value=tmp_db):
+    with (
+        patch.dict("os.environ", {"SENTINEL_EVIDENCE_DEMO": "1"}),
+        patch("sentinel.evidence_api._db_path", return_value=tmp_db),
+    ):
         yield TestClient(app)
 
 
@@ -121,13 +124,13 @@ def test_dev_mode_bypasses_payment(client: TestClient) -> None:
     assert resp.status_code == 200
 
 
-def test_payment_proof_bypasses_gate(client: TestClient) -> None:
+def test_unverified_payment_proof_is_rejected(client: TestClient) -> None:
     """X-Payment-Proof header also bypasses the gate."""
     resp = client.get(
         "/api/v1/incidents/latest",
         headers={"X-Payment-Proof": "mock-proof"},
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 402
 
 
 # ---------------------------------------------------------------------------
@@ -175,7 +178,10 @@ def test_latest_incident_sha256_deterministic(client: TestClient) -> None:
 def test_latest_incident_404_when_no_db(tmp_path: Path) -> None:
     from sentinel.evidence_api import app
 
-    with patch("sentinel.evidence_api._db_path", return_value=tmp_path / "missing.sqlite3"):
+    with (
+        patch.dict("os.environ", {"SENTINEL_EVIDENCE_DEMO": "1"}),
+        patch("sentinel.evidence_api._db_path", return_value=tmp_path / "missing.sqlite3"),
+    ):
         c = TestClient(app)
         resp = c.get("/api/v1/incidents/latest", headers={"X-Dev-Mode": "1"})
     assert resp.status_code == 404
@@ -188,9 +194,7 @@ def test_latest_incident_404_when_no_db(tmp_path: Path) -> None:
 
 
 def test_get_incident_by_id_found(client: TestClient) -> None:
-    resp = client.get(
-        "/api/v1/incidents/inc-abc123-uuid", headers={"X-Dev-Mode": "1"}
-    )
+    resp = client.get("/api/v1/incidents/inc-abc123-uuid", headers={"X-Dev-Mode": "1"})
     assert resp.status_code == 200
     assert resp.json()["incident_id"] == "inc-abc123-uuid"
 
@@ -217,3 +221,25 @@ def test_guardian_ref(client: TestClient) -> None:
     assert guardian["address"] == "0x8B7B1Ee7e335FD00F35cc6272C113c8735cB8Ed3"
     assert guardian["chain_id"] == 84532
     assert "basescan" in guardian["explorer_url"]
+
+
+def test_demo_header_requires_server_opt_in(client: TestClient) -> None:
+    with patch.dict("os.environ", {"SENTINEL_EVIDENCE_DEMO": "0"}):
+        response = client.get("/api/v1/incidents/latest", headers={"X-Dev-Mode": "1"})
+    assert response.status_code == 402
+
+
+def test_fingerprint_protects_recorded_cause(client: TestClient) -> None:
+    from sentinel.proof import evidence_fingerprint
+
+    data = client.get("/api/v1/incidents/latest", headers={"X-Dev-Mode": "1"}).json()
+    assert "no persisted AI classification" in data["trigger_cause"]
+    original = data["sha256_state_fingerprint"]
+    assert evidence_fingerprint(data) == original
+    data["trigger_cause"] = "invented AI cause"
+    assert evidence_fingerprint(data) != original
+
+
+def test_generated_id_with_underscore_is_accepted(client: TestClient) -> None:
+    response = client.get("/api/v1/incidents/inc_example", headers={"X-Dev-Mode": "1"})
+    assert response.status_code == 404  # Valid identifier, absent record; not a 400 format error.

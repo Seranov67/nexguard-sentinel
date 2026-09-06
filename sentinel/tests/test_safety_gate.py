@@ -5,12 +5,13 @@ import json
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 
 from sentinel.actuator import Actuator, build_pause_calldata
 from sentinel.classifier import ClassificationResult
 from sentinel.config import Settings
-from sentinel.loop import run_loop_step
+from sentinel.loop import ingest_live, run_loop_step
 from sentinel.policy import ActionPolicy
 from sentinel.proof import incident_proof
 from sentinel.store import StateStore
@@ -177,3 +178,55 @@ def test_canonical_proof_golden() -> None:
     )
     assert payload == golden
     assert reference == "0x" + hashlib.sha256(golden.encode("ascii")).hexdigest()
+
+
+def test_live_transport_pins_hash_for_nullable_historical_metadata(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from sentinel.tests.test_ingestion import event, reply
+
+    store = StateStore(tmp_path / "state.db")
+    settings = Settings(
+        "https://rpc.example.org",
+        "https://graph.example.org",
+        GUARDIAN,
+        GUARDIAN,
+        store.path,
+        graph_deployment="expected",
+    )
+    actuator = Actuator(store, settings.rpc_http, GUARDIAN)
+    queries: list[dict[str, Any]] = []
+
+    def rpc(method: str, params: list[Any]) -> Any:
+        if method == "eth_chainId":
+            return hex(84532)
+        if method == "eth_getCode":
+            return "0x1234"
+        if method == "eth_blockNumber":
+            return hex(12)
+        if method == "eth_getBlockByNumber":
+            return {"hash": BLOCK}
+        raise AssertionError(method)
+
+    def graph(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        queries.append(body)
+        if body["variables"]:
+            assert body["variables"]["hash"] == BLOCK
+            assert "hash: $hash" in body["query"]
+            assert "number: $block" not in body["query"]
+            return httpx.Response(200, json=reply([event()]))
+        return httpx.Response(200, json=reply([], block=12))
+
+    original = httpx.Client
+    monkeypatch.setattr(actuator, "_rpc_call", rpc)
+    monkeypatch.setattr(
+        "httpx.Client",
+        lambda **kw: original(
+            transport=httpx.MockTransport(graph),
+            **kw,
+        ),
+    )
+    assert ingest_live(settings, store, actuator) == 1
+    assert len(queries) == 2

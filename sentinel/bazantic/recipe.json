@@ -1,16 +1,25 @@
 {
-"schemaVersion": "1.0",
+  "schemaVersion": "1.0",
   "name": "nexguard-sentinel-incident-investigator",
-  "displayName": "NexGuard Sentinel — Incident Investigator",
+  "displayName": "NexGuard Sentinel \u0432\u0402\u201d Incident Investigator",
   "description": "Retrieve and explain the latest NexGuard Sentinel circuit-breaker incident. The agent will find the most recent automatic Vault pause event, show the Base Sepolia transaction, cross-reference The Graph entity evidence, and explain in plain language why the system stopped the Vault.",
   "version": "1.0.0",
   "author": "NexGuard Sentinel / ETHOnline 2026",
   "license": "MIT",
   "category": "security-automation",
-  "tags": ["blockchain", "security", "incident-response", "base-sepolia", "the-graph"],
+  "tags": [
+    "blockchain",
+    "security",
+    "incident-response",
+    "base-sepolia",
+    "the-graph"
+  ],
   "mcp": {
     "serverCommand": "python",
-    "serverArgs": ["-m", "sentinel.bazantic.mcp_server"],
+    "serverArgs": [
+      "-m",
+      "sentinel.bazantic.mcp_server"
+    ],
     "transport": "stdio",
     "env": {
       "EVIDENCE_API_URL": "http://localhost:8080",
@@ -19,7 +28,10 @@
   },
   "primaryTask": {
     "prompt": "Find the latest critical incident in NexGuard Sentinel. Show the Base Sepolia transaction hash, the Basescan explorer link, and explain in plain language why the system automatically paused the Vault. Verify the evidence is consistent and report any issues.",
-    "requiredTools": ["get_latest_incident", "verify_incident_evidence"]
+    "requiredTools": [
+      "get_latest_incident",
+      "verify_incident_evidence"
+    ]
   },
   "tools": [
     {
@@ -29,25 +41,24 @@
     },
     {
       "name": "verify_incident_evidence",
-      "guidance": "Call this after get_latest_incident using the incident_id returned. Check that verified=true. If issues is non-empty, list each issue in your response. This tool confirms that the SHA-256 fingerprint is present and the onchain tx_hash matches the recorded status.",
-      "outputInterpretation": "Report verified status and any consistency issues found. A verified=true response confirms the evidence chain is intact."
+      "guidance": "Call after get_latest_incident. Recompute evidence integrity and report issues.",
+      "outputInterpretation": "verified=true means payload integrity only; it does not authenticate the provider or independently verify the chain."
     }
   ],
   "responseFormat": {
-    "required": ["incident_id", "status", "transaction_link", "explanation"],
-    "example": {
-      "incident_id": "abc123...",
-      "status": "paused and verified on-chain",
-      "transaction_link": "https://sepolia.basescan.org/tx/0x92ce...",
-      "explanation": "The Vault was automatically paused because three consecutive Vault withdrawal events above the anomaly threshold were detected. The AI classifier rated severity=critical with confidence 0.92. The deterministic ActionPolicy authorized the keeper to call Guardian.pause(), which was confirmed on Base Sepolia in block 46427900.",
-      "evidence_fingerprint": "sha256:abc123..."
-    }
+    "required": [
+      "incident_id",
+      "status",
+      "transaction_link",
+      "explanation"
+    ]
   },
   "bazanticGateway": {
     "endpoint": "/api/v1/incidents/latest",
     "paymentScheme": "x402",
     "priceUSDC": "0.001",
     "network": "base-sepolia",
-    "note": "testnet demonstration; price is illustrative only"
+    "note": "Payment prototype; no payment proof is accepted. Server requires SENTINEL_EVIDENCE_DEMO=1 for local demonstration access.",
+    "implemented": false
   }
 }

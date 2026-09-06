@@ -36,3 +36,13 @@ Python/npm/Solidity tools remain governed by their upstream licenses. Exact dire
 versions and security status are recorded in `DEPENDENCIES.md`; lockfiles are the
 machine-readable dependency evidence. Before publication, generate/review the
 dependency license report and include notices required by any vendored assets.
+
+
+## Vendored ERC-7730 schema — 6 September 2026
+
+`sentinel/ledger/erc7730-v1.schema.json` is copied unchanged from LedgerHQ's
+clear-signing-erc7730-registry at commit
+`0318f9a51ec4fc7ba4aed6de5e315c8884d1fe38`, path `specs/erc7730-v1.schema.json`.
+The upstream license is retained as `sentinel/ledger/ERC7730-LICENSE.md`.
+The NexGuard descriptor is project-specific; schema validation does not imply
+registry acceptance, device support or a hardware Clear Signing demonstration.
