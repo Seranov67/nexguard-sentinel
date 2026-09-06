@@ -6,6 +6,7 @@ Each operation uses its own connection, including across independent processes.
 
 import json
 import sqlite3
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -48,6 +49,15 @@ CREATE TABLE IF NOT EXISTS audit (
  id INTEGER PRIMARY KEY, at TEXT NOT NULL, intent_id TEXT,
  transition TEXT NOT NULL, detail TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS processed_events (
+ event_id TEXT PRIMARY KEY REFERENCES events(id), decision TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS action_times (
+ intent_id TEXT PRIMARY KEY REFERENCES intents(id), reserved_at REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS incident_proofs (
+ intent_id TEXT PRIMARY KEY REFERENCES intents(id), canonical_json TEXT NOT NULL
+);
 """
 
 
@@ -59,10 +69,51 @@ class StateStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as db:
             version = int(db.execute("PRAGMA user_version").fetchone()[0])
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 raise ValueError("Unsupported state schema version")
             db.execute("PRAGMA journal_mode=WAL")
-            db.executescript("BEGIN IMMEDIATE;" + SCHEMA + "PRAGMA user_version=1; COMMIT;")
+            db.executescript("BEGIN IMMEDIATE;" + SCHEMA + "PRAGMA user_version=2; COMMIT;")
+            # Preserve cooldown across migration of existing live action records.
+            db.execute(
+                "INSERT OR IGNORE INTO action_times SELECT id, "
+                "CAST(strftime('%s',created_at) AS REAL) FROM intents"
+            )
+        self._migrate_legacy_source()
+
+    def _migrate_legacy_source(self) -> None:
+        """Normalize the earlier loop's source without discarding its event ownership."""
+        with self._transaction() as db:
+            rows = db.execute(
+                "SELECT id,payload FROM events WHERE source='the_graph_withdrawals'"
+            ).fetchall()
+            for row in rows:
+                payload = json.loads(row["payload"])
+                for field in (
+                    "id",
+                    "transactionHash",
+                    "blockHash",
+                    "who",
+                    "recipient",
+                    "triggeredBy",
+                ):
+                    payload[field] = str(payload[field]).lower()
+                for field in (
+                    "sequence",
+                    "blockNumber",
+                    "logIndex",
+                    "timestamp",
+                    "amount",
+                    "remainingCredit",
+                ):
+                    payload[field] = str(int(payload[field]))
+                db.execute(
+                    "UPDATE events SET source='vault-withdrawals',payload=? WHERE id=?",
+                    (json.dumps(payload, sort_keys=True, separators=(",", ":")), row["id"]),
+                )
+            # Do not migrate the old read cursor: replay validates the historical
+            # entities, while intent_events continues to prevent duplicate action.
+            if rows:
+                self._audit(db, "migration", "source_normalized", str(len(rows)))
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
@@ -128,7 +179,18 @@ class StateStore:
             ).fetchone()
             return None if row is None else (int(row[0]), int(row[1]))
 
-    def reserve(self, intent: str, incident: str, event_ids: list[str]) -> bool:
+    def reserve(
+        self,
+        intent: str,
+        incident: str,
+        event_ids: list[str],
+        *,
+        now: float | None = None,
+        cooldown: int = 0,
+        budget: int = 3,
+        budget_window: int = 600,
+        canonical_json: str = "{}",
+    ) -> bool:
         """Storage-level exclusivity; ES302 must additionally enforce policy.
 
         An unfinished intent prevents every new reservation, including after restart.
@@ -136,6 +198,14 @@ class StateStore:
         if not intent or not incident or not event_ids or len(set(event_ids)) != len(event_ids):
             raise ValueError("A reservation requires unique source events and stable IDs")
         with self._transaction() as db:
+            timestamp = time.time() if now is None else now
+            latest = db.execute("SELECT MAX(reserved_at) FROM action_times").fetchone()[0]
+            recent = db.execute(
+                "SELECT COUNT(*) FROM action_times WHERE reserved_at>?",
+                (timestamp - budget_window,),
+            ).fetchone()[0]
+            if (latest is not None and timestamp - latest < cooldown) or recent >= budget:
+                return False
             if (
                 db.execute("SELECT 1 FROM latch").fetchone()
                 or db.execute(
@@ -151,19 +221,71 @@ class StateStore:
                     return False
                 if not db.execute("SELECT 1 FROM events WHERE id=?", (event,)).fetchone():
                     raise ValueError("Cannot reserve an unknown event")
-            now = datetime.now(UTC).isoformat()
+            created_at = datetime.now(UTC).isoformat()
             db.execute(
-                "INSERT INTO incidents VALUES(?,?,?)", (incident, now, json.dumps(event_ids))
+                "INSERT INTO incidents VALUES(?,?,?)", (incident, created_at, json.dumps(event_ids))
             )
             db.execute(
                 "INSERT INTO intents(id,incident_id,status,created_at) VALUES(?,?,'reserved',?)",
-                (intent, incident, now),
+                (intent, incident, created_at),
             )
             db.executemany(
                 "INSERT INTO intent_events VALUES(?,?)", [(e, intent) for e in event_ids]
             )
+            db.execute("INSERT INTO action_times VALUES(?,?)", (intent, timestamp))
+            db.execute("INSERT INTO incident_proofs VALUES(?,?)", (intent, canonical_json))
+            db.executemany(
+                "INSERT OR IGNORE INTO processed_events VALUES(?,?)",
+                [(e, "reserved") for e in event_ids],
+            )
             self._audit(db, intent, "reserved", "storage exclusivity passed; policy is external")
             return True
+
+    def pending_events(self, source: str) -> list[dict[str, object]]:
+        with self._connection() as db:
+            rows = db.execute(
+                "SELECT payload FROM events e WHERE source=? AND NOT EXISTS "
+                "(SELECT 1 FROM processed_events p WHERE p.event_id=e.id) AND NOT EXISTS "
+                "(SELECT 1 FROM intent_events i WHERE i.event_id=e.id) "
+                "ORDER BY length(sequence),sequence LIMIT 1000",
+                (source,),
+            ).fetchall()
+            return [dict(json.loads(row[0])) for row in rows]
+
+    def mark_processed(self, event_ids: list[str], decision: str) -> None:
+        with self._transaction() as db:
+            db.executemany(
+                "INSERT OR IGNORE INTO processed_events VALUES(?,?)",
+                [(e, decision) for e in event_ids],
+            )
+
+    def set_latch(self, reason: str) -> None:
+        with self._transaction() as db:
+            db.execute(
+                "INSERT INTO latch VALUES(1,?) ON CONFLICT(singleton) "
+                "DO UPDATE SET reason=excluded.reason",
+                (reason,),
+            )
+            self._audit(db, "latch", "latched", reason)
+
+    def unfinished(self) -> list[str]:
+        with self._connection() as db:
+            return [
+                str(row[0])
+                for row in db.execute(
+                    "SELECT id FROM intents WHERE status IN "
+                    "('reserved','prepared','broadcast','indeterminate')"
+                )
+            ]
+
+    def rate_limited(self, now: float, cooldown: int) -> bool:
+        with self._connection() as db:
+            latest = db.execute("SELECT MAX(reserved_at) FROM action_times").fetchone()[0]
+            count = db.execute(
+                "SELECT COUNT(*) FROM action_times WHERE reserved_at>?",
+                (now - 600,),
+            ).fetchone()[0]
+            return (latest is not None and now - float(latest) < cooldown) or count >= 3
 
     def prepare(self, intent: str, nonce: int, fee_data: str) -> None:
         if nonce < 0:

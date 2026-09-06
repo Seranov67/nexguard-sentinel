@@ -16,6 +16,7 @@ class Settings:
     chain_id: int = 84532
     confirmations: int = 2
     rewind_blocks: int = 2
+    graph_deployment: str = "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str]) -> "Settings":

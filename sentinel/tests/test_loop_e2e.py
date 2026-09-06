@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from sentinel.actuator import Actuator, build_pause_calldata
+from sentinel.actuator import build_pause_calldata
 from sentinel.cli import cmd_reset, cmd_status
 from sentinel.config import Settings
 from sentinel.loop import run_loop_step
@@ -37,104 +37,27 @@ def test_actuator_calldata_format() -> None:
     assert len(calldata) == 2 + 8 + 64 + 64
 
 
-def test_actuator_simulated_execution_flow(test_env: tuple[Settings, StateStore]) -> None:
+def test_dry_run_never_changes_live_state(test_env: tuple[Settings, StateStore]) -> None:
     settings, store = test_env
-    # Ingest event so foreign keys work
-    store.ingest("source", "ev-1", 1, 100, "{}")
-    store.reserve("intent-1", "inc-1", ["ev-1"])
-
-    actuator = Actuator(
-        store=store,
-        rpc_http=settings.rpc_http,
-        guardian_address=settings.guardian_address,
-        chain_id=settings.chain_id,
-    )
-    result = actuator.execute_pause("intent-1", "inc-1", severity=2, dry_run=True)
-
-    assert result.outcome == "success"
-    assert result.tx_hash is not None
-    assert result.tx_hash.startswith("0x")
-    assert len(result.tx_hash) == 66
-    # Verify intent updated in store
-    intent = store.intent("intent-1")
-    assert intent is not None
-    assert intent["status"] == "success"
-    assert intent["tx_hash"] == result.tx_hash
-
-
-def test_loop_step_with_empty_events(test_env: tuple[Settings, StateStore]) -> None:
-    settings, store = test_env
-    result = run_loop_step(settings, store, events_override=[], dry_run=True)
-    assert result.events_polled == 0
-    assert result.new_events == 0
-    assert result.is_latched is False
-    assert result.decision is None
-
-
-def test_loop_step_with_critical_events_triggers_pause(
-    test_env: tuple[Settings, StateStore],
-) -> None:
-    settings, store = test_env
-    critical_events = [
-        {
-            "id": "0xaaa-1",
-            "sequence": "100",
-            "blockNumber": 500,
-            "amount": "5000000000000000000",  # 5 ETH
-            "who": "0xAttacker",
-            "timestamp": 1000,
-        },
-        {
-            "id": "0xaaa-2",
-            "sequence": "101",
-            "blockNumber": 501,
-            "amount": "6000000000000000000",  # 6 ETH -> Total 11 ETH (catastrophic)
-            "who": "0xAttacker",
-            "timestamp": 1010,
-        },
-    ]
-    result = run_loop_step(settings, store, events_override=critical_events, dry_run=True)
-
-    assert result.events_polled == 2
+    event = {
+        "id": "e1",
+        "sequence": "1",
+        "blockNumber": 100,
+        "amount": str(25 * 10**18),
+        "timestamp": 1000,
+        "who": "actor",
+    }
+    result = run_loop_step(settings, store, events_override=[event], dry_run=True)
     assert result.classification is not None
-    assert result.classification.severity == "critical"
-    assert result.decision is not None
-    assert result.decision.allowed is True
-    assert result.execution is not None
-    assert result.execution.outcome == "success"
-    assert result.execution.tx_hash is not None
-    assert result.cursor_advanced is True
-
-    # Verify cursor was advanced in store
-    cursor = store.cursor("the_graph_withdrawals")
-    assert cursor is not None
-    assert cursor[0] == 101
+    assert result.execution is None
+    assert store.cursor("vault-withdrawals") is None
+    assert store.unfinished() == []
 
 
-def test_loop_step_blocks_duplicate_event_reservation(
-    test_env: tuple[Settings, StateStore],
-) -> None:
+def test_missing_key_never_means_simulation(test_env: tuple[Settings, StateStore]) -> None:
     settings, store = test_env
-    event = [
-        {
-            "id": "0xbbb-1",
-            "sequence": "200",
-            "blockNumber": 600,
-            "amount": "15000000000000000000",
-            "who": "0xAttacker",
-            "timestamp": 2000,
-        }
-    ]
-    # First pass runs pause
-    r1 = run_loop_step(settings, store, events_override=event, dry_run=True)
-    assert r1.execution is not None
-    assert r1.execution.outcome == "success"
-
-    # Second pass with same event will fail reservation (already reserved)
-    r2 = run_loop_step(settings, store, events_override=event, dry_run=True)
-    assert r2.decision is not None
-    assert r2.decision.allowed is False
-    assert r2.decision.status == "reservation_failed"
+    with pytest.raises(ValueError, match="keeper key"):
+        run_loop_step(settings, store, events_override=[])
 
 
 def test_cli_status_and_reset(

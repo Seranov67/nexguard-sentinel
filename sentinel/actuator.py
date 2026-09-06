@@ -27,6 +27,8 @@ PAUSED_SELECTOR = "0x5c975abb"  # keccak256("paused()")[:4]
 
 def build_pause_calldata(incident_ref: str, severity: int = 2) -> str:
     """Encode Guardian.pause(bytes32,uint8) calldata hex."""
+    if severity not in (1, 2, 3):
+        raise ValueError("Invalid pause severity")
     clean_ref = incident_ref.removeprefix("0x")
     try:
         int(clean_ref, 16)
@@ -65,6 +67,8 @@ class Actuator:
         keeper_private_key: str | None = None,
         confirmations: int = 2,
     ) -> None:
+        if chain_id != 84532 or confirmations < 1:
+            raise ValueError("Unsafe chain or confirmation depth")
         self.store = store
         self.rpc_http = rpc_http
         self.guardian_address = guardian_address
@@ -83,22 +87,101 @@ class Actuator:
             raise RuntimeError(f"RPC error {method}: {data['error']['message']}")
         return data.get("result")
 
+    def verify_identity(self) -> None:
+        if self.guardian_address.lower() != "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3":
+            raise ValueError("Guardian is outside the approved deployment allowlist")
+        if int(self._rpc_call("eth_chainId", []), 16) != 84532:
+            raise ValueError("RPC chain mismatch")
+        code = self._rpc_call("eth_getCode", [self.guardian_address, "latest"])
+        if not code or code == "0x":
+            raise ValueError("Guardian has no deployed code")
+
     def is_paused_onchain(self) -> bool:
-        """Read current Guardian.paused() status from contract."""
-        if not self.rpc_http or not self.guardian_address:
-            return False
+        result = self._rpc_call(
+            "eth_call", [{"to": self.guardian_address, "data": PAUSED_SELECTOR}, "latest"]
+        )
+        if result not in ("0x" + "0" * 64, "0x" + "0" * 63 + "1"):
+            raise ValueError("Malformed Guardian state")
+        return int(result, 16) == 1
+
+    def _uncertain(self, intent_id: str, tx_hash: str | None, reason: str) -> ExecutionResult:
+        evidence = json.dumps({"error": reason, "tx_hash": tx_hash})
+        # Storage failure propagates and stops the caller; never silently continue.
+        self.store.finish(intent_id, "indeterminate", evidence)
+        return ExecutionResult("indeterminate", tx_hash, None, evidence, reason)
+
+    def verify_transaction(self, intent_id: str, tx_hash: str) -> ExecutionResult:
+        """Confirm receipt identity, canonical block, depth and final state without sending."""
         try:
-            tx_data = {
-                "to": to_checksum_address(self.guardian_address),
-                "data": PAUSED_SELECTOR,
-            }
-            result = self._rpc_call("eth_call", [tx_data, "latest"])
-            if not result:
-                return False
-            val = int(result, 16) if isinstance(result, str) else 0
-            return val == 1
-        except Exception as exc:
-            raise RuntimeError(f"Failed to query Guardian.paused(): {exc}") from exc
+            self.verify_identity()
+            for _ in range(12):
+                receipt = self._rpc_call("eth_getTransactionReceipt", [tx_hash])
+                if receipt is not None:
+                    if receipt["transactionHash"].lower() != tx_hash.lower():
+                        raise ValueError("Receipt transaction mismatch")
+                    if receipt["to"].lower() != self.guardian_address.lower():
+                        raise ValueError("Receipt destination mismatch")
+                    block = int(receipt["blockNumber"], 16)
+                    head = int(self._rpc_call("eth_blockNumber", []), 16)
+                    canonical = self._rpc_call("eth_getBlockByNumber", [hex(block), False])
+                    if canonical is None or canonical["hash"] != receipt["blockHash"]:
+                        raise ValueError("Receipt is not canonical")
+                    if head - block + 1 >= self.confirmations:
+                        # Re-fetch after observing depth: a reorg must not become success.
+                        again = self._rpc_call("eth_getTransactionReceipt", [tx_hash])
+                        if again != receipt:
+                            raise ValueError("Receipt changed during verification")
+                        status = int(receipt["status"], 16)
+                        if status not in (0, 1):
+                            raise ValueError("Invalid receipt status")
+                        transaction = self._rpc_call("eth_getTransactionByHash", [tx_hash])
+                        intent = self.store.intent(intent_id)
+                        if intent is None or transaction is None:
+                            raise ValueError("Missing transaction identity")
+                        expected = build_pause_calldata(str(intent["incident_id"]), 3)
+                        actual = transaction["input"].lower()
+                        if (
+                            transaction["to"].lower() != self.guardian_address.lower()
+                            or int(transaction["nonce"], 16) != intent["nonce"]
+                            or actual[:-64] != expected[:-64]
+                            or int(actual[-64:], 16) not in (1, 2, 3)
+                        ):
+                            raise ValueError("Transaction does not match reserved pause intent")
+                        if status == 1 and not self.is_paused_onchain():
+                            raise ValueError("Confirmed receipt but Guardian is not paused")
+                        outcome: Outcome = "success" if status == 1 else "reverted"
+                        evidence = json.dumps(
+                            {
+                                "tx_hash": tx_hash,
+                                "block_number": block,
+                                "block_hash": receipt["blockHash"],
+                                "status": status,
+                                "confirmations": head - block + 1,
+                                "simulated": False,
+                            }
+                        )
+                        self.store.finish(intent_id, outcome, evidence)
+                        return ExecutionResult(outcome, tx_hash, block, evidence)
+                time.sleep(2)
+            return self._uncertain(intent_id, tx_hash, "Receipt or confirmation timeout")
+        except (ValueError, KeyError, TypeError, RuntimeError, httpx.HTTPError):
+            return self._uncertain(intent_id, tx_hash, "RPC verification failed or disagreed")
+
+    def reconcile(self, intent_id: str) -> ExecutionResult:
+        intent = self.store.intent(intent_id)
+        if intent is None or intent["status"] not in (
+            "reserved",
+            "prepared",
+            "broadcast",
+            "indeterminate",
+        ):
+            raise ValueError("Reconciliation requires an unfinished intent")
+        tx_hash = intent["tx_hash"]
+        if not isinstance(tx_hash, str):
+            return self._uncertain(
+                intent_id, None, "No persisted hash; manual investigation required"
+            )
+        return self.verify_transaction(intent_id, tx_hash)
 
     def execute_pause(
         self,
@@ -108,170 +191,45 @@ class Actuator:
         *,
         dry_run: bool = False,
     ) -> ExecutionResult:
-        """Execute Guardian.pause() onchain or simulated, with full state transitions."""
+        """Persist the signed hash before send; never infer simulation from a missing key."""
         calldata = build_pause_calldata(incident_ref, severity)
-
-        # Check if dry run or missing private key
-        is_simulated = dry_run or not self.keeper_private_key
-
-        if is_simulated:
-            # Simulated execution mode
-            # 1. Check pre-read
-            try:
-                if self.rpc_http and self.is_paused_onchain():
-                    ev = json.dumps({"reason": "Already paused on Base Sepolia"})
-                    self.store.finish(intent_id, "already_desired", ev)
-                    return ExecutionResult(
-                        outcome="already_desired",
-                        tx_hash=None,
-                        block_number=None,
-                        evidence=ev,
-                    )
-            except Exception:  # noqa: S110
-                pass
-
-            # Generate deterministic simulated tx hash
-            sim_digest = hashlib.sha256(f"sim_tx_{intent_id}".encode()).hexdigest()
-            sim_tx_hash = f"0x{sim_digest}"
-            sim_block = 46428200
-
-            # Step 1: Prepare intent
-            fee_info = json.dumps({"maxFeePerGas": "2000000000", "mode": "simulated"})
-            self.store.prepare(intent_id, nonce=1, fee_data=fee_info)
-
-            # Step 2: Broadcast immediately persists tx hash
-            self.store.broadcast(intent_id, sim_tx_hash)
-
-            # Step 3: Finish intent
-            evidence = json.dumps({
-                "simulated": True,
-                "block_number": sim_block,
-                "confirmations": self.confirmations,
-                "guardian_address": self.guardian_address,
-                "incident_ref": incident_ref,
-            })
-            self.store.finish(intent_id, "success", evidence)
-
-            return ExecutionResult(
-                outcome="success",
-                tx_hash=sim_tx_hash,
-                block_number=sim_block,
-                evidence=evidence,
-            )
-
-        # Live onchain execution mode
+        if dry_run:
+            raise ValueError("Dry-run must not reserve or mutate the live action store")
+        if not self.keeper_private_key:
+            raise ValueError("Live execution requires a keeper key")
+        tx_hash: str | None = None
         try:
             from eth_account import Account
 
-            account = Account.from_key(self.keeper_private_key)
-            sender = account.address
-
-            # Pre-read check
+            self.verify_identity()
             if self.is_paused_onchain():
-                ev = json.dumps({"reason": "Already paused on Base Sepolia"})
-                self.store.finish(intent_id, "already_desired", ev)
-                return ExecutionResult(
-                    outcome="already_desired",
-                    tx_hash=None,
-                    block_number=None,
-                    evidence=ev,
-                )
-
-            # Get nonce and gas fees
-            nonce_hex = self._rpc_call("eth_getTransactionCount", [sender, "pending"])
-            nonce = int(nonce_hex, 16)
-
-            fee_history = self._rpc_call("eth_gasPrice", [])
-            gas_price = int(fee_history, 16)
-
-            fee_data = json.dumps({"gasPrice": gas_price, "sender": sender})
-            self.store.prepare(intent_id, nonce=nonce, fee_data=fee_data)
-
-            # Build transaction dict
-            tx_dict = {
-                "to": to_checksum_address(self.guardian_address),
-                "value": 0,
-                "gas": 150000,
-                "gasPrice": gas_price,
-                "nonce": nonce,
-                "chainId": self.chain_id,
-                "data": calldata,
-            }
-
-            signed = account.sign_transaction(tx_dict)
-            raw_hex = "0x" + signed.raw_transaction.hex()
-
-            # Broadcast
-            tx_hash = self._rpc_call("eth_sendRawTransaction", [raw_hex])
+                evidence = json.dumps({"reason": "Already paused", "simulated": False})
+                self.store.finish(intent_id, "already_desired", evidence)
+                return ExecutionResult("already_desired", None, None, evidence)
+            account = Account.from_key(self.keeper_private_key)
+            nonce = int(self._rpc_call("eth_getTransactionCount", [account.address, "pending"]), 16)
+            gas_price = int(self._rpc_call("eth_gasPrice", []), 16)
+            self.store.prepare(intent_id, nonce, json.dumps({"gasPrice": gas_price}))
+            signed = account.sign_transaction(
+                {
+                    "to": to_checksum_address(self.guardian_address),
+                    "value": 0,
+                    "gas": 150000,
+                    "gasPrice": gas_price,
+                    "nonce": nonce,
+                    "chainId": 84532,
+                    "data": calldata,
+                }
+            )
+            tx_hash = "0x" + signed.hash.hex()
+            # Persist the deterministic signed hash BEFORE broadcasting. A lost RPC
+            # response can then be reconciled by hash with no replacement/resend.
             self.store.broadcast(intent_id, tx_hash)
-
-            # Wait receipt
-            receipt = None
-            for _ in range(12):
-                time.sleep(2)
-                receipt = self._rpc_call("eth_getTransactionReceipt", [tx_hash])
-                if receipt is not None:
-                    break
-
-            if receipt is None:
-                ev = json.dumps({"error": "Receipt timeout after broadcast", "tx_hash": tx_hash})
-                self.store.finish(intent_id, "indeterminate", ev)
-                return ExecutionResult(
-                    outcome="indeterminate",
-                    tx_hash=tx_hash,
-                    block_number=None,
-                    evidence=ev,
-                    error="Receipt timeout; policy latched for safety",
-                )
-
-            status = int(receipt.get("status", "0x0"), 16)
-            blk = int(receipt.get("blockNumber", "0x0"), 16)
-
-            if status != 1:
-                ev = json.dumps({"status": 0, "receipt": receipt})
-                self.store.finish(intent_id, "reverted", ev)
-                return ExecutionResult(
-                    outcome="reverted",
-                    tx_hash=tx_hash,
-                    block_number=blk,
-                    evidence=ev,
-                    error="Transaction reverted onchain",
-                )
-
-            # State re-read verification
-            if not self.is_paused_onchain():
-                ev = json.dumps({
-                    "error": "Receipt status 1 but paused() is false",
-                    "receipt": receipt,
-                })
-                self.store.finish(intent_id, "indeterminate", ev)
-                return ExecutionResult(
-                    outcome="indeterminate",
-                    tx_hash=tx_hash,
-                    block_number=blk,
-                    evidence=ev,
-                    error="State verification mismatch; policy latched",
-                )
-
-            ev = json.dumps({"status": 1, "block_number": blk, "tx_hash": tx_hash})
-            self.store.finish(intent_id, "success", ev)
-            return ExecutionResult(
-                outcome="success",
-                tx_hash=tx_hash,
-                block_number=blk,
-                evidence=ev,
+            returned = self._rpc_call(
+                "eth_sendRawTransaction", ["0x" + signed.raw_transaction.hex()]
             )
-
-        except Exception as exc:
-            ev = json.dumps({"error": str(exc)})
-            try:
-                self.store.finish(intent_id, "indeterminate", ev)
-            except Exception:  # noqa: S110
-                pass
-            return ExecutionResult(
-                outcome="indeterminate",
-                tx_hash=None,
-                block_number=None,
-                evidence=ev,
-                error=str(exc),
-            )
+            if returned != tx_hash:
+                return self._uncertain(intent_id, tx_hash, "Broadcast hash mismatch")
+        except (ValueError, KeyError, TypeError, RuntimeError, httpx.HTTPError):
+            return self._uncertain(intent_id, tx_hash, "Signing or broadcast failed; reconcile")
+        return self.verify_transaction(intent_id, tx_hash)

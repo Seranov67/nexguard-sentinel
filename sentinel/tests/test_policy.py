@@ -93,7 +93,7 @@ def test_policy_cooldown_active(store: StateStore) -> None:
     assert d2.allowed is False
     assert d2.status == "cooldown_active"
 
-    # Catastrophic override bypasses cooldown
+    # Classification cannot bypass the durable safety cooldown
     cat_cls = ClassificationResult(
         severity="critical",
         recommended_action="pause",
@@ -102,7 +102,7 @@ def test_policy_cooldown_active(store: StateStore) -> None:
         is_catastrophic_override=True,
     )
     d3 = policy.evaluate_and_reserve(cat_cls, ["ev-3"], current_time=1100.0)
-    assert d3.allowed is True
+    assert d3.allowed is False
 
 
 def test_policy_already_in_desired_state(store: StateStore) -> None:
@@ -128,8 +128,8 @@ def test_policy_reset_latch(store: StateStore) -> None:
     store.reset_latch("operator_alice", "Resolved onchain state check")
     assert store.is_latched() is False
 
-    # Now action can proceed
+    # Reset cannot erase the action cooldown.
     policy = ActionPolicy(store)
     cls = _critical_classification()
     decision = policy.evaluate_and_reserve(cls, ["ev-2"])
-    assert decision.allowed is True
+    assert decision.status == "cooldown_active"

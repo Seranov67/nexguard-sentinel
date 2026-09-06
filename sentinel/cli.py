@@ -52,7 +52,7 @@ def cmd_status(settings: Settings, store: StateStore) -> None:
         print("Safety Latch:       [NORMAL] (Not latched)")
 
     # Cursor status
-    cursor = store.cursor("the_graph_withdrawals")
+    cursor = store.cursor("vault-withdrawals")
     if cursor:
         print(f"Cursor Sequence:    {cursor[0]} (Block: {cursor[1]})")
     else:
@@ -100,13 +100,9 @@ def cmd_reconcile(settings: Settings, store: StateStore, intent_id: str) -> None
         rpc_http=settings.rpc_http,
         guardian_address=settings.guardian_address,
     )
-    is_paused = actuator.is_paused_onchain()
-    print(f"  Guardian Paused Onchain: {is_paused}")
-
-    if intent['status'] in ('success', 'already_desired') and is_paused:
-        print("  Reconciliation result: Intent matches onchain state.")
-    elif intent['status'] == 'indeterminate':
-        print("  Reconciliation warning: Intent marked indeterminate. Check tx hash on Basescan.")
+    result = actuator.reconcile(intent_id)
+    print(f"  Reconciliation outcome: {result.outcome}")
+    print("  Latch remains set; reset requires an attributed operator decision.")
 
 
 def cmd_run(
@@ -115,6 +111,8 @@ def cmd_run(
     """Run the Sentinel event loop."""
     print(f"[sentinel] Starting loop (dry_run={dry_run}, once={once}) ...")
     keeper_key = os.environ.get("KEEPER_PRIVATE_KEY", "")
+    if not dry_run and not keeper_key:
+        raise ValueError("KEEPER_PRIVATE_KEY required; use --dry-run for read-only preview")
 
     while True:
         result = run_loop_step(settings, store, dry_run=dry_run, keeper_private_key=keeper_key)

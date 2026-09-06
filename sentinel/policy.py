@@ -10,13 +10,13 @@ Invariants:
 
 from __future__ import annotations
 
-import hashlib
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
 from sentinel.classifier import ClassificationResult
+from sentinel.proof import incident_proof
 from sentinel.store import StateStore
 
 DecisionStatus = Literal[
@@ -58,7 +58,8 @@ class ActionPolicy:
         self.guardian_address = guardian_address
         self.cooldown_seconds = cooldown_seconds
         self._onchain_state_reader = onchain_state_reader
-        self._last_action_timestamp: float = 0.0
+        if chain_id != 84532 or cooldown_seconds < 0:
+            raise ValueError("Unsafe policy chain or cooldown")
 
     def evaluate_and_reserve(
         self,
@@ -71,10 +72,10 @@ class ActionPolicy:
         now = time.time() if current_time is None else current_time
 
         # Compute stable deterministic incident_id and intent_id from event_ids
-        sorted_events = sorted(event_ids)
-        digest = hashlib.sha256(",".join(sorted_events).encode("utf-8")).hexdigest()
-        incident_id = f"inc_{digest[:16]}"
-        intent_id = f"intent_pause_{digest[:16]}"
+        canonical_json, incident_id = incident_proof(
+            self.chain_id, self.guardian_address, event_ids
+        )
+        intent_id = f"intent_pause_{incident_id[2:]}"
 
         # 1. Gate: Check if policy is latched
         if self.store.is_latched():
@@ -102,17 +103,13 @@ class ActionPolicy:
             )
 
         # 3. Gate: Check cooldown budget
-        if (
-            not classification.is_catastrophic_override
-            and (now - self._last_action_timestamp) < self.cooldown_seconds
-        ):
-            remaining = int(self.cooldown_seconds - (now - self._last_action_timestamp))
+        if self.store.rate_limited(now, self.cooldown_seconds):
             return PolicyDecision(
                 status="cooldown_active",
                 allowed=False,
                 intent_id=intent_id,
                 incident_id=incident_id,
-                reason=f"Action cooldown active ({remaining}s remaining).",
+                reason="Durable cooldown or action budget active.",
             )
 
         # 4. Gate: Pre-read onchain contract state
@@ -128,6 +125,7 @@ class ActionPolicy:
                         reason="Guardian is already paused onchain; no transaction needed.",
                     )
             except Exception as exc:
+                self.store.set_latch("Contract state read failed")
                 return PolicyDecision(
                     status="latched",
                     allowed=False,
@@ -138,7 +136,14 @@ class ActionPolicy:
 
         # 5. Gate: Atomic reservation in StateStore
         try:
-            reserved = self.store.reserve(intent_id, incident_id, event_ids)
+            reserved = self.store.reserve(
+                intent_id,
+                incident_id,
+                event_ids,
+                now=now,
+                cooldown=self.cooldown_seconds,
+                canonical_json=canonical_json,
+            )
             if not reserved:
                 return PolicyDecision(
                     status="reservation_failed",
@@ -149,7 +154,6 @@ class ActionPolicy:
                         "Durable reservation rejected by store (duplicate event or active intent)."
                     ),
                 )
-            self._last_action_timestamp = now
             return PolicyDecision(
                 status="allowed",
                 allowed=True,

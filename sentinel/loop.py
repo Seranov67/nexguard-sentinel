@@ -45,39 +45,44 @@ class LoopStepResult:
     cursor_advanced: bool = False
 
 
-def poll_graph_subgraph(
-    subgraph_url: str,
-    after_sequence: str,
-    first: int = 100,
-) -> list[dict[str, Any]]:
-    """Poll The Graph endpoint for new confirmed withdrawal events."""
+def ingest_live(settings: Settings, store: StateStore, actuator: Actuator) -> int:
+    """Use the validated snapshot/replay ingestion path exclusively."""
     import httpx
 
-    if not subgraph_url:
-        return []
+    from sentinel.ingestion import Ingestor, natural
 
-    query = """query Withdrawals($after: BigInt!, $first: Int!) {
-      withdrawals(
-        first: $first,
-        orderBy: sequence,
-        orderDirection: asc,
-        where: {sequence_gt: $after}
-      ) {
-        id sequence blockNumber blockHash transactionHash logIndex timestamp
-        who recipient triggeredBy amount remainingCredit
-      }
-    }"""
-    variables = {"after": after_sequence, "first": first}
-
-    try:
+    def fetch(query: str, variables: dict[str, object]) -> dict[str, Any]:
         with httpx.Client(timeout=15) as client:
-            resp = client.post(subgraph_url, json={"query": query, "variables": variables})
-            if resp.status_code != 200:
-                return []
-            data = resp.json().get("data", {})
-            return list(data.get("withdrawals", []))
-    except Exception:
-        return []
+            response = client.post(
+                settings.subgraph_url,
+                json={
+                    "query": query,
+                    "variables": variables,
+                },
+            )
+            response.raise_for_status()
+            payload = response.json()
+        if not isinstance(payload, dict) or payload.get("errors"):
+            raise ValueError("Graph query failed")
+        if "block" in variables:
+            block = actuator._rpc_call(
+                "eth_getBlockByNumber", [hex(int(str(variables["block"]))), False]
+            )
+            if block is None or block["hash"] != payload["data"]["_meta"]["block"]["hash"]:
+                raise ValueError("Graph snapshot disagrees with canonical RPC block")
+        return payload
+
+    actuator.verify_identity()
+    meta = fetch("{ _meta { deployment hasIndexingErrors block { number } } }", {})["data"]["_meta"]
+    if meta["deployment"] != settings.graph_deployment or meta["hasIndexingErrors"] is not False:
+        raise ValueError("Unexpected Graph deployment or indexing errors")
+    return Ingestor(
+        store,
+        fetch,
+        settings.graph_deployment,
+        settings.confirmations,
+        settings.rewind_blocks,
+    ).poll(int(actuator._rpc_call("eth_blockNumber", []), 16), natural(meta["block"]["number"]))
 
 
 def run_loop_step(
@@ -89,81 +94,88 @@ def run_loop_step(
     keeper_private_key: str | None = None,
     llm_evaluator: Callable[[dict[str, Any]], str] | None = None,
 ) -> LoopStepResult:
-    """Execute one atomic pass of the Sentinel control loop."""
-    # 1. Check latch
-    if store.is_latched():
-        return LoopStepResult(events_polled=0, new_events=0, is_latched=True)
-
-    # 2. Ingest events
-    source_name = "the_graph_withdrawals"
-    cursor_row = store.cursor(source_name)
-    current_seq = str(cursor_row[0]) if cursor_row else "0"
-
-    if events_override is not None:
-        raw_events = events_override
-    else:
-        raw_events = poll_graph_subgraph(settings.subgraph_url, current_seq)
-
-    if not raw_events:
-        return LoopStepResult(events_polled=0, new_events=0, is_latched=False)
-
-    # 3. Ingest events into StateStore first so foreign keys are satisfied
+    """Process durable pending events; an ingest cursor is never a processing cursor."""
     import json
-    for ev in raw_events:
-        ev_id = str(ev.get("id"))
-        ev_seq = int(ev.get("sequence", 0))
-        ev_blk = int(ev.get("blockNumber", 0))
-        store.ingest(source_name, ev_id, ev_seq, ev_blk, json.dumps(ev))
+    import tempfile
+    from pathlib import Path
 
-    # 4. Extract features & classify
-    features = extract_features(raw_events)
-    classification = classify_features(features, llm_evaluator=llm_evaluator)
+    if dry_run:
+        # A fresh isolated database guarantees rehearsal cannot consume live events,
+        # reservations or cooldown. No signing or transaction simulation is performed.
+        with tempfile.TemporaryDirectory(prefix="sentinel-preview-") as directory:
+            preview = StateStore(Path(directory) / "state.db")
+            actuator = Actuator(preview, settings.rpc_http, settings.guardian_address)
+            if events_override is None:
+                ingest_live(settings, preview, actuator)
+                events_override = preview.pending_events("vault-withdrawals")
+            features = extract_features(events_override)
+            classification = classify_features(features, llm_evaluator=llm_evaluator)
+            return LoopStepResult(
+                len(events_override),
+                len(events_override),
+                store.is_latched(),
+                features,
+                classification,
+            )
+    if not keeper_private_key:
+        raise ValueError("Live loop requires keeper key; use --dry-run for preview")
+    if store.is_latched():
+        return LoopStepResult(0, 0, True)
+    if store.unfinished():
+        store.set_latch("Unfinished intent requires reconciliation before further processing")
+        return LoopStepResult(0, 0, True)
 
-    # 5. Evaluate ActionPolicy
+    source = "vault-withdrawals"
     actuator = Actuator(
-        store=store,
-        rpc_http=settings.rpc_http,
-        guardian_address=settings.guardian_address,
+        store,
+        settings.rpc_http,
+        settings.guardian_address,
         chain_id=settings.chain_id,
         keeper_private_key=keeper_private_key,
         confirmations=settings.confirmations,
     )
-
-    def safe_onchain_reader() -> bool:
-        try:
-            return actuator.is_paused_onchain()
-        except Exception:
-            if dry_run:
-                return False
-            raise
-
-    policy = ActionPolicy(
-        store=store,
-        chain_id=settings.chain_id,
-        guardian_address=settings.guardian_address,
-        onchain_state_reader=safe_onchain_reader,
-    )
-
-    event_ids = [str(ev.get("id")) for ev in raw_events if ev.get("id")]
-    decision = policy.evaluate_and_reserve(classification, event_ids)
-
-    execution: ExecutionResult | None = None
-    if decision.allowed:
-        # 6. Actuate pause
-        execution = actuator.execute_pause(
-            intent_id=decision.intent_id,
-            incident_ref=decision.incident_id,
-            severity=2 if classification.severity == "critical" else 1,
-            dry_run=dry_run,
+    try:
+        if events_override is None:
+            inserted = ingest_live(settings, store, actuator)
+        else:
+            inserted = 0
+            for event in events_override:
+                inserted += store.ingest(
+                    source,
+                    str(event["id"]),
+                    int(event["sequence"]),
+                    int(event["blockNumber"]),
+                    json.dumps(event, sort_keys=True),
+                )
+        raw_events = store.pending_events(source)
+        if not raw_events:
+            return LoopStepResult(inserted, 0, False)
+        features = extract_features(raw_events)
+        classification = classify_features(features, llm_evaluator=llm_evaluator)
+        policy = ActionPolicy(
+            store,
+            chain_id=settings.chain_id,
+            guardian_address=settings.guardian_address,
+            onchain_state_reader=actuator.is_paused_onchain,
         )
-
-    return LoopStepResult(
-        events_polled=len(raw_events),
-        new_events=len(event_ids),
-        is_latched=store.is_latched(),
-        features=features,
-        classification=classification,
-        decision=decision,
-        execution=execution,
-        cursor_advanced=True,
-    )
+        event_ids = [str(event["id"]) for event in raw_events]
+        decision = policy.evaluate_and_reserve(classification, event_ids)
+        execution = None
+        if decision.allowed:
+            execution = actuator.execute_pause(decision.intent_id, decision.incident_id, severity=3)
+        elif decision.status in ("low_severity", "already_in_desired_state"):
+            if classification.error is None:
+                store.mark_processed(event_ids, decision.reason)
+        return LoopStepResult(
+            inserted,
+            len(event_ids),
+            store.is_latched(),
+            features,
+            classification,
+            decision,
+            execution,
+            inserted > 0,
+        )
+    except Exception:
+        store.set_latch("Loop failed; inspect durable events and intents before reset")
+        raise
