@@ -17,10 +17,10 @@ jobs:
       - name: Foundry format and tests
         run: |
           docker run --rm \
-            --volume "$PWD/contracts:/work" \
-            --workdir /work \
+            --volume "$PWD/contracts:/source:ro" \
+            --workdir /tmp \
             ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46 \
-            "forge fmt --check && forge test -vvv"
+            "cp -R /source /tmp/contracts && cd /tmp/contracts && forge fmt --check && forge test -vvv"
 
   subgraph:
     runs-on: ubuntu-latest
