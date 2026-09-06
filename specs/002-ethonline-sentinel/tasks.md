@@ -135,7 +135,7 @@ contract/Subgraph/Compose checks and manual evidence-to-claim review.
 
 ### ES504 — reconcile project plans and verify remote CI
 
-**Status:** `[x]` — plans reconciled; remote CI run 34049799940 passes all four jobs at 0eae479.
+**Status:** `[x]` — plans reconciled; remote CI run 34050527569 passes all four jobs at 6f03dff.
 **Authorization:** Owner requested execution of the full-project plan review on 2026-09-06.
 **Files:** AGENTS.md, event identity/disclosure/preparation records, this task list,
 plan.md, submission checklist and evidence documents; CI configuration if diagnosis
@@ -147,7 +147,9 @@ labelled; remote CI outcome recorded separately from local checks.
 
 ### ES505 — real-model Bazantic comparison
 
-**Status:** `[ ]`
+**Status:** `[/]` — real paired run completed: 3/3 structural checks in both
+conditions, no uplift. Unedited transcripts and AI-assisted accuracy findings
+recorded; human explanation review remains pending.
 **Files:** docs/ethonline/BAZANTIC_AB_BENCHMARK.md, sanitized transcript evidence,
 `sentinel/bazantic/benchmark_ab.py`, Recipe metadata and focused tests.
 **Justification:** CPU live run exceeded the fixed 30-second benchmark timeout.

@@ -36,5 +36,5 @@ The [Constitution](../ssd/CONSTITUTION.md) records the approved scope amendment.
 ## Current delivery boundary
 
 ES302, ES401 and ES402 are implemented and locally verified. ES501 live model-backed
-evidence and ES502 final submission remain open. Historical preparation records do
+evidence is recorded; ES502 final submission remains open. Historical preparation records do
 not override the current task list or FINAL_AUDIT_2026-09-06.md.

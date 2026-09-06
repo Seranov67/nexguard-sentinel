@@ -7,7 +7,7 @@ by the implementation audit. Dashboard selections have not been verified.
 | Partner | Intended track | Evidence still required |
 |---|---|---|
 | The Graph | Best AI Tooling or AI Use Case with The Graph (Continuity) | Live trace recorded; final video and Dashboard prize selection remain |
-| Bazantic | Help an Agent Use Your Hackathon Project (Continuity) | Actual same-model Recipe comparison and human transcript review |
+| Bazantic | Help an Agent Use Your Hackathon Project (Continuity) | Paired comparison recorded (3/3 both); human review remains, no uplift claim |
 | Ledger | Continuity | Device/tool qualification evidence; schema validation and terminal simulation alone do not establish Clear Signing |
 
 The Graph is the live source of event data. Its repaired runtime path and the

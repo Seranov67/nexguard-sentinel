@@ -18,7 +18,7 @@ valueless accounting credits; it holds no Ether or tokens.
   Clear Signing and a Ledger-originated recovery have **not been demonstrated**.
 - A new live Graph-to-Qwen3-to-pause rehearsal is verified, including initial RPC
   uncertainty, no-send reconciliation and restart without a second action.
-- GitHub CI passes all four jobs at 0eae479; latest local suite has 186 tests.
+- GitHub CI passes all four jobs at 6f03dff; latest local suite has 186 tests.
 - Real-model A/B review, human video and final Dashboard submission remain open.
 
 See [current verification and blockers](docs/ethonline/FINAL_AUDIT_2026-09-06.md)

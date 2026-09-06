@@ -57,8 +57,10 @@ a second send. Restart produced no additional action.
 We provide a Recipe, stdio MCP tools and an Incident Evidence API for agent
 investigation. Tools retrieve persisted incidents and independently recompute
 payload fingerprints. The A/B runner uses a real model, identical task/settings
-and the same read-only tools; only Recipe guidance differs. Its real-model run
-is pending. x402 is a payment prototype, not settled payment infrastructure;
+and the same read-only tools; only Recipe guidance differs. A real paired run
+passed 3/3 structural checks in both conditions, demonstrating no improvement.
+Both explanations contain inaccuracies, documented with unedited transcripts;
+human review remains pending. x402 is a payment prototype, not settled infrastructure;
 unverified proofs are rejected and local demo access requires server opt-in.
 
 **Ledger partner description:**
@@ -184,3 +186,20 @@ open; terminal simulation and AI-generated narration cannot close those tasks.
 Evening Dashboard update could not be applied: browser automation failed to start
 with a local kernel-assets error, including after reset. The earlier saved draft
 remains; paste the current descriptions above before final submission.
+
+## Current-host recording commands (PowerShell + WSL)
+
+The local containers are prepared and the Guardian is paused after the verified
+rehearsal. Record these read-only screens; do not generate another incident while
+paused or present a replay as a new action.
+
+```powershell
+wsl -d Ubuntu -- docker exec nexguard-sentinel-runtime python -m sentinel.cli status
+wsl -d Ubuntu -- docker exec nexguard-sentinel-runtime python -m sentinel.ledger.unpause_ledger --simulate --reason "Recorded incident reviewed"
+```
+
+Show the committed `deployments/live-e2e-2026-09-06.json` classification/transition
+record and pause receipt, then the paired A/B report with its equal scores and
+accuracy limitations. The Docker runtime uses Python 3.12 and the committed lock.
+Ollama and the demo Evidence API bind only to localhost. These demo services stop
+with WSL shutdown; keep WSL open during recording.

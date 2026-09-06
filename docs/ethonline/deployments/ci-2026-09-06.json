@@ -1,12 +1,12 @@
 {
-  "checked_at": "2026-09-06T17:53:45.918900+00:00",
-  "commit": "0eae479dad0d3f9bec044c2441268347db93a737",
-  "run_url": "https://github.com/Seranov67/nexguard-sentinel/actions/runs/34049799940",
+  "checked_at": "2026-09-06T18:07:54.761500+00:00",
+  "commit": "6f03dff3a91ec4ce9f2ee66ebdac61e6a6296f27",
+  "run_url": "https://github.com/Seranov67/nexguard-sentinel/actions/runs/34050527569",
   "event": "workflow_dispatch",
   "conclusion": "success",
   "jobs": [
     {
-      "name": "quality",
+      "name": "subgraph",
       "conclusion": "success"
     },
     {
@@ -14,13 +14,14 @@
       "conclusion": "success"
     },
     {
-      "name": "docker-e2e",
+      "name": "quality",
       "conclusion": "success"
     },
     {
-      "name": "subgraph",
+      "name": "docker-e2e",
       "conclusion": "success"
     }
   ],
+  "earlier_passing_run": 34049799940,
   "initial_failure": "Foundry could not write /work/out; fixed by building a temporary copy of read-only source."
 }

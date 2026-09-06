@@ -58,3 +58,7 @@ require the owner. Final form availability is controlled by ETHGlobal.
 No post-hackathon production roadmap is approved. Mainnet, real-value custody,
 web administration, cloud infrastructure and multi-protocol expansion remain out
 of scope; proposing them requires a separate SSD specification.
+
+Evening update: ES501 live evidence and ES504 remote CI/plan reconciliation pass.
+Ollama is installed and the model is configured. ES506 records the no-hardware
+limitation. ES502/ES507 remain open for human video and final submission.

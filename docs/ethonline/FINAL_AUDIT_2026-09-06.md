@@ -1,102 +1,80 @@
-# NexGuard Sentinel: engineering audit, 6 September 2026
+# NexGuard Sentinel: engineering status, 6 September 2026
 
-> **Evening update, 6 September:** A new real-model live rehearsal now passes
-> after no-send reconciliation. New withdrawal block 46474498; pause block
-> 46474539; one pause transaction; restart produces no second action.
-> See [live evidence](deployments/live-e2e-2026-09-06.json).
-> Remote CI run 34049799940 passes all four jobs at commit 0eae479.
-> Earlier same-day unavailable-model/no-new-transaction statements below describe
-> the morning audit snapshot, not the current state. Ledger hardware and human
-> video remain unavailable. Final submission is not complete.
+## Outcome
 
-## Current stage
+Stage 5 live evidence is verified. Final hackathon delivery remains open because
+human video and final Dashboard confirmation are unavailable. The earlier morning
+audit and its unavailable-model findings are preserved in Git history.
 
-Stage 5: qualification evidence and delivery. The original assertion that only
-video/form work remained was not supported by the code. Stages 3–4 were repaired
-during this audit. Final qualification is **not complete**.
+Working branch: `feature/ethonline-sentinel`; workspace: `D:\NexGuard Sentinel`.
+The IoT MVP remains preserved and regression-tested.
 
-Branch: `feature/ethonline-sentinel`; repository: `Seranov67/nexguard-sentinel`.
-The older IoT MVP and separate legacy checkout were preserved.
+## New live rehearsal
 
-## Implemented and repaired
+- Local Ollama 0.33.3 / Qwen3 4B Instruct, Python 3.12.14, locked dependencies.
+- New valueless withdrawal: block **46474498**.
+- Live Graph indexed the entity; bounded AI features included that single new
+  withdrawal. Five pending historical/new entity IDs were reserved in one intent.
+- Real model returned critical/pause; deterministic policy reserved one action.
+- Pause transaction: `0x26f2076b9dc3c1e7313f68cd0506e393e38a11a4680b06eb6a558bd77b59a750`,
+  block **46474539**.
+- Initial RPC verification was indeterminate and latched. A separate no-send
+  reconcile verified the canonical receipt, confirmations and paused state.
+- Attributed latch reset followed successful reconciliation. A separate process
+  rerun found no new events and created no second pause transaction.
+- Withdrawal eth_call in paused state reverted. Both outbox notifications delivered.
+- Three new transactions total: demo credit, demo withdrawal and one pause.
+  No owner unpause was performed. **Guardian is currently paused.**
 
-- Durable pending processing, rolling windows across polling cycles, atomic
-  cooldown/action budgets, incident proofs and restart recovery.
-- Signed transaction identity persisted before broadcast; canonical receipts,
-  confirmations and final paused state checked; no blind resend.
-- Real Ollama structured-output transport, bounded fail-closed validation and
-  persisted model/prompt/input traces; durable notification leases and retries.
-- Evidence API rejects arbitrary payment proofs. Demo bypass requires explicit
-  server opt-in. MCP recomputes fingerprints, which prove payload integrity only.
-- Real-model A/B runner replaces invented scores; no live result is claimed.
-- Ledger uses Ethereum Keccak and a descriptor validated against the pinned
-  official ERC-7730 schema; hardware owner address is checked before sending.
-  Terminal previews remain simulations, not hardware Clear Signing evidence.
-- Python 3.12 dependencies locked; package submodules and assets included.
+Full records: [live-e2e-2026-09-06.json](deployments/live-e2e-2026-09-06.json).
+The model rationale contains qualitative overstatement; the earlier preview also
+misstated numeric values. Preserve exact outputs and treat recorded numeric inputs
+as authoritative. This is not a measured claim of model explanation accuracy.
 
 ## Verification
 
 | Check | Result |
 |---|---|
-| Clean locked Python 3.12 install, full pytest | 181 passed, including 126 Sentinel tests |
-| Repository Ruff | PASS |
-| Strict MyPy, including Sentinel tests | PASS, 30 source files |
-| Wheel installation, submodule imports and package assets | PASS |
-| Foundry tests and formatting | 9 tests PASS; LF-normalized source |
-| Subgraph install/codegen/build, Node 22 | PASS |
-| Matchstick | 1 test PASS |
-| Isolated Compose restart and corrupt-config recovery | PASS |
-| Gitleaks source/history and local secret denylist | PASS |
-| SQLite migration on a copy | PASS; original state untouched |
+| Python 3.12 full suite | 186 PASS, including 131 Sentinel tests |
+| Repository Ruff / strict Sentinel MyPy | PASS; types include tests |
+| Foundry | 9 tests PASS |
+| Subgraph codegen/build and Matchstick | PASS; 1 mapping test |
+| Isolated Compose restart/config recovery | PASS |
+| Package install/import/assets | PASS in preceding engineering audit |
+| Gitleaks source/history and private denylist | PASS |
+| GitHub CI at 6f03dff | All four jobs PASS, run 34050527569 |
 
-Only the labelled, allowlisted audit gateway was stopped for Compose checks.
-Audit resources were cleaned; unrelated containers were untouched. Python reports
-three dependency deprecation warnings; no failing tests. Legacy services require
-separate MyPy invocations because both expose a package named `app`.
+CI initially failed because Foundry could not write to the runner's checkout.
+The job now builds a temporary copy of read-only source. The later code change
+adds only a bounded configurable A/B timeout plus five rejection cases; local
+checks and the subsequent remote run both pass. The final documentation-only
+commit follows this verified code revision.
 
-## Live evidence and limitations
+## Partner and delivery status
 
-Graph Studio v0.1.0 returns real data. The read-only preview polled four events
-and produced a three-event rolling window. Historical number-pinned Graph metadata
-returned a null hash; transport now pins queries by canonical RPC hash and rechecks
-that hash after the response. A regression test covers this provider behavior.
-See [read-only evidence](deployments/live-read-audit-2026-09-06.json).
+The Graph is demonstrated in the real model-backed action path. Recipe/MCP tools
+retrieve the persisted incident and recompute payload integrity. The real-model
+A/B status and unedited outputs are recorded in BAZANTIC_AB_BENCHMARK.md; structural
+checks are not explanation-accuracy or statistically significant improvement claims.
+Payment settlement is not implemented.
 
-Historical pause succeeded at block **46433932**, and owner unpause at **46434002**.
-The earlier incorrect pause block was corrected. These receipts do not prove the
-repaired runtime, real AI or Ledger use. No new onchain transaction was sent.
+The owner confirmed there is no Ledger device and no human voice recording.
+ERC-7730 schema/CLI simulation is retained as a prototype, without a hardware
+Clear Signing qualification claim. Do not select a prize based on unperformed
+hardware work.
 
-The configured SQLite database contains zero events. Local Ollama is unavailable
-and no model is selected. The preview consequently produced no decision or action.
-Real-model A/B evidence, settled payments, device rendering and hardware-signed
-recovery are not established.
+The earlier ETHGlobal project draft was saved. An evening attempt to update it
+failed because the local browser tool could not initialize its assets. Current
+copy is in [SUBMISSION_PACK.md](SUBMISSION_PACK.md). Final submission availability
+must be rechecked in the authenticated Dashboard; no final confirmation exists.
 
-## Delivery and remaining work
+## Remaining work
 
-The authenticated ETHGlobal description and technical explanation were updated;
-the form confirmed **Saved!**. Title, category, Continuity selection and repository
-were preserved. No demo URL was invented. The Dashboard currently says final
-submissions are not enabled yet.
+1. Human review of real A/B explanations and accurate partner choices.
+2. Record human narration and screen footage; export 2–4 minutes at >=720p.
+3. Verify the video URL without authentication; paste current project text and
+   select supported prizes in Dashboard when final submission is available.
+4. Retain final confirmation. Internal target: 13 September 17:00 Europe/Kyiv;
+   hard deadline: 19:00. Do not introduce new product scope before submission.
 
-Project: https://ethglobal.com/showcase/nexguard-sentinel-1czjq
-
-1. Configure a reachable Ollama endpoint/model and record a real classification
-   trace; run and review the real-model A/B transcript.
-2. Rehearse the repaired Graph-to-AI-to-pause flow on disposable Base Sepolia state
-   and retain transaction/restart evidence.
-3. Obtain Ledger hardware evidence if claiming that integration; otherwise retain
-   the simulation limitation and review prize eligibility.
-4. Record human narration and screen footage, export 2–4 minutes at >=720p, and
-   verify the public/unlisted video link without authentication.
-5. Add video and eligible partner choices when final submission becomes available;
-   retain Dashboard confirmation before 13 September 2026, 19:00 Europe/Kyiv.
-
-The [submission pack](SUBMISSION_PACK.md) contains corrected descriptions and a
-roughly three-minute narration script. Official rules:
-https://ethglobal.com/events/ethonline2026/info/details
-
-## Git delivery
-
-Audit implementation commits: `dce41aa` and `a8ea64f`; partner/packaging repairs and
-this report follow in the final audit commit on the same event branch.
-Local checks are not evidence of remote GitHub Actions success.
+Official rules: https://ethglobal.com/events/ethonline2026/info/details

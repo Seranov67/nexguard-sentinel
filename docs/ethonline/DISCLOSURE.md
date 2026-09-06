@@ -88,8 +88,8 @@ is the on-chain Sentinel vertical slice:
 The repository preserves the pre-event history. The annotated tag
 `pre-ethonline-2026` resolves to the baseline above. The event branch was created
 after the confirmed 4 September 19:00 Kyiv start. Contracts, live Graph ingestion, durable state, the fail-closed AI transport and
-verified executor are implemented and locally tested as of 6 September. The final
-real-model end-to-end demonstration remains pending.
+verified executor are implemented and locally tested as of 6 September. The new real-model pause and no-send reconciliation were verified on 6 September;
+see deployments/live-e2e-2026-09-06.json.
 See `COMPLIANCE.md` and `deployments/` for verified evidence.
 
 ## 6. Support communication
