@@ -46,12 +46,14 @@ def test_extract_features_with_events() -> None:
 
 
 def test_validate_classification_json_valid() -> None:
-    payload = json.dumps({
-        "severity": "critical",
-        "recommended_action": "pause",
-        "confidence": 0.95,
-        "rationale": "High velocity withdrawal drain detected.",
-    })
+    payload = json.dumps(
+        {
+            "severity": "critical",
+            "recommended_action": "pause",
+            "confidence": 0.95,
+            "rationale": "High velocity withdrawal drain detected.",
+        }
+    )
     res = validate_classification_json(payload)
     assert res.severity == "critical"
     assert res.recommended_action == "pause"
@@ -73,30 +75,34 @@ def test_validate_classification_json_invalid_schema() -> None:
 
 
 def test_validate_classification_json_low_confidence() -> None:
-    payload = json.dumps({
-        "severity": "critical",
-        "recommended_action": "pause",
-        "confidence": 0.75,  # below 0.8 threshold
-        "rationale": "Uncertain signal.",
-    })
+    payload = json.dumps(
+        {
+            "severity": "critical",
+            "recommended_action": "pause",
+            "confidence": 0.75,  # below 0.8 threshold
+            "rationale": "Uncertain signal.",
+        }
+    )
     res = validate_classification_json(payload)
     assert res.confidence == 0.75
     assert res.is_actionable_pause() is False  # fails closed
 
 
 def test_validate_classification_json_excess_rationale_length() -> None:
-    payload = json.dumps({
-        "severity": "critical",
-        "recommended_action": "pause",
-        "confidence": 0.95,
-        "rationale": "X" * 300,  # exceeds 240 char limit
-    })
+    payload = json.dumps(
+        {
+            "severity": "critical",
+            "recommended_action": "pause",
+            "confidence": 0.95,
+            "rationale": "X" * 300,  # exceeds 240 char limit
+        }
+    )
     res = validate_classification_json(payload)
     assert res.error is not None
     assert res.is_actionable_pause() is False
 
 
-def test_classify_features_catastrophic_override() -> None:
+def test_catastrophic_input_without_ai_fails_closed() -> None:
     features = EventFeatures(
         event_count=1,
         total_amount_wei=15 * 10**18,  # > 10 ETH threshold
@@ -108,10 +114,9 @@ def test_classify_features_catastrophic_override() -> None:
         latest_timestamp=1000,
     )
     res = classify_features(features)
-    assert res.is_catastrophic_override is True
-    assert res.severity == "critical"
-    assert res.recommended_action == "pause"
-    assert res.is_actionable_pause() is True
+    assert res.is_catastrophic_override is False
+    assert res.error == "AI unavailable"
+    assert res.is_actionable_pause() is False
 
 
 def test_classify_features_high_velocity() -> None:
@@ -126,10 +131,8 @@ def test_classify_features_high_velocity() -> None:
         latest_timestamp=1000,
     )
     res = classify_features(features)
-    assert res.severity == "critical"
-    assert res.recommended_action == "pause"
-    assert res.confidence >= 0.9
-    assert res.is_actionable_pause() is True
+    assert res.error == "AI unavailable"
+    assert res.is_actionable_pause() is False
 
 
 def test_classify_features_benign() -> None:
@@ -162,12 +165,14 @@ def test_classify_features_llm_evaluator_injection() -> None:
     )
 
     def mock_llm(feat_dict: dict) -> str:  # type: ignore[type-arg]
-        return json.dumps({
-            "severity": "critical",
-            "recommended_action": "pause",
-            "confidence": 0.92,
-            "rationale": "LLM detected rapid drain anomaly.",
-        })
+        return json.dumps(
+            {
+                "severity": "critical",
+                "recommended_action": "pause",
+                "confidence": 0.92,
+                "rationale": "LLM detected rapid drain anomaly.",
+            }
+        )
 
     res = classify_features(features, llm_evaluator=mock_llm)
     assert res.severity == "critical"

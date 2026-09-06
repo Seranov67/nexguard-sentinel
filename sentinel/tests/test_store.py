@@ -2,13 +2,14 @@ import sqlite3
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import pytest
 
 from sentinel.store import StateStore
 
 
-def test_restart_preserves_cursor_and_prepared_intent(tmp_path):
+def test_restart_preserves_cursor_and_prepared_intent(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     sequence = 2**70
@@ -17,14 +18,16 @@ def test_restart_preserves_cursor_and_prepared_intent(tmp_path):
     store.prepare("i1", 4, '{"maxFeePerGas":100}')
     reopened = StateStore(path)
     assert reopened.cursor("vault") == (sequence, 100)
-    assert reopened.intent("i1")["nonce"] == 4
+    record = reopened.intent("i1")
+    assert record is not None
+    assert record["nonce"] == 4
     reopened.ingest("vault", "e2", sequence + 1, 101, "{}")
     assert not reopened.reserve("i2", "incident2", ["e2"])
     with pytest.raises(ValueError, match="not reserved"):
         reopened.prepare("i1", 5, "{}")
 
 
-def test_concurrent_connections_reserve_exactly_once(tmp_path):
+def test_concurrent_connections_reserve_exactly_once(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     store.ingest("vault", "event", 1, 1, "{}")
@@ -39,7 +42,7 @@ def test_concurrent_connections_reserve_exactly_once(tmp_path):
     assert sum(results) == 1
 
 
-def test_replay_and_conflict_do_not_advance_cursor(tmp_path):
+def test_replay_and_conflict_do_not_advance_cursor(tmp_path: Path) -> None:
     store = StateStore(tmp_path / "state.sqlite3")
     assert store.ingest("vault", "event", 10, 2, "{}")
     assert not store.ingest("vault", "event", 10, 2, "{}")
@@ -48,7 +51,7 @@ def test_replay_and_conflict_do_not_advance_cursor(tmp_path):
     assert store.cursor("vault") == (10, 2)
 
 
-def test_cursor_and_event_rollback_together(tmp_path):
+def test_cursor_and_event_rollback_together(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     with sqlite3.connect(path) as db:
@@ -62,7 +65,7 @@ def test_cursor_and_event_rollback_together(tmp_path):
         assert db.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0
 
 
-def test_indeterminate_latch_and_outbox_survive_restart(tmp_path):
+def test_indeterminate_latch_and_outbox_survive_restart(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     store.ingest("vault", "event", 1, 1, "{}")
@@ -73,13 +76,15 @@ def test_indeterminate_latch_and_outbox_survive_restart(tmp_path):
     store.finish("i", "indeterminate", "receipt timeout")
     reopened = StateStore(path)
     assert reopened.is_latched()
-    assert reopened.intent("i")["tx_hash"] == tx
+    record = reopened.intent("i")
+    assert record is not None
+    assert record["tx_hash"] == tx
     with sqlite3.connect(path) as db:
         assert db.execute("SELECT COUNT(*) FROM outbox").fetchone()[0] == 1
         assert db.execute("SELECT COUNT(*) FROM audit").fetchone()[0] == 4
 
 
-def test_completed_event_cannot_be_reserved_again(tmp_path):
+def test_completed_event_cannot_be_reserved_again(tmp_path: Path) -> None:
     store = StateStore(tmp_path / "state.sqlite3")
     store.ingest("vault", "event", 1, 1, "{}")
     store.reserve("i", "incident", ["event"])
@@ -89,7 +94,7 @@ def test_completed_event_cannot_be_reserved_again(tmp_path):
     assert not store.reserve("different-intent", "different-incident", ["event"])
 
 
-def test_unknown_event_and_future_schema_fail_closed(tmp_path):
+def test_unknown_event_and_future_schema_fail_closed(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     with pytest.raises(ValueError, match="unknown event"):
@@ -101,7 +106,7 @@ def test_unknown_event_and_future_schema_fail_closed(tmp_path):
         StateStore(path)
 
 
-def test_outbox_failure_rolls_back_outcome_and_audit(tmp_path):
+def test_outbox_failure_rolls_back_outcome_and_audit(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     store = StateStore(path)
     store.ingest("vault", "event", 1, 1, "{}")
@@ -113,12 +118,14 @@ def test_outbox_failure_rolls_back_outcome_and_audit(tmp_path):
         )
     with pytest.raises(sqlite3.IntegrityError):
         store.finish("i", "indeterminate", "timeout")
-    assert store.intent("i")["status"] == "reserved"
+    record = store.intent("i")
+    assert record is not None
+    assert record["status"] == "reserved"
     assert not store.is_latched()
     assert not store.reserve("i2", "incident2", ["event"])
 
 
-def test_no_receipt_success_without_transaction_hash(tmp_path):
+def test_no_receipt_success_without_transaction_hash(tmp_path: Path) -> None:
     store = StateStore(tmp_path / "state.sqlite3")
     store.ingest("vault", "event", 1, 1, "{}")
     store.reserve("i", "incident", ["event"])
@@ -127,7 +134,7 @@ def test_no_receipt_success_without_transaction_hash(tmp_path):
         store.finish("i", "success", "unsubstantiated receipt")
 
 
-def test_process_crash_after_prepare_blocks_resend(tmp_path):
+def test_process_crash_after_prepare_blocks_resend(tmp_path: Path) -> None:
     path = tmp_path / "state.sqlite3"
     result = subprocess.run(
         [
@@ -149,6 +156,10 @@ os._exit(17)
     )
     assert result.returncode == 17
     reopened = StateStore(path)
-    assert reopened.intent("i")["status"] == "prepared"
-    assert reopened.intent("i")["nonce"] == 7
+    record = reopened.intent("i")
+    assert record is not None
+    assert record["status"] == "prepared"
+    record = reopened.intent("i")
+    assert record is not None
+    assert record["nonce"] == 7
     assert not reopened.reserve("new", "new-incident", ["event"])

@@ -107,7 +107,19 @@ def test_crash_after_ingest_is_processed_on_restart(
         "https://example.org", "https://example.org", GUARDIAN, GUARDIAN, store.path
     )
     monkeypatch.setattr("sentinel.loop.ingest_live", lambda *args: 0)
-    result = run_loop_step(settings, StateStore(store.path), keeper_private_key="unused")
+    result = run_loop_step(
+        settings,
+        StateStore(store.path),
+        keeper_private_key="unused",
+        llm_evaluator=lambda _: json.dumps(
+            {
+                "severity": "info",
+                "recommended_action": "none",
+                "confidence": 1.0,
+                "rationale": "Normal activity",
+            }
+        ),
+    )
     assert result.new_events == 1
     assert store.pending_events("vault-withdrawals") == []
     assert run_loop_step(settings, store, keeper_private_key="unused").new_events == 0

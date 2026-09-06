@@ -3,7 +3,7 @@ import pytest
 from sentinel.config import Settings
 
 
-def environment():
+def environment() -> dict[str, str]:
     return {
         "RPC_HTTP": "https://sepolia.base.org",
         "SUBGRAPH_URL": "https://example.org/query",
@@ -12,7 +12,7 @@ def environment():
     }
 
 
-def test_config_defaults():
+def test_config_defaults() -> None:
     settings = Settings.from_env(environment())
     assert settings.chain_id == 84532
     assert settings.confirmations == settings.rewind_blocks == 2
@@ -31,7 +31,7 @@ def test_config_defaults():
         ("VAULT_ADDRESS", "invalid"),
     ],
 )
-def test_unsafe_config_rejected(key, value):
+def test_unsafe_config_rejected(key: str, value: str) -> None:
     env = environment()
     env[key] = value
     with pytest.raises(ValueError):

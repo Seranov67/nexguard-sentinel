@@ -1,4 +1,6 @@
 from copy import deepcopy
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -6,7 +8,7 @@ from sentinel.ingestion import Ingestor
 from sentinel.store import StateStore
 
 
-def event(block=10, log=0):
+def event(block: int = 10, log: int = 0) -> dict[str, Any]:
     tx = "0x" + "ab" * 32
     return {
         "id": tx + log.to_bytes(4, "little").hex(),
@@ -24,7 +26,7 @@ def event(block=10, log=0):
     }
 
 
-def reply(rows, block=10):
+def reply(rows: list[dict[str, Any]], block: int = 10) -> dict[str, Any]:
     return {
         "data": {
             "_meta": {
@@ -37,12 +39,12 @@ def reply(rows, block=10):
     }
 
 
-def test_fixed_snapshot_pagination_and_restart_dedupe(tmp_path):
+def test_fixed_snapshot_pagination_and_restart_dedupe(tmp_path: Path) -> None:
     path = tmp_path / "db"
     observations = []
     rows = [event(log=0), event(log=1)]
 
-    def fetch(query, variables):
+    def fetch(query: str, variables: dict[str, Any]) -> dict[str, Any]:
         observations.append(variables)
         return reply([r for r in rows if int(r["sequence"]) > int(variables["after"])][:1])
 
@@ -53,7 +55,7 @@ def test_fixed_snapshot_pagination_and_restart_dedupe(tmp_path):
 
 
 @pytest.mark.parametrize("mutation", ["identity", "order", "unconfirmed", "deployment", "error"])
-def test_bad_pages_never_advance_cursor(tmp_path, mutation):
+def test_bad_pages_never_advance_cursor(tmp_path: Path, mutation: str) -> None:
     store = StateStore(tmp_path / "db")
     response = reply([event()])
     if mutation == "identity":

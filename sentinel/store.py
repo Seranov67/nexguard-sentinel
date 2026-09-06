@@ -58,6 +58,14 @@ CREATE TABLE IF NOT EXISTS action_times (
 CREATE TABLE IF NOT EXISTS incident_proofs (
  intent_id TEXT PRIMARY KEY REFERENCES intents(id), canonical_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS classification_traces (
+ id INTEGER PRIMARY KEY, at TEXT NOT NULL, source_ids TEXT NOT NULL,
+ features TEXT NOT NULL, result TEXT NOT NULL, model TEXT NOT NULL,
+ prompt_version TEXT NOT NULL, prompt_hash TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS outbox_leases (
+ outbox_id INTEGER PRIMARY KEY REFERENCES outbox(id), token TEXT NOT NULL, expires REAL NOT NULL
+);
 """
 
 
@@ -251,6 +259,38 @@ class StateStore:
                 (source,),
             ).fetchall()
             return [dict(json.loads(row[0])) for row in rows]
+
+    def record_classification(
+        self,
+        event_ids: list[str],
+        features: str,
+        result: str,
+        model: str,
+        prompt_version: str,
+        prompt_hash: str,
+    ) -> None:
+        with self._transaction() as db:
+            db.execute(
+                "INSERT INTO classification_traces "
+                "(at,source_ids,features,result,model,prompt_version,prompt_hash) "
+                "VALUES(?,?,?,?,?,?,?)",
+                (
+                    datetime.now(UTC).isoformat(),
+                    json.dumps(event_ids),
+                    features,
+                    result,
+                    model,
+                    prompt_version,
+                    prompt_hash,
+                ),
+            )
+
+    def outbox_counts(self) -> dict[str, int]:
+        with self._connection() as db:
+            return {
+                str(row[0]): int(row[1])
+                for row in db.execute("SELECT status,COUNT(*) FROM outbox GROUP BY status")
+            }
 
     def mark_processed(self, event_ids: list[str], decision: str) -> None:
         with self._transaction() as db:

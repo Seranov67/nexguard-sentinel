@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any
 
 from sentinel.actuator import Actuator, ExecutionResult
@@ -152,6 +152,16 @@ def run_loop_step(
             return LoopStepResult(inserted, 0, False)
         features = extract_features(raw_events)
         classification = classify_features(features, llm_evaluator=llm_evaluator)
+        from sentinel.ai import PROMPT_HASH, PROMPT_VERSION
+
+        store.record_classification(
+            [str(event["id"]) for event in raw_events],
+            json.dumps(features.to_dict()),
+            json.dumps(asdict(classification)),
+            str(getattr(llm_evaluator, "model", "unconfigured")),
+            PROMPT_VERSION,
+            PROMPT_HASH,
+        )
         policy = ActionPolicy(
             store,
             chain_id=settings.chain_id,

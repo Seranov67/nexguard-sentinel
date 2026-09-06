@@ -5,12 +5,13 @@ Safety invariants:
 2. AI responses are strictly validated JSON matching IncidentClassification schema.
 3. Fail-closed: invalid schema, timeouts, unknown enums, or confidence < 0.8
    MUST NOT authorize an on-chain action (classified as rejected/unavailable).
-4. Catastrophic deterministic threshold override acts as a safety backstop.
+4. Missing AI is unavailable; no deterministic fallback may authorize signing.
 """
 
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal, cast
@@ -63,8 +64,6 @@ class ClassificationResult:
 
     def is_actionable_pause(self) -> bool:
         """Return True only if a circuit-breaker pause is safely authorized."""
-        if self.is_catastrophic_override:
-            return True
         if self.error is not None:
             return False
         if self.confidence < MIN_CONFIDENCE_THRESHOLD:
@@ -79,6 +78,11 @@ def extract_features(
     baseline_velocity_wei_per_sec: int = 10**15,  # 0.001 ETH / sec
 ) -> EventFeatures:
     """Extract bounded numeric features from raw Graph withdrawal event records."""
+    if not 1 <= window_seconds <= 3600 or len(events) > 1000:
+        raise ValueError("Feature window exceeds bounds")
+    if events:
+        latest = max(int(ev.get("timestamp", 0)) for ev in events)
+        events = [ev for ev in events if latest - int(ev.get("timestamp", 0)) < window_seconds]
     if not events:
         return EventFeatures(
             event_count=0,
@@ -103,6 +107,8 @@ def extract_features(
             amt = int(raw_amount)
         except (ValueError, TypeError):
             amt = 0
+        if not 0 <= amt < 2**256:
+            raise ValueError("Amount is outside uint256 bounds")
         total_amount += amt
         if amt > max_single:
             max_single = amt
@@ -122,7 +128,7 @@ def extract_features(
     effective_window = max(window_seconds, 1)
     current_velocity = total_amount // effective_window
     if baseline_velocity_wei_per_sec > 0:
-        velocity_bps = int((current_velocity * 10000) / baseline_velocity_wei_per_sec)
+        velocity_bps = min(10**9, (current_velocity * 10000) // baseline_velocity_wei_per_sec)
     else:
         velocity_bps = 0
 
@@ -141,6 +147,8 @@ def extract_features(
 def validate_classification_json(raw_json: str) -> ClassificationResult:
     """Parse and strictly validate raw LLM JSON output."""
     try:
+        if len(raw_json) > 4096:
+            raise ValueError("Response too large")
         data = json.loads(raw_json)
     except Exception as exc:
         return ClassificationResult(
@@ -159,6 +167,9 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
             rationale="Output is not a JSON object",
             error="Non-object JSON payload",
         )
+
+    if set(data) != {"severity", "recommended_action", "confidence", "rationale"}:
+        return ClassificationResult("info", "none", 0.0, "Invalid fields", error="Schema mismatch")
 
     sev = data.get("severity")
     if sev not in ("info", "warning", "critical"):
@@ -181,7 +192,7 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
         )
 
     conf_raw = data.get("confidence")
-    if not isinstance(conf_raw, (int, float, str)):
+    if type(conf_raw) not in (int, float):
         return ClassificationResult(
             severity="info",
             recommended_action="none",
@@ -190,7 +201,7 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
             error=f"Invalid confidence: {conf_raw!r}",
         )
     try:
-        conf = float(conf_raw)
+        conf = float(cast(float, conf_raw))
     except (ValueError, TypeError):
         return ClassificationResult(
             severity="info",
@@ -199,7 +210,7 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
             rationale="Invalid confidence type",
             error=f"Invalid confidence: {conf_raw!r}",
         )
-    if not (0.0 <= conf <= 1.0):
+    if not math.isfinite(conf) or not (0.0 <= conf <= 1.0):
         return ClassificationResult(
             severity="info",
             recommended_action="none",
@@ -208,7 +219,11 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
             error=f"Confidence out of bounds [0, 1]: {conf}",
         )
 
-    rat = str(data.get("rationale", "")).strip()
+    if not isinstance(data.get("rationale"), str) or not data["rationale"].strip():
+        return ClassificationResult(
+            "info", "none", 0.0, "Invalid rationale", error="Invalid rationale"
+        )
+    rat = data["rationale"].strip()
     if len(rat) > MAX_RATIONALE_LENGTH:
         return ClassificationResult(
             severity="info",
@@ -230,23 +245,9 @@ def validate_classification_json(raw_json: str) -> ClassificationResult:
 def classify_features(
     features: EventFeatures,
     *,
-    catastrophic_threshold_wei: int = DEFAULT_CATASTROPHIC_THRESHOLD_WEI,
     llm_evaluator: Callable[[dict[str, Any]], str] | None = None,
 ) -> ClassificationResult:
     """Classify incident features."""
-    # 1. Deterministic safety override
-    if features.total_amount_wei >= catastrophic_threshold_wei:
-        return ClassificationResult(
-            severity="critical",
-            recommended_action="pause",
-            confidence=1.0,
-            rationale=(
-                f"Catastrophic threshold breached: {features.total_amount_wei} Wei "
-                f">= {catastrophic_threshold_wei} Wei."
-            ),
-            is_catastrophic_override=True,
-        )
-
     # 2. Benign if no events
     if features.event_count == 0:
         return ClassificationResult(
@@ -270,32 +271,10 @@ def classify_features(
                 error=f"Evaluation failed: {exc}",
             )
 
-    # 4. Default deterministic analytical classifier
-    if features.velocity_bps >= 25000 and features.event_count >= 3:
-        return ClassificationResult(
-            severity="critical",
-            recommended_action="pause",
-            confidence=0.95,
-            rationale=(
-                f"Excessive withdrawal velocity ({features.velocity_bps / 100:.1f}x baseline) "
-                f"across {features.event_count} events in {features.window_seconds}s window."
-            ),
-        )
-
-    if features.velocity_bps >= 15000 or features.event_count >= 5:
-        return ClassificationResult(
-            severity="warning",
-            recommended_action="notify",
-            confidence=0.90,
-            rationale=(
-                f"Elevated withdrawal volume ({features.velocity_bps / 100:.1f}x baseline) "
-                f"detected; within alert limits."
-            ),
-        )
-
     return ClassificationResult(
         severity="info",
         recommended_action="none",
-        confidence=0.99,
-        rationale="Normal transaction velocity and volume.",
+        confidence=0.0,
+        rationale="No AI evaluator configured",
+        error="AI unavailable",
     )

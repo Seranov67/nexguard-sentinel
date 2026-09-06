@@ -12,12 +12,15 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 
 from sentinel.actuator import Actuator
+from sentinel.ai import OllamaEvaluator
 from sentinel.config import Settings
 from sentinel.loop import run_loop_step
+from sentinel.outbox import OutboxWorker
 from sentinel.store import StateStore
 
 
@@ -43,6 +46,7 @@ def cmd_status(settings: Settings, store: StateStore) -> None:
     print(f"Guardian Contract:  {settings.guardian_address}")
     print(f"Vault Contract:     {settings.vault_address}")
     print(f"State DB:           {settings.state_path}")
+    print(f"Outbox:             {store.outbox_counts()}")
 
     # Latch status
     if store.is_latched():
@@ -113,9 +117,31 @@ def cmd_run(
     keeper_key = os.environ.get("KEEPER_PRIVATE_KEY", "")
     if not dry_run and not keeper_key:
         raise ValueError("KEEPER_PRIVATE_KEY required; use --dry-run for read-only preview")
+    model = os.environ.get("OLLAMA_MODEL", "").strip()
+    evaluator = (
+        OllamaEvaluator(os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434"), model)
+        if model
+        else None
+    )
+
+    def notify() -> None:
+        try:
+            OutboxWorker(store).run_once()
+        except Exception:
+            print("[sentinel] Outbox unavailable; durable entries remain pending.")
 
     while True:
-        result = run_loop_step(settings, store, dry_run=dry_run, keeper_private_key=keeper_key)
+        result = run_loop_step(
+            settings,
+            store,
+            dry_run=dry_run,
+            keeper_private_key=keeper_key,
+            llm_evaluator=evaluator,
+        )
+        if not dry_run:
+            threading.Thread(target=notify, daemon=True).start()
+        if result.classification is not None:
+            print(f"[sentinel] Classification: {result.classification}")
         if result.is_latched:
             print("[sentinel] Loop stopped: StateStore is latched.")
             break
