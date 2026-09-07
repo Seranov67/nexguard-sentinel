@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from sentinel.classifier import ClassificationResult
+from sentinel.models import Proposal, hex_value
 from sentinel.proof import incident_proof
 from sentinel.store import StateStore
 
@@ -169,3 +170,32 @@ class ActionPolicy:
                 incident_id=incident_id,
                 reason=f"Durable reservation failed: {exc}",
             )
+
+
+@dataclass(frozen=True)
+class Policy:
+    guardian: str
+    vault: str
+    chain_id: int = 84532
+    cooldown_seconds: int = 300
+    window_seconds: int = 3600
+    max_actions: int = 1
+
+    def __post_init__(self) -> None:
+        hex_value(self.guardian, 20)
+        hex_value(self.vault, 20)
+        if (
+            self.chain_id != 84532
+            or self.cooldown_seconds < 0
+            or self.window_seconds < 1
+            or self.max_actions < 1
+        ):
+            raise ValueError("Invalid Base Sepolia pause policy")
+
+    def allows(self, chain: int, guardian: str, vault: str, proposal: Proposal) -> bool:
+        return (
+            chain == self.chain_id == 84532
+            and guardian.lower() == self.guardian.lower()
+            and vault.lower() == self.vault.lower()
+            and proposal.permits_pause()
+        )

@@ -82,7 +82,7 @@ def cmd_reset(store: StateStore, operator: str, reason: str) -> None:
     if not store.is_latched():
         print("[sentinel] Store is not latched. Nothing to reset.")
         return
-    store.reset_latch(operator, reason)
+    store.reset_latch(operator, reason, require_reconciled=False)
     print(f"[sentinel] Safety latch successfully reset by operator '{operator}'.")
     print(f"[sentinel] Reason logged: '{reason}'")
 

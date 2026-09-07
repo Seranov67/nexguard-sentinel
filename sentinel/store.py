@@ -4,6 +4,8 @@ No signer is available in this module. Any SQLite exception must stop execution.
 Each operation uses its own connection, including across independent processes.
 """
 
+from __future__ import annotations
+
 import json
 import sqlite3
 import time
@@ -11,7 +13,11 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+from sentinel.models import Proposal, Withdrawal
+if TYPE_CHECKING:
+    from sentinel.policy import Policy
 
 Outcome = Literal["success", "reverted", "already_desired", "indeterminate"]
 
@@ -44,6 +50,9 @@ CREATE TABLE IF NOT EXISTS outbox (
  id INTEGER PRIMARY KEY, intent_id TEXT NOT NULL REFERENCES intents(id),
  payload TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
  attempts INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, last_error TEXT
+);
+CREATE TABLE IF NOT EXISTS proofs (
+ intent_id TEXT PRIMARY KEY REFERENCES intents(id), canonical_json TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS audit (
  id INTEGER PRIMARY KEY, at TEXT NOT NULL, intent_id TEXT,
@@ -81,47 +90,10 @@ class StateStore:
                 raise ValueError("Unsupported state schema version")
             db.execute("PRAGMA journal_mode=WAL")
             db.executescript("BEGIN IMMEDIATE;" + SCHEMA + "PRAGMA user_version=2; COMMIT;")
-            # Preserve cooldown across migration of existing live action records.
             db.execute(
                 "INSERT OR IGNORE INTO action_times SELECT id, "
                 "CAST(strftime('%s',created_at) AS REAL) FROM intents"
             )
-        self._migrate_legacy_source()
-
-    def _migrate_legacy_source(self) -> None:
-        """Normalize the earlier loop's source without discarding its event ownership."""
-        with self._transaction() as db:
-            rows = db.execute(
-                "SELECT id,payload FROM events WHERE source='the_graph_withdrawals'"
-            ).fetchall()
-            for row in rows:
-                payload = json.loads(row["payload"])
-                for field in (
-                    "id",
-                    "transactionHash",
-                    "blockHash",
-                    "who",
-                    "recipient",
-                    "triggeredBy",
-                ):
-                    payload[field] = str(payload[field]).lower()
-                for field in (
-                    "sequence",
-                    "blockNumber",
-                    "logIndex",
-                    "timestamp",
-                    "amount",
-                    "remainingCredit",
-                ):
-                    payload[field] = str(int(payload[field]))
-                db.execute(
-                    "UPDATE events SET source='vault-withdrawals',payload=? WHERE id=?",
-                    (json.dumps(payload, sort_keys=True, separators=(",", ":")), row["id"]),
-                )
-            # Do not migrate the old read cursor: replay validates the historical
-            # entities, while intent_events continues to prevent duplicate action.
-            if rows:
-                self._audit(db, "migration", "source_normalized", str(len(rows)))
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
@@ -242,6 +214,11 @@ class StateStore:
             )
             db.execute("INSERT INTO action_times VALUES(?,?)", (intent, timestamp))
             db.execute("INSERT INTO incident_proofs VALUES(?,?)", (intent, canonical_json))
+            if canonical_json:
+                db.execute(
+                    "INSERT OR REPLACE INTO proofs VALUES(?,?)",
+                    (intent, canonical_json),
+                )
             db.executemany(
                 "INSERT OR IGNORE INTO processed_events VALUES(?,?)",
                 [(e, "reserved") for e in event_ids],
@@ -249,16 +226,78 @@ class StateStore:
             self._audit(db, intent, "reserved", "storage exclusivity passed; policy is external")
             return True
 
-    def pending_events(self, source: str) -> list[dict[str, object]]:
+    def prepare(self, intent: str, nonce: int, fee_data: str, tx_hash: str | None = None) -> None:
+        if nonce < 0:
+            raise ValueError("Nonce cannot be negative")
+        if tx_hash is not None:
+            from sentinel.models import hex_value
+
+            hex_value(tx_hash, 32)
+        with self._transaction() as db:
+            updated = db.execute(
+                "UPDATE intents SET status='prepared',nonce=?,fee_data=?,tx_hash=? "
+                "WHERE id=? AND status='reserved' AND NOT EXISTS(SELECT 1 FROM latch)",
+                (nonce, fee_data, tx_hash, intent),
+            )
+            if updated.rowcount != 1:
+                raise ValueError("Intent is not reserved; do not send")
+            self._audit(db, intent, "prepared", "nonce and fee data persisted")
+
+    def broadcast(self, intent: str, tx_hash: str) -> None:
+        if len(tx_hash) != 66 or not tx_hash.startswith("0x"):
+            raise ValueError("Invalid transaction hash")
+        int(tx_hash[2:], 16)
+        with self._transaction() as db:
+            updated = db.execute(
+                "UPDATE intents SET status='broadcast',tx_hash=? WHERE id=? AND status='prepared' "
+                "AND (tx_hash IS NULL OR tx_hash=?)",
+                (tx_hash, intent, tx_hash),
+            )
+            if updated.rowcount != 1:
+                raise ValueError("Intent is not prepared; reconcile")
+            self._audit(db, intent, "broadcast", tx_hash)
+
+    def finish(self, intent: str, outcome: Outcome, evidence: str) -> None:
+        """Record a verifier's outcome; this method itself does not verify the chain."""
+        if (
+            outcome not in ("success", "reverted", "already_desired", "indeterminate")
+            or not evidence
+        ):
+            raise ValueError("A recognized outcome and evidence are required")
+        with self._transaction() as db:
+            row = db.execute("SELECT status,tx_hash FROM intents WHERE id=?", (intent,)).fetchone()
+            if row is None or row[0] not in ("reserved", "prepared", "broadcast", "indeterminate"):
+                raise ValueError("No unfinished intent")
+            if outcome in ("success", "reverted") and row[0] not in ("broadcast", "indeterminate"):
+                raise ValueError("A receipt outcome requires a broadcast or reconciliation")
+            if outcome in ("success", "reverted") and row[1] is None:
+                raise ValueError("A receipt outcome requires a persisted transaction hash")
+            if outcome == "already_desired" and row[0] != "reserved":
+                raise ValueError("Already-desired is only valid before transaction preparation")
+            db.execute(
+                "UPDATE intents SET status=?,outcome_evidence=? WHERE id=?",
+                (outcome, evidence, intent),
+            )
+            if outcome == "indeterminate":
+                db.execute(
+                    "INSERT INTO latch VALUES(1,?) ON CONFLICT(singleton) DO UPDATE "
+                    "SET reason=excluded.reason",
+                    (evidence,),
+                )
+            self._audit(db, intent, outcome, evidence)
+            db.execute(
+                "INSERT INTO outbox(intent_id,payload) VALUES(?,?)",
+                (intent, json.dumps({"intent": intent, "outcome": outcome})),
+            )
+
+    def intent(self, intent: str) -> dict[str, str | int | None] | None:
         with self._connection() as db:
-            rows = db.execute(
-                "SELECT payload FROM events e WHERE source=? AND NOT EXISTS "
-                "(SELECT 1 FROM processed_events p WHERE p.event_id=e.id) AND NOT EXISTS "
-                "(SELECT 1 FROM intent_events i WHERE i.event_id=e.id) "
-                "ORDER BY length(sequence),sequence LIMIT 1000",
-                (source,),
-            ).fetchall()
-            return [dict(json.loads(row[0])) for row in rows]
+            row = db.execute("SELECT * FROM intents WHERE id=?", (intent,)).fetchone()
+            return None if row is None else dict(row)
+
+    def is_latched(self) -> bool:
+        with self._connection() as db:
+            return db.execute("SELECT 1 FROM latch").fetchone() is not None
 
     def record_classification(
         self,
@@ -313,25 +352,6 @@ class StateStore:
                 [(e, decision) for e in event_ids],
             )
 
-    def set_latch(self, reason: str) -> None:
-        with self._transaction() as db:
-            db.execute(
-                "INSERT INTO latch VALUES(1,?) ON CONFLICT(singleton) "
-                "DO UPDATE SET reason=excluded.reason",
-                (reason,),
-            )
-            self._audit(db, "latch", "latched", reason)
-
-    def unfinished(self) -> list[str]:
-        with self._connection() as db:
-            return [
-                str(row[0])
-                for row in db.execute(
-                    "SELECT id FROM intents WHERE status IN "
-                    "('reserved','prepared','broadcast','indeterminate')"
-                )
-            ]
-
     def rate_limited(self, now: float, cooldown: int) -> bool:
         with self._connection() as db:
             latest = db.execute("SELECT MAX(reserved_at) FROM action_times").fetchone()[0]
@@ -341,83 +361,174 @@ class StateStore:
             ).fetchone()[0]
             return (latest is not None and now - float(latest) < cooldown) or count >= 3
 
-    def prepare(self, intent: str, nonce: int, fee_data: str) -> None:
-        if nonce < 0:
-            raise ValueError("Nonce cannot be negative")
-        with self._transaction() as db:
-            updated = db.execute(
-                "UPDATE intents SET status='prepared',nonce=?,fee_data=? "
-                "WHERE id=? AND status='reserved'",
-                (nonce, fee_data, intent),
-            )
-            if updated.rowcount != 1:
-                raise ValueError("Intent is not reserved; do not send")
-            self._audit(db, intent, "prepared", "nonce and fee data persisted")
-
-    def broadcast(self, intent: str, tx_hash: str) -> None:
-        if len(tx_hash) != 66 or not tx_hash.startswith("0x"):
-            raise ValueError("Invalid transaction hash")
-        int(tx_hash[2:], 16)
-        with self._transaction() as db:
-            updated = db.execute(
-                "UPDATE intents SET status='broadcast',tx_hash=? WHERE id=? AND status='prepared'",
-                (tx_hash, intent),
-            )
-            if updated.rowcount != 1:
-                raise ValueError("Intent is not prepared; reconcile")
-            self._audit(db, intent, "broadcast", tx_hash)
-
-    def finish(self, intent: str, outcome: Outcome, evidence: str) -> None:
-        """Record a verifier's outcome; this method itself does not verify the chain."""
-        if (
-            outcome not in ("success", "reverted", "already_desired", "indeterminate")
-            or not evidence
-        ):
-            raise ValueError("A recognized outcome and evidence are required")
-        with self._transaction() as db:
-            row = db.execute("SELECT status,tx_hash FROM intents WHERE id=?", (intent,)).fetchone()
-            if row is None or row[0] not in ("reserved", "prepared", "broadcast", "indeterminate"):
-                raise ValueError("No unfinished intent")
-            if outcome in ("success", "reverted") and row[0] not in ("broadcast", "indeterminate"):
-                raise ValueError("A receipt outcome requires a broadcast or reconciliation")
-            if outcome == "success" and row[1] is None:
-                raise ValueError("A receipt outcome requires a persisted transaction hash")
-            if outcome == "already_desired" and row[0] != "reserved":
-                raise ValueError("Already-desired is only valid before transaction preparation")
-            db.execute(
-                "UPDATE intents SET status=?,outcome_evidence=? WHERE id=?",
-                (outcome, evidence, intent),
-            )
-            if outcome == "indeterminate":
-                db.execute(
-                    "INSERT INTO latch VALUES(1,?) ON CONFLICT(singleton) DO UPDATE "
-                    "SET reason=excluded.reason",
-                    (evidence,),
-                )
-            self._audit(db, intent, outcome, evidence)
-            db.execute(
-                "INSERT INTO outbox(intent_id,payload) VALUES(?,?)",
-                (intent, json.dumps({"intent": intent, "outcome": outcome})),
-            )
-
-    def intent(self, intent: str) -> dict[str, str | int | None] | None:
-        with self._connection() as db:
-            row = db.execute("SELECT * FROM intents WHERE id=?", (intent,)).fetchone()
-            return None if row is None else dict(row)
-
-    def is_latched(self) -> bool:
-        with self._connection() as db:
-            return db.execute("SELECT 1 FROM latch").fetchone() is not None
-
     def latch_reason(self) -> str | None:
         with self._connection() as db:
             row = db.execute("SELECT reason FROM latch WHERE singleton=1").fetchone()
             return str(row[0]) if row else None
 
-    def reset_latch(self, operator: str, reason: str) -> None:
-        if not operator.strip() or not reason.strip():
-            raise ValueError("Operator and reason required to reset latch")
+    def check_and_reserve(
+        self,
+        intent: str,
+        events: list[Withdrawal],
+        canonical_json: str,
+        policy: Policy,
+        proposal: Proposal,
+        chain: int,
+        guardian: str,
+        vault: str,
+    ) -> bool:
+        """Validate identities/proof, then enforce budgets inside BEGIN IMMEDIATE."""
+        from sentinel.models import canonical_incident, incident_ref
+
+        if not policy.allows(chain, guardian, vault, proposal):
+            with self._transaction() as db:
+                self._audit(db, intent, "refused", "chain, target or proposal policy")
+            return False
+        proof = canonical_incident(events, guardian)
+        if canonical_json != proof.decode() or intent != incident_ref(proof):
+            raise ValueError("Noncanonical intent or incident proof")
+        with self._connection() as db:
+            for event in events:
+                row = db.execute(
+                    "SELECT source,payload FROM events WHERE id=?", (event.id,)
+                ).fetchone()
+                if row is None or tuple(row) != (f"84532:{vault.lower()}", event.payload()):
+                    raise ValueError("Proposal must reference persisted Graph events")
+        now = datetime.now(UTC)
+        with self._connection() as db:
+            rows = db.execute("SELECT created_at FROM intents").fetchall()
+            ages = [
+                (now - datetime.fromisoformat(str(row[0]))).total_seconds()
+                for row in rows
+            ]
+            if (
+                any(age < policy.cooldown_seconds for age in ages)
+                or sum(age < policy.window_seconds for age in ages) >= policy.max_actions
+            ):
+                with self._transaction() as audit_db:
+                    self._audit(
+                        audit_db,
+                        intent,
+                        "refused",
+                        "cooldown or action budget",
+                    )
+                return False
+
+        return self.reserve(
+            intent,
+            intent,
+            [event.id for event in events],
+            cooldown=0,
+            budget=2**31 - 1,
+            budget_window=0,
+            canonical_json=canonical_json,
+        )
+
+    def set_latch(self, reason: str) -> None:
+        if not reason.strip():
+            raise ValueError("Latch reason is required")
         with self._transaction() as db:
-            db.execute("DELETE FROM latch WHERE singleton=1")
-            audit_payload = json.dumps({"operator": operator, "reason": reason})
-            self._audit(db, "latch", "latch_reset", audit_payload)
+            db.execute(
+                "INSERT INTO latch VALUES(1,?) ON CONFLICT(singleton) DO UPDATE "
+                "SET reason=excluded.reason",
+                (reason,),
+            )
+            self._audit(db, "", "latched", reason)
+
+    def reset_latch(
+        self,
+        operator: str,
+        reason: str,
+        *,
+        require_reconciled: bool = True,
+    ) -> None:
+        if not operator.strip() or not reason.strip():
+            raise ValueError("Operator and reason are required")
+        with self._transaction() as db:
+            if require_reconciled and db.execute(
+                "SELECT 1 FROM intents WHERE status IN "
+                "('reserved','prepared','broadcast','indeterminate')"
+            ).fetchone():
+                raise ValueError("Reconcile unfinished intents before reset")
+            db.execute("DELETE FROM latch")
+            self._audit(
+                db,
+                "",
+                "operator_reset",
+                json.dumps({"operator": operator, "reason": reason}),
+            )
+
+    def unfinished(self) -> list[str]:
+        with self._connection() as db:
+            return [
+                str(row[0])
+                for row in db.execute(
+                    "SELECT id FROM intents WHERE status IN "
+                    "('reserved','prepared','broadcast','indeterminate') ORDER BY created_at"
+                )
+            ]
+
+    def pending_events(
+        self,
+        source: str,
+        limit: int = 100,
+    ) -> list[Withdrawal | dict[str, object]]:
+        with self._connection() as db:
+            rows = db.execute(
+                "SELECT payload FROM events e WHERE source=? AND NOT EXISTS "
+                "(SELECT 1 FROM processed_events p WHERE p.event_id=e.id) AND NOT EXISTS "
+                "(SELECT 1 FROM intent_events i WHERE i.event_id=e.id) "
+                "ORDER BY length(sequence),sequence LIMIT ?",
+                (source, limit),
+            ).fetchall()
+
+        result: list[Withdrawal | dict[str, object]] = []
+
+        for row in rows:
+            payload = dict(json.loads(row[0]))
+
+            if {
+                "id",
+                "sequence",
+                "block",
+                "block_hash",
+                "tx_hash",
+                "log_index",
+                "timestamp",
+                "actor",
+                "amount",
+            }.issubset(payload):
+                result.append(Withdrawal(**payload))
+            else:
+                result.append(payload)
+
+        return result
+
+    def proof(self, intent: str) -> str:
+        with self._connection() as db:
+            row = db.execute(
+                "SELECT canonical_json FROM proofs WHERE intent_id=?", (intent,)
+            ).fetchone()
+            if row is None:
+                raise ValueError("Missing canonical proof")
+            return str(row[0])
+
+    def status(self) -> dict[str, object]:
+        with self._connection() as db:
+            latch = db.execute("SELECT reason FROM latch").fetchone()
+            return {
+                "latch": None if latch is None else latch[0],
+                "cursors": [dict(row) for row in db.execute("SELECT * FROM cursors")],
+                "intents": [
+                    dict(row)
+                    for row in db.execute(
+                        "SELECT * FROM intents ORDER BY created_at DESC LIMIT 100"
+                    )
+                ],
+                "outbox": [
+                    dict(row)
+                    for row in db.execute(
+                        "SELECT status,COUNT(*) AS count FROM outbox GROUP BY status"
+                    )
+                ],
+            }
