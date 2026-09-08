@@ -1,5 +1,9 @@
 # Base Sepolia deployment handoff
 
+> Historical handoff snapshot. ES302, AI classification, notification delivery
+> and the live model-backed pause were completed later. Current status is tracked
+> in `FINAL_AUDIT_2026-09-06.md` and `specs/002-ethonline-sentinel/tasks.md`.
+
 **Recorded:** 2026-09-04  
 **Resume:** 2026-09-05  
 **Purpose:** fund the disposable deployer, deploy the contracts, and publish the

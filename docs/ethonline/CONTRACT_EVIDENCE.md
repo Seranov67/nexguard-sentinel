@@ -31,9 +31,12 @@ The deployment tool loads secrets only from the ignored `.env.ethonline`,
 refuses any chain other than Base Sepolia, constructs EIP-1559 transactions,
 checks receipt status, and re-reads role and Guardian/Vault linkage state.
 
-## Live evidence pending
+## Live Base Sepolia evidence
 
-No Base Sepolia deployment is claimed yet. Record chain ID, owner and keeper
-separation, contract addresses, deployment transaction hashes, pause/unpause
-transactions, and explorer links only after a live run with a disposable,
-faucet-funded testnet wallet.
+Deployment and role verification are recorded in
+[`deployments/base-sepolia.json`](deployments/base-sepolia.json). The later
+model-backed pause, canonical receipt, confirmation/state verification and
+no-resend reconciliation are recorded in
+[`deployments/live-e2e-2026-09-06.json`](deployments/live-e2e-2026-09-06.json).
+Both contracts are valueless testnet fixtures. Ledger hardware signing and any
+real-value custody are not claimed.

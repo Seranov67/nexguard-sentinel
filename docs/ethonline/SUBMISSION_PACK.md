@@ -166,7 +166,7 @@ state. Do not present a historical transaction as a result of the repaired code.
 - [x] Real model endpoint/name configured and live trace recorded; numeric wording limitations documented.
 - [x] Final Graph-to-AI-to-pause rehearsal and restart evidence recorded.
 - [ ] Real-model A/B transcript reviewed; unsupported partner claims excluded.
-- [ ] Ledger hardware evidence obtained, or simulation limitation retained.
+- [x] Ledger simulation limitation retained; no hardware qualification claim.
 - [ ] Human voice recorded, desktop footage captured, exported at 720p or higher.
 - [ ] Video duration is 2–4 minutes and link opens without authentication.
 - [ ] Dashboard fields and up to three partner choices reviewed by owner.

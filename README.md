@@ -4,7 +4,7 @@ Testnet incident response using live The Graph data, structured AI classificatio
 durable pause-only execution, and inspectable incident evidence. DemoVault uses
 valueless accounting credits; it holds no Ether or tokens.
 
-## Verified status — 6 September 2026
+## Verified status — 8 September 2026
 
 - Guardian and DemoVault are deployed on Base Sepolia; 9 Solidity tests pass.
 - Studio v0.1.0 returns live Withdrawal entities and healthy `_meta` information.
@@ -18,7 +18,9 @@ valueless accounting credits; it holds no Ether or tokens.
   Clear Signing and a Ledger-originated recovery have **not been demonstrated**.
 - A new live Graph-to-Qwen3-to-pause rehearsal is verified, including initial RPC
   uncertainty, no-send reconciliation and restart without a second action.
-- GitHub CI passes all four jobs at 6f03dff; latest local suite has 186 tests.
+- The current local Python 3.12 suite has 239 passing tests; Ruff and strict
+  Sentinel MyPy pass. The last remote four-job CI success is at `6f03dff`, before
+  the latest repair, so current-HEAD CI confirmation remains pending.
 - Real-model A/B review, human video and final Dashboard submission remain open.
 
 See [current verification and blockers](docs/ethonline/FINAL_AUDIT_2026-09-06.md)

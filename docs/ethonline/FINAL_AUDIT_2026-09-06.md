@@ -1,5 +1,10 @@
 # NexGuard Sentinel: engineering status, 6 September 2026
 
+> **8 September verification update:** current HEAD behavior passes 239 tests on
+> Python 3.12, repository Ruff, and strict Sentinel MyPy for 40 files. The last
+> remote CI success remains run 34050527569 at `6f03dff`; a current-HEAD run is
+> still required. Human video and final Dashboard submission remain open.
+
 ## Outcome
 
 Stage 5 live evidence is verified. Final hackathon delivery remains open because
@@ -35,20 +40,20 @@ as authoritative. This is not a measured claim of model explanation accuracy.
 
 | Check | Result |
 |---|---|
-| Python 3.12 full suite | 186 PASS, including 131 Sentinel tests |
+| Python 3.12 full suite | 239 PASS, including 184 Sentinel tests (8 September) |
 | Repository Ruff / strict Sentinel MyPy | PASS; types include tests |
 | Foundry | 9 tests PASS |
 | Subgraph codegen/build and Matchstick | PASS; 1 mapping test |
 | Isolated Compose restart/config recovery | PASS |
 | Package install/import/assets | PASS in preceding engineering audit |
 | Gitleaks source/history and private denylist | PASS |
-| GitHub CI at 6f03dff | All four jobs PASS, run 34050527569 |
+| GitHub CI at 6f03dff | All four jobs PASS, run 34050527569; current HEAD pending |
 
 CI initially failed because Foundry could not write to the runner's checkout.
-The job now builds a temporary copy of read-only source. The later code change
-adds only a bounded configurable A/B timeout plus five rejection cases; local
-checks and the subsequent remote run both pass. The final documentation-only
-commit follows this verified code revision.
+The job now builds a temporary copy of read-only source. Run 34050527569 verifies
+the 6 September revision. Later ingestion/executor work and the ES508 quality
+repair pass locally but require a new remote run; the older run must not be used
+as evidence for the current HEAD.
 
 ## Partner and delivery status
 

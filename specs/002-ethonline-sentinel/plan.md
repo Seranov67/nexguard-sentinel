@@ -38,10 +38,12 @@ check-ins, prize selection, and submission.
 Feature freeze is 10 September. Internal submission target is 13 September 17:00
 Europe/Kyiv; the hard deadline is 19:00.
 
-## Current execution schedule (6 September audit)
+## Current execution schedule (updated 8 September)
 
 The IoT MVP T000–T027 is complete and remains a non-regression baseline. Sentinel
-ES000–ES402 and ES503 are implemented and locally checked. ES501/ES502 remain open.
+ES000–ES506 and ES508 are implemented except for the explicitly human review in
+ES505. ES502/ES507 remain open for video and final Dashboard delivery. ES509 keeps
+the current status records aligned and requires CI evidence for the repaired HEAD.
 
 | Target | Work | Completion evidence |
 |---|---|---|
@@ -59,6 +61,8 @@ No post-hackathon production roadmap is approved. Mainnet, real-value custody,
 web administration, cloud infrastructure and multi-protocol expansion remain out
 of scope; proposing them requires a separate SSD specification.
 
-Evening update: ES501 live evidence and ES504 remote CI/plan reconciliation pass.
-Ollama is installed and the model is configured. ES506 records the no-hardware
-limitation. ES502/ES507 remain open for human video and final submission.
+8 September update: ES501 live evidence passes; ES506 records the no-hardware
+limitation; ES508 restores the current Python 3.12 gates with 239 tests, Ruff and
+strict MyPy passing locally. The last remote CI evidence still covers `6f03dff`,
+so CI for the repaired HEAD is pending. ES502/ES507 remain open for human video
+and final submission.

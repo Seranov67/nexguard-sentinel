@@ -62,7 +62,7 @@ see `docs/ethonline/deployments/subgraph-studio.json` for query and latency evid
 ### ES301 — package, configuration, and durable state
 
 **Status:** `[x]` — SQLite schema v2 and environment settings implemented; current complete suite has
-181 tests, including 126 Sentinel tests. Restart, process crash, replay, concurrent
+239 tests, including 184 Sentinel tests. Restart, process crash, replay, concurrent
 reservation and transactional rollback checks pass; Ruff and strict MyPy pass.
 **Files:** `sentinel/`, migrations, config loader, package/lock and unit tests
 **Depends:** ES000 approval
@@ -201,3 +201,18 @@ mixed durable event representations must be narrowed before classifier or execut
 **Justification:** The latest ingestion/executor commit added untyped test surfaces
 and mixed event representations after the last verified CI revision.
 **Verify:** `python -m pytest -q`; `python -m ruff check .`; `python -m mypy sentinel`.
+
+### ES509 — current status and provenance reconciliation
+
+**Status:** `[/]` — owner authorized completion-audit corrections on 2026-09-08.
+**Files:** `README.md`, `specs/002-ethonline-sentinel/plan.md`, this task list,
+`docs/ethonline/COMPLIANCE.md`, `docs/ethonline/CONTRACT_EVIDENCE.md`,
+`docs/ethonline/FINAL_AUDIT_2026-09-06.md`, `docs/ethonline/SUBMISSION_PACK.md`,
+`docs/ethonline/TESTNET_HANDOFF.md`.
+**Depends:** ES508.
+**Acceptance:** Current verification counts and HEAD coverage agree across the
+submission-facing documents; historical snapshots remain labelled; annotated-tag
+object and peeled commit identities are not confused; unresolved human delivery
+steps remain explicit.
+**Verify:** document cross-reference review; `git diff --check`; tag dereference;
+public unauthenticated repository check; current-HEAD CI check after push.

@@ -1,10 +1,15 @@
 # Compliance evidence register
 
+> **8 September update:** the current Python 3.12 suite passes 239 tests, with
+> Ruff and strict Sentinel MyPy passing locally after ES508. The public repository
+> and event branch returned HTTP 200 without authentication. Remote CI for the
+> repaired HEAD, human video, partner selection and final submission remain pending.
+
 > **Evening update, 6 September:** A new real-model live rehearsal now passes
 > after no-send reconciliation. New withdrawal block 46474498; pause block
 > 46474539; one pause transaction; restart produces no second action.
 > See [live evidence](deployments/live-e2e-2026-09-06.json).
-> Remote CI run 34049799940 passes all four jobs at commit 0eae479.
+> Remote CI run 34050527569 passes all four jobs at commit 6f03dff.
 > Earlier same-day unavailable-model/no-new-transaction statements below describe
 > the morning audit snapshot, not the current state. Ledger hardware and human
 > video remain unavailable. Final submission is not complete.
@@ -66,16 +71,16 @@ submission implementation.
 |---|---|---|
 | Dashboard-confirmed hacking start | Authenticated Dashboard checked 2026-09-04; schedule shows `Hacking Begins!` at 19:00 Europe/Kyiv | verified |
 | Event-only history | baseline tag and event branch exist; event commits/diff begin with ES000 | in progress |
-| Public repository | anonymous/incognito access test | pending |
+| Public repository | unauthenticated repository and event-branch HTTP checks returned 200 on 2026-09-08 | verified |
 | Local Graph implementation | Graph codegen/build pass; Matchstick 0.6.0 Docker test 1/1 pass; deterministic tx-hash/log-index ID and sequence cursor | verified locally 2026-09-04 |
 | Live Graph provider | Studio `nexguard-sentinel` v0.1.0; deployment/query/response/latency in `deployments/subgraph-studio.json` | verified 2026-09-05; decentralized publication not performed |
-| Meaningful AI use | schema, prompt/version, Graph-derived inputs, output and policy trace | pending |
-| Working automation | Graph entity → reservation → tx → confirmations → state re-read | pending |
+| Meaningful AI use | real Qwen3 trace with schema, prompt/version, Graph-derived inputs, output and deterministic policy record in `deployments/live-e2e-2026-09-06.json` | verified 2026-09-06; rationale limitations retained |
+| Working automation | Graph entity → reservation → tx → confirmations → state re-read and no-send restart reconciliation | verified 2026-09-06 |
 | Testnet contracts | chain ID, addresses, deployment tx hashes and state in `deployments/base-sepolia.json` | verified 2026-09-05 |
-| Contract implementation | Solc 0.8.24 compile; 9 Foundry tests; 5 deployment-tool tests; full 55-test Python suite; guarded EIP-1559 deploy tool | verified locally 2026-09-04; live deployment pending |
-| Disposable testnet roles | Keeper/deployer `0x46C3a46Efd54f928707F83D9e3F5f87f0D420172`; owner `0xcF44200ba4024772acF529D87B758C4FCA6e7A15`; secrets stored only in ignored `.env.ethonline` | generated locally 2026-09-04; deployer funding pending |
-| Base Sepolia faucet | ETHGlobal sent 0.1 test ETH to the participant's verified wallet in tx `0xce439e827fad4c0cb8b8735e3630e68c8dd25d6e08bf2c39c7de54b8f4cb7c0c` | verified onchain 2026-09-04; transfer to disposable deployer pending |
-| Reproducibility | clean-clone install/test/run record | pending |
+| Contract implementation | Solc 0.8.24 compile; 9 Foundry tests; guarded EIP-1559 deploy tool and Base Sepolia deployment evidence | verified locally and on Base Sepolia |
+| Disposable testnet roles | Keeper/deployer `0x46C3a46Efd54f928707F83D9e3F5f87f0D420172`; owner `0xcF44200ba4024772acF529D87B758C4FCA6e7A15`; secrets stored only in ignored `.env.ethonline` | funded/deployed on testnet; no real value |
+| Base Sepolia faucet | ETHGlobal faucet receipt and transfer/deployment evidence in the deployment record | verified onchain |
+| Reproducibility | Python 3.12 container: 239 tests, Ruff and strict MyPy pass; current-HEAD remote CI still required | verified locally 2026-09-08; remote pending |
 | Demo video | public URL, duration 2–4 min, ≥720p, human narration | pending |
 | Disclosure | final prior/new table and license notices | pending final review |
 | AI transparency | per-file activity log and prompt/spec archive | pending final review |
@@ -107,7 +112,7 @@ submission implementation.
 | Incident Evidence API | `sentinel/evidence_api.py` (FastAPI, x402/MPP payment gate, SHA-256 fingerprint) | verified |
 | Bazantic MCP Server | `sentinel/bazantic/mcp_server.py` (`get_latest_incident`, `verify_incident_evidence`) | verified |
 | Bazantic Recipe | `sentinel/bazantic/recipe.json` and `sentinel/bazantic/recipe_spec.md` | verified |
-| A/B Benchmark | `sentinel/bazantic/benchmark_ab.py` generates `docs/ethonline/BAZANTIC_AB_BENCHMARK.md` | verified |
+| A/B Benchmark | real paired transcript recorded; both conditions pass 3/3 structural checks with no uplift | human explanation review pending |
 | Bazantic Tests | `sentinel/tests/test_evidence_api.py` & `sentinel/tests/test_bazantic_recipe.py` (34 tests passing) | verified |
 
 ## Ledger partner evidence
@@ -128,7 +133,7 @@ submission implementation.
 | Pause Actuator | `sentinel/actuator.py` (Encodes `Guardian.pause(bytes32,uint8)`, immediate tx_hash broadcast persistence before confirmation, verifies `paused()` post-state) | verified |
 | Control Loop Orchestration | `sentinel/loop.py` (`run_loop_step` tying Graph ingestion, features, classifier, policy, actuator, and durable state cursor) | verified |
 | Operational CLI | `sentinel/cli.py` (`status`, `run`, `reset`, `reconcile` with operator audit trail) | verified |
-| Test Coverage & Quality Gates | `sentinel/tests/` (97 tests passing: `test_classifier.py`, `test_policy.py`, `test_loop_e2e.py`; Ruff and strict MyPy clean) | verified |
+| Test Coverage & Quality Gates | full suite 239 tests, including 184 Sentinel tests; Ruff and strict MyPy clean on 2026-09-08 | verified locally; remote HEAD CI pending |
 
 ## Live Base Sepolia Verification Evidence
 
@@ -139,5 +144,5 @@ submission implementation.
 | 3. Subgraph Indexing | The Graph Studio query | Query latency < 3s, appearance upper bound 3s | 46433925 | Entity indexed |
 | 4. Autonomous Pause | Guardian.pause(incidentRef, 3) | [`0xaa915ea5...`](https://sepolia.basescan.org/tx/0xaa915ea5e86823ec63259d3573b05c4e243fbbaae3ae3a8003dbaf8582e29d75) | 46433932 | `Guardian.paused() == true` |
 | 5. Vault Block Proof | Withdrawal attempted | Contract execution reverted with `GuardianPaused()` (`0xdfe79c85`) | - | Vault circuit broken |
-| 6. Bazantic Evidence | Incident Evidence API | `inc_6a2d540da0445aa2` SHA256 `6758056f...` via x402 payment gate | - | Agent verified |
-| 7. Ledger Recovery | Guardian.unpause(reasonHash) | [`0x2f68bdd8...`](https://sepolia.basescan.org/tx/0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070) | 46434002 | `Guardian.paused() == false` |
+| 6. Bazantic Evidence | Incident Evidence API | payload fingerprint verified in explicit local demo mode; no settled x402 payment claim | - | Integrity-only evidence |
+| 7. Historical Owner Recovery | Direct owner `Guardian.unpause(reasonHash)` | [`0x2f68bdd8...`](https://sepolia.basescan.org/tx/0x2f68bdd881089057139f38d1ce7585169d27ff793f5b7af5a34951def628b070) | 46434002 | Historical owner action; not Ledger hardware evidence |
