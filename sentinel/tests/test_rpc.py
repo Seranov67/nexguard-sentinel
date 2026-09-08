@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import Mock
 
 import pytest
@@ -11,7 +12,7 @@ from sentinel.tests.test_action_loop import BLOCK, GUARDIAN, TX, VAULT
 
 
 @pytest.fixture
-def rpc(setup):
+def rpc(setup: Any) -> tuple[RpcChain, Any, Any, Any, Any]:
     settings, _, _, _, _ = setup
     web3 = Mock()
     guardian, vault = Mock(), Mock()
@@ -37,7 +38,7 @@ def rpc(setup):
     return RpcChain(settings, key, web3), web3, guardian, vault, key
 
 
-def test_rpc_signer_is_lazy_and_only_builds_zero_value_pause(rpc):
+def test_rpc_signer_is_lazy_and_only_builds_zero_value_pause(rpc: Any) -> None:
     chain, web3, guardian, _, key = rpc
     chain.identity()
     key.assert_not_called()
@@ -57,7 +58,7 @@ def test_rpc_signer_is_lazy_and_only_builds_zero_value_pause(rpc):
 
 
 @pytest.mark.parametrize("failure", ["mainnet", "owner", "not_keeper", "wrong_vault", "no_code"])
-def test_rpc_refuses_unsafe_identity_or_signer(rpc, failure):
+def test_rpc_refuses_unsafe_identity_or_signer(rpc: Any, failure: str) -> None:
     chain, web3, guardian, vault, key = rpc
     if failure == "mainnet":
         web3.eth.chain_id = 1
@@ -79,7 +80,7 @@ def test_rpc_refuses_unsafe_identity_or_signer(rpc, failure):
         key.assert_not_called()
 
 
-def test_read_only_adapter_cannot_access_signer(rpc):
+def test_read_only_adapter_cannot_access_signer(rpc: Any) -> None:
     chain, _, _, _, key = rpc
     chain.key = None
     with pytest.raises(ValueError, match="unavailable"):
@@ -87,7 +88,7 @@ def test_read_only_adapter_cannot_access_signer(rpc):
     key.assert_not_called()
 
 
-def test_receipt_decodes_real_pause_event_and_ignores_other_contracts(rpc):
+def test_receipt_decodes_real_pause_event_and_ignores_other_contracts(rpc: Any) -> None:
     chain, web3, _, _, _ = rpc
     chain.guardian = Web3().eth.contract(
         address=Web3.to_checksum_address(GUARDIAN), abi=GUARDIAN_ABI

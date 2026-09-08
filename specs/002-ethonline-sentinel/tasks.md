@@ -185,3 +185,19 @@ partner choices; final Dashboard confirmation. Internal target: 13 September 17:
 Europe/Kyiv. ES502 closes only when final delivery evidence exists.
 **Verify:** inspect exported media metadata and playback, anonymous links and
 Dashboard confirmation. Do not substitute AI/TTS narration.
+
+### ES508 — post-audit HEAD quality repair
+
+**Status:** `[x]` — owner-authorized repair completed on 2026-09-08. Python 3.12
+passes 239 tests; repository Ruff and strict Sentinel MyPy pass for 40 files.
+Remote CI for the repair commit remains a separate ES509 delivery check.
+**Files:** `sentinel/runtime.py`, `sentinel/loop.py`, `sentinel/store.py`,
+`sentinel/tests/conftest.py`, `sentinel/tests/test_action_loop.py`,
+`sentinel/tests/test_graph.py`, `sentinel/tests/test_rpc.py`, this task list.
+**Depends:** ES302, ES503.
+**Acceptance:** Preserve the 239-test behavior while restoring zero Ruff and strict
+MyPy errors for the current HEAD. Dynamic test doubles must remain explicitly typed;
+mixed durable event representations must be narrowed before classifier or executor use.
+**Justification:** The latest ingestion/executor commit added untyped test surfaces
+and mixed event representations after the last verified CI revision.
+**Verify:** `python -m pytest -q`; `python -m ruff check .`; `python -m mypy sentinel`.

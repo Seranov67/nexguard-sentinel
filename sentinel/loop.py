@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, cast
 
 from sentinel.actuator import Actuator, ExecutionResult
 from sentinel.classifier import (
@@ -125,7 +125,10 @@ def run_loop_step(
             actuator = Actuator(preview, settings.rpc_http, settings.guardian_address)
             if events_override is None:
                 ingest_live(settings, preview, actuator)
-                events_override = preview.pending_events("vault-withdrawals")
+                pending = preview.pending_events("vault-withdrawals")
+                if not all(isinstance(event, dict) for event in pending):
+                    raise ValueError("Preview source returned an unexpected event representation")
+                events_override = cast(list[dict[str, Any]], pending)
             features = extract_features(events_override)
             classification = classify_features(features, llm_evaluator=llm_evaluator)
             return LoopStepResult(
@@ -165,9 +168,12 @@ def run_loop_step(
                     int(event["blockNumber"]),
                     json.dumps(event, sort_keys=True),
                 )
-        raw_events = store.pending_events(source)
-        if not raw_events:
+        pending = store.pending_events(source)
+        if not pending:
             return LoopStepResult(inserted, 0, False)
+        if not all(isinstance(event, dict) for event in pending):
+            raise ValueError("Feature source returned an unexpected event representation")
+        raw_events = cast(list[dict[str, Any]], pending)
         latest_timestamp = max(int(str(event["timestamp"])) for event in raw_events)
         features = extract_features(store.feature_window(source, latest_timestamp))
         classification = classify_features(features, llm_evaluator=llm_evaluator)

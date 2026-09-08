@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Any
+
 import pytest
 
 from sentinel.config import Settings
@@ -8,7 +11,7 @@ from sentinel.tests.test_action_loop import GUARDIAN, VAULT, FakeChain, event
 
 
 @pytest.fixture
-def setup(tmp_path):
+def setup(tmp_path: Path) -> tuple[Settings, StateStore, FakeChain, Executor, Any]:
     settings = Settings(
         "https://rpc.example", "https://graph.example", GUARDIAN, VAULT, tmp_path / "state.sqlite3"
     )

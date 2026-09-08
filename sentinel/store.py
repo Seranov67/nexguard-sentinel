@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from sentinel.models import Proposal, Withdrawal
+
 if TYPE_CHECKING:
     from sentinel.policy import Policy
 

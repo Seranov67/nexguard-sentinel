@@ -24,7 +24,10 @@ class Runtime:
         events = self.executor.store.pending_events(self.source.source)
         if not events:
             return None
-        proposal = self.classify(events)
+        withdrawals = [event for event in events if isinstance(event, Withdrawal)]
+        if len(withdrawals) != len(events):
+            raise ValueError("Runtime source returned a noncanonical event representation")
+        proposal = self.classify(withdrawals)
         if proposal is None:
             return None
-        return self.executor.act(events, proposal)
+        return self.executor.act(withdrawals, proposal)

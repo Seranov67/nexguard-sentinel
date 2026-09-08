@@ -1,4 +1,6 @@
 import json
+from collections.abc import Callable
+from typing import Any
 
 import httpx
 import pytest
@@ -10,7 +12,7 @@ from sentinel.store import StateStore
 from sentinel.tests.test_action_loop import BLOCK, GUARDIAN, PROPOSAL, event
 
 
-def raw_event(index=0, block=100):
+def raw_event(index: int = 0, block: int = 100) -> dict[str, Any]:
     ev = event(index, block)
     return {
         "id": ev.id,
@@ -25,14 +27,19 @@ def raw_event(index=0, block=100):
     }
 
 
-def graph_client(rows, *, height=104, changes=None):
-    requests = []
+def graph_client(
+    rows: list[dict[str, Any]],
+    *,
+    height: int = 104,
+    changes: Callable[[dict[str, Any]], None] | None = None,
+) -> tuple[httpx.Client, list[dict[str, Any]]]:
+    requests: list[dict[str, Any]] = []
 
-    def handle(request):
+    def handle(request: httpx.Request) -> httpx.Response:
         body = json.loads(request.content)
         requests.append(body)
         meta = {"block": {"number": height, "hash": BLOCK}, "hasIndexingErrors": False}
-        data = {"_meta": meta}
+        data: dict[str, Any] = {"_meta": meta}
         if body["variables"]:
             after = int(body["variables"]["after"])
             through = int(body["variables"]["through"])
@@ -48,7 +55,7 @@ def graph_client(rows, *, height=104, changes=None):
     return httpx.Client(transport=httpx.MockTransport(handle)), requests
 
 
-def test_same_timestamp_pagination_confirmation_and_restart(setup):
+def test_same_timestamp_pagination_confirmation_and_restart(setup: Any) -> None:
     settings, store, chain, _, _ = setup
     rows = [raw_event(i) for i in range(101)] + [raw_event(0, 104)]
     client, requests = graph_client(rows)
@@ -77,7 +84,9 @@ def test_same_timestamp_pagination_confirmation_and_restart(setup):
         lambda data: data.update(withdrawals=[{**raw_event(), "id": "0x" + "00" * 36}]),
     ],
 )
-def test_unhealthy_unordered_unconfirmed_or_noncanonical_pages_latch(setup, mutation):
+def test_unhealthy_unordered_unconfirmed_or_noncanonical_pages_latch(
+    setup: Any, mutation: Callable[[dict[str, Any]], None]
+) -> None:
     settings, store, chain, _, _ = setup
     client, _ = graph_client([raw_event()], changes=mutation)
     with client:
@@ -89,7 +98,7 @@ def test_unhealthy_unordered_unconfirmed_or_noncanonical_pages_latch(setup, muta
         assert store.is_latched()
 
 
-def test_graph_error_is_not_an_empty_page(setup):
+def test_graph_error_is_not_an_empty_page(setup: Any) -> None:
     settings, store, chain, _, _ = setup
     with httpx.Client(
         transport=httpx.MockTransport(
@@ -102,7 +111,7 @@ def test_graph_error_is_not_an_empty_page(setup):
         assert store.is_latched()
 
 
-def test_conflicting_replay_latches_and_preserves_original(setup):
+def test_conflicting_replay_latches_and_preserves_original(setup: Any) -> None:
     settings, store, chain, _, ev = setup
     client, _ = graph_client([{**raw_event(), "amount": "1"}])
     with client:
@@ -113,7 +122,7 @@ def test_conflicting_replay_latches_and_preserves_original(setup):
         assert store.is_latched()
 
 
-def test_crash_after_ingestion_recovers_unhandled_event(setup):
+def test_crash_after_ingestion_recovers_unhandled_event(setup: Any) -> None:
     settings, store, chain, executor, _ = setup
     client, _ = graph_client([raw_event()])
     with client:
@@ -126,7 +135,7 @@ def test_crash_after_ingestion_recovers_unhandled_event(setup):
         assert chain.sends == 1
 
 
-def test_regressed_graph_head_stops_processing(setup):
+def test_regressed_graph_head_stops_processing(setup: Any) -> None:
     settings, store, chain, _, _ = setup
     client, _ = graph_client([], height=99)
     with client:
@@ -139,12 +148,12 @@ def test_regressed_graph_head_stops_processing(setup):
     "field,value",
     [("amount", "-1"), ("sequence", "1"), ("timestamp", True), ("logIndex", "1000000")],
 )
-def test_graph_entity_validation(field, value):
+def test_graph_entity_validation(field: str, value: object) -> None:
     with pytest.raises(ValueError):
         Withdrawal.parse({**raw_event(), field: value})
 
 
-def test_canonical_incident_golden_vector():
+def test_canonical_incident_golden_vector() -> None:
     expected = (
         b'{"chain_id":"84532","guardian":"0x1111111111111111111111111111111111111111",'
         b'"schema_version":1,"severity":"critical","source_ids":['
