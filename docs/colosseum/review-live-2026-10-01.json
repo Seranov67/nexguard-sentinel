@@ -1,0 +1,40 @@
+{
+  "health": {
+    "status": "healthy",
+    "checked_at": "2026-10-01T18:04:04.614946Z",
+    "rpc_head": 47554787,
+    "graph_snapshot": 47554785,
+    "block_age_seconds": -11,
+    "confirmed_through": 47554784,
+    "snapshot_hash": "0x6c54251d5d5945808987450f3f11d91e3a0233107d4447adc708f14d18fc8f36",
+    "guardian_paused": true,
+    "state_block": 47554785,
+    "added": 0,
+    "scan_complete": true,
+    "next_after": "46474498000075",
+    "max_future_clock_skew_seconds": 30,
+    "limits": [
+      "Bounded Graph pagination; provider omissions cannot be disproved.",
+      "Canonical replay covers the configured rewind window."
+    ]
+  },
+  "evaluated": 5,
+  "restart_evaluated": 0,
+  "counts": {
+    "observations": 5,
+    "review_cases": 4,
+    "conflicts": 0,
+    "evaluations": 5
+  },
+  "policy": {
+    "version": "single-withdrawal-v1",
+    "withdrawal_limit": "10000000000000000000",
+    "chain_id": 84532,
+    "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+    "rule": "single_withdrawal_limit",
+    "comparison": ">",
+    "unit": "DemoVault accounting units (valueless)"
+  },
+  "negative_example": "The 100-unit withdrawal is within the limit and produced no case.",
+  "origin": "Historical events verified today; no new transaction and no human decision."
+}

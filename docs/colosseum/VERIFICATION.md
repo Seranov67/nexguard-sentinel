@@ -38,3 +38,13 @@ are pending. No current remote CI, human feedback/video or submission is claimed
   API semantics: https://thegraph.com/docs/en/subgraphs/querying/graphql-api/
 - Evidence: observer-live-2026-10-01.json. No transaction sent; historical events
   are not new hackathon transactions. No review policy evaluated at this stage.
+
+## CWF201–202
+
+21 focused tests PASS. Full Linux suite: **287 PASS**. Ruff, strict MyPy
+Sentinel (51 files), gateway/controller/deploy and Compose PASS.
+Integer threshold boundaries, invalid/scientific/float parameters, uint256 precision,
+restart evaluations, degraded-source block, version identity and evidence exports pass.
+Recorded success/reverted/indeterminate/already_desired outcomes are read via mode=ro;
+tests verify legacy database bytes are unchanged. Missing legacy state is not created.
+Fixtures produce no explorer links. A review case never implies successful pause.

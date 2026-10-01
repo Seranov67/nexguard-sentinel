@@ -1,0 +1,4 @@
+# Integer DemoVault accounting units, not ETH or financial losses.
+# Change version whenever parameters change. Review never authorizes a transaction.
+version: single-withdrawal-v1
+withdrawal_limit: "10000000000000000000"
