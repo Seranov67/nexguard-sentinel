@@ -3,6 +3,7 @@
 import json
 import sqlite3
 from contextlib import closing
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -81,6 +82,27 @@ class LegacyEvidence:
             }
 
 
+def source_status(store: ReviewStore) -> dict[str, Any]:
+    value = store.metadata("health") or {"status": "not_observed"}
+    status = value["status"]
+    age = None
+    if status in ("healthy", "catching_up"):
+        try:
+            age = (datetime.now(UTC) - datetime.fromisoformat(value["checked_at"])).total_seconds()
+            if age < 0 or age > 90:
+                status = "stale"
+        except (ValueError, KeyError, TypeError):
+            status = "stale"
+    if store.counts()["conflicts"]:
+        status = "reconciliation_required"
+    return {
+        **value,
+        "recorded_status": value["status"],
+        "status": status,
+        "age_since_check_seconds": int(age) if age is not None else None,
+    }
+
+
 def bundle(store: ReviewStore, case_id: str, legacy: LegacyEvidence) -> dict[str, Any]:
     case = store.detail(case_id)
     observation = case["observation"]
@@ -96,7 +118,7 @@ def bundle(store: ReviewStore, case_id: str, legacy: LegacyEvidence) -> dict[str
         "case": case,
         "synthetic": synthetic,
         "finding_integrity": "conflicting" if case["conflicts"] else "recorded",
-        "source_health": store.metadata("health"),
+        "source_health": source_status(store),
         "source": store.metadata("scope"),
         "legacy_action": legacy.lookup(raw["id"])
         if not synthetic

@@ -35,6 +35,11 @@ Verification: focused `python -m pytest -q sentinel/tests/test_review_rules.py s
 
 ## Stage 3 — local operator workflow
 
+CWF301 shared-file justification before editing: add a freshness projection to
+`sentinel/review/evidence.py`, so both API and exported brief label old health
+observations as stale. Preserve recorded health facts separately. Extend its test
+for a stale timestamp. No legacy module or signing API is modified.
+
 **CWF301:** add `sentinel/review/api.py`, `sentinel/review/cli.py`, `sentinel/tests/test_review_api.py`. Local list/detail/acknowledge/resolve/export; server timestamps, idempotency/revisions, input validation, allowed-origin write checks. No calls into execution/reset/recovery. Depends: CWF202.
 
 **CWF302:** add `sentinel/review/static/{index.html,app.js,style.css}` and package-data entries for those files. Three screens; keyboard-accessible decisions; clear accounting units/data status; actual action status separate from review status. Gate: direct local UI use creates correct reviewer metadata and brief; API concurrency/invalid-origin tests pass; stored data is rendered as text, not executable HTML. Depends: CWF301 and explicit UI amendment.

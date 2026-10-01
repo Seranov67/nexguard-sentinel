@@ -27,6 +27,7 @@ exclude = ["sentinel.tests*"]
 [tool.setuptools.package-data]
 "sentinel.ledger" = ["*.json", "*.md"]
 "sentinel.bazantic" = ["*.json", "*.md"]
+"sentinel.review" = ["static/*.html", "static/*.js", "static/*.css"]
 
 [project.optional-dependencies]
 dev = [

@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 
 from sentinel.review.brief import json_brief, text_brief
-from sentinel.review.evidence import LegacyEvidence, bundle
+from sentinel.review.evidence import LegacyEvidence, bundle, source_status
 from sentinel.review.models import Decision
 from sentinel.review.rules import ReviewPolicy, process_pending
 from sentinel.review.store import ReviewStore
@@ -77,3 +77,11 @@ def test_missing_legacy_db_not_created(tmp_path: Path) -> None:
     path = tmp_path / "missing.sqlite3"
     assert LegacyEvidence(path).lookup("id")["status"] == "unavailable"
     assert not path.exists()
+
+
+def test_old_source_health_is_stale_with_recorded_facts_preserved(tmp_path: Path) -> None:
+    store = ReviewStore(tmp_path / "review.sqlite3")
+    store.health({"status": "healthy", "checked_at": "2026-09-06T12:00:00Z", "rpc_head": 100})
+    health = source_status(store)
+    assert health["status"] == "stale" and health["recorded_status"] == "healthy"
+    assert health["rpc_head"] == 100

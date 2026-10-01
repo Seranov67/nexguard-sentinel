@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexGuard — Incident Review Desk</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">N</span><div>NEXGUARD<span class="brand-sub">INCIDENT REVIEW DESK</span></div></div><div class="header-tags"><span class="tag">LOCAL</span><span class="network">Base Sepolia · 84532</span></div></header>
+  <div class="shell">
+    <aside class="sidebar"><div class="sidebar-caption">WORKSPACE</div><nav aria-label="Workspace"><button data-view="overview" class="nav active">Source overview</button><button data-view="cases" class="nav">Review queue <span id="queue-count">0</span></button></nav><div class="scope-note"><span class="dot"></span> Chain reads only<p>Reviewer decisions are local records. DemoVault uses valueless accounting units.</p></div></aside>
+    <main>
+      <div id="notice" class="notice" role="status" aria-live="polite">Loading source status…</div>
+      <section id="overview-view" class="view">
+        <div class="heading"><div><div class="eyebrow">OBSERVE → REVIEW → RECORD</div><h1>Know what happened.</h1><p>Verified source facts and the review trail, together.</p></div><button id="refresh" class="button secondary">Refresh</button></div>
+        <div class="metrics"><article class="metric"><span>Source health</span><strong id="health-label">—</strong><small id="health-age">Awaiting observation</small></article><article class="metric"><span id="observations-label">Verified observations</span><strong id="observations">0</strong><small>Stored across restarts</small></article><article class="metric"><span>Review cases</span><strong id="case-count">0</strong><small>Policy findings for review</small></article><article class="metric"><span>Guardian state</span><strong id="paused">Unknown</strong><small id="state-block">No state read</small></article></div>
+        <div class="overview-grid"><article class="panel"><div class="panel-top"><h2>Source & confirmation</h2><span id="origin-tag" class="tag">UNOBSERVED</span></div><dl id="source-facts" class="facts"></dl><div id="source-limits" class="muted small"></div></article><article class="panel"><h2>Review policy</h2><div class="policy-symbol">&gt;</div><p class="muted">A single withdrawal above this exact integer opens a case.</p><div id="policy-limit" class="amount">—</div><p class="small muted">DemoVault accounting units (valueless)</p><div id="policy-version" class="tag">—</div><hr><p class="small muted">A finding does not prove an exploit or a financial loss. It does not authorize a transaction.</p><button data-view="cases" class="button primary">Open review queue →</button></article></div>
+      </section>
+      <section id="cases-view" class="view" hidden>
+        <div class="heading"><div><div class="eyebrow">OPERATOR WORKSPACE</div><h1>Review queue</h1><p>Open the source evidence before recording a disposition.</p></div><label class="filter-label">Show <select id="case-filter"><option value="all">All states</option><option value="open">Open</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option></select></label></div>
+        <div id="case-list" class="case-list"></div><div class="pagination"><button id="previous" class="button secondary">← Previous</button><span id="page-note" class="muted small"></span><button id="next" class="button secondary">Next →</button></div>
+      </section>
+      <section id="detail-view" class="view" hidden>
+        <button data-view="cases" class="back">← Review queue</button>
+        <div class="heading"><div><div class="eyebrow">SINGLE WITHDRAWAL LIMIT</div><h1 id="detail-title">Case</h1><p id="detail-meta"></p></div><div class="export-buttons"><a id="export-json" class="button secondary">JSON brief ↓</a><a id="export-txt" class="button secondary">Text brief ↓</a></div></div>
+        <div class="detail-grid"><div><article class="panel"><div class="panel-top"><h2>Recorded finding</h2><span id="case-status" class="tag"></span></div><dl id="finding-facts" class="facts"></dl><div id="conflict-warning" class="warning" hidden></div><div id="explorer-links" class="explorer-links"></div></article><article class="panel"><h2>Chain action evidence</h2><p id="legacy-status"></p><p id="legacy-gap" class="muted small"></p><pre id="legacy-evidence"></pre></article><details class="panel"><summary>Original source & verification evidence</summary><pre id="source-evidence"></pre></details></div><div><article class="panel decision-panel"><h2>Record your decision</h2><p class="muted small">Your operator label is declared locally. Resolving a case records your assessment.</p><form id="decision-form"><label>Operator label<input id="operator" maxlength="80" required autocomplete="off" placeholder="Your local operator label"></label><label>Review note<textarea id="note" rows="4" maxlength="2000" required placeholder="What did you check? What remains uncertain?"></textarea></label><label id="disposition-label" hidden>Disposition<select id="disposition"><option value="insufficient_evidence">Insufficient evidence</option><option value="expected_activity">Expected activity</option><option value="policy_breach">Policy breach</option></select></label><button id="decision-submit" class="button primary" type="submit">Acknowledge case</button><p id="decision-message" role="status" aria-live="polite" class="small"></p></form></article><article class="panel"><h2>Review history</h2><ol id="history" class="history"></ol></article></div></div>
+      </section>
+      <footer>Local operator workspace · DemoVault accounting units are valueless · Evidence fingerprints show consistency</footer>
+    </main>
+  </div>
+</body>
+</html>

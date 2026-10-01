@@ -48,3 +48,20 @@ restart evaluations, degraded-source block, version identity and evidence export
 Recorded success/reverted/indeterminate/already_desired outcomes are read via mode=ro;
 tests verify legacy database bytes are unchanged. Missing legacy state is not created.
 Fixtures produce no explorer links. A review case never implies successful pause.
+
+## CWF301–302
+
+Full Linux suite: **302 PASS**, including **63 new review tests**. Repository Ruff,
+strict MyPy Sentinel (54 files), gateway/controller/deploy and Compose PASS.
+JavaScript syntax check PASS. Wheel builds and contains all three static assets.
+
+Browser acceptance on 127.0.0.1:8090, isolated synthetic database:
+source overview, queue, detail, acknowledgment, resolution with expected_activity,
+history revision 2 and text-brief download PASS. HTML-like note is displayed as
+literal text; no browser console errors. Screenshot: ui-fixture-acceptance.jpg;
+downloaded brief: ui-fixture-brief.txt. Operator label explicitly identifies an
+automated fixture test. This is not a human user session or a live chain decision.
+
+Cross-origin/missing-origin/missing-header writes, hostile Host, oversized payload,
+invalid state/revision/fields and unknown paths are rejected. Old source health is
+projected as stale; its recorded facts remain intact.
