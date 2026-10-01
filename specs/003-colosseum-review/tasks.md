@@ -19,17 +19,17 @@ Linux, their supported target; do not weaken tests or rewrite the controller.
 
 ## Stage 1 — observation and review persistence
 
-**CWF101:** add `sentinel/review/{__init__,models,store}.py` and `sentinel/tests/test_review_store.py`. Separate review-state file with replay-safe observation/rule bookkeeping, `review_cases`, `review_actions`, schema metadata and revisions. No legacy execution schema or source cursor is changed. Gate: restart, rollback, duplicate/conflicting source, competing updates and existing legacy-state isolation pass. Depends: CWF001.
+**CWF101 / complete:** add `sentinel/review/{__init__,models,store}.py` and `sentinel/tests/test_review_store.py`. Separate review-state file with replay-safe observation/rule bookkeeping, `review_cases`, `review_actions`, schema metadata and revisions. No legacy execution schema or source cursor is changed. Gate: restart, rollback, duplicate/conflicting source, competing updates and existing legacy-state isolation pass. Depends: CWF001.
 
-**CWF102:** add `sentinel/review/observer.py` and `sentinel/tests/test_review_observer.py`. Reuse public Graph/RPC validation through a read-only interface; persistent source health/gap state; no signer/model requirement and no action reservation. Minimal shared-module edits require explicit justification in the task before editing. Gate: captured source parsing, confirmation/canonical hash checks, degraded source, crash between ingest and rule evaluation, and tests where every sign/send method fails if called. Depends: CWF101.
+**CWF102 / complete:** add `sentinel/review/observer.py` and `sentinel/tests/test_review_observer.py`. Reuse public Graph/RPC validation through a read-only interface; persistent source health/gap state; no signer/model requirement and no action reservation. Minimal shared-module edits require explicit justification in the task before editing. Gate: captured source parsing, confirmation/canonical hash checks, degraded source, crash between ingest and rule evaluation, and tests where every sign/send method fails if called. Depends: CWF101.
 
 Verification: `python -m pytest -q sentinel/tests/test_review_store.py sentinel/tests/test_review_observer.py`; `python -m ruff check sentinel`; `python -m mypy sentinel`.
 
 ## Stage 2 — policy findings and evidence
 
-**CWF201:** add `sentinel/review/rules.py`, `sentinel/tests/test_review_rules.py` and `config/review.example.yaml`. One integer withdrawal threshold; exact policy version/source IDs/evidence. Optional rolling window requires a separate completed first-rule gate. Verify threshold boundaries, unit labels, invalid input, duplicate source and deterministic identities. Depends: CWF102.
+**CWF201 / complete:** add `sentinel/review/rules.py`, `sentinel/tests/test_review_rules.py` and `config/review.example.yaml`. One integer withdrawal threshold; exact policy version/source IDs/evidence. Optional rolling window requires a separate completed first-rule gate. Verify threshold boundaries, unit labels, invalid input, duplicate source and deterministic identities. Depends: CWF102.
 
-**CWF202:** add `sentinel/review/evidence.py`, `brief.py` and their tests. Legacy evidence is read via a read-only connection/reader, with explicit status and gaps; never infer a successful pause from a review result. Verify golden exported payload, genuine versus fixture links, indeterminate/reverted/no-action outcomes and legacy DB immutability. Depends: CWF201.
+**CWF202 / complete:** add `sentinel/review/evidence.py`, `brief.py` and their tests. Legacy evidence is read via a read-only connection/reader, with explicit status and gaps; never infer a successful pause from a review result. Verify golden exported payload, genuine versus fixture links, indeterminate/reverted/no-action outcomes and legacy DB immutability. Depends: CWF201.
 
 Verification: focused `python -m pytest -q sentinel/tests/test_review_rules.py sentinel/tests/test_review_evidence.py`; Ruff and strict MyPy.
 
@@ -40,16 +40,32 @@ CWF301 shared-file justification before editing: add a freshness projection to
 observations as stale. Preserve recorded health facts separately. Extend its test
 for a stale timestamp. No legacy module or signing API is modified.
 
-**CWF301:** add `sentinel/review/api.py`, `sentinel/review/cli.py`, `sentinel/tests/test_review_api.py`. Local list/detail/acknowledge/resolve/export; server timestamps, idempotency/revisions, input validation, allowed-origin write checks. No calls into execution/reset/recovery. Depends: CWF202.
+**CWF301 / complete:** add `sentinel/review/api.py`, `sentinel/review/cli.py`, `sentinel/tests/test_review_api.py`. Local list/detail/acknowledge/resolve/export; server timestamps, idempotency/revisions, input validation, allowed-origin write checks. No calls into execution/reset/recovery. Depends: CWF202.
 
-**CWF302:** add `sentinel/review/static/{index.html,app.js,style.css}` and package-data entries for those files. Three screens; keyboard-accessible decisions; clear accounting units/data status; actual action status separate from review status. Gate: direct local UI use creates correct reviewer metadata and brief; API concurrency/invalid-origin tests pass; stored data is rendered as text, not executable HTML. Depends: CWF301 and explicit UI amendment.
+**CWF302 / complete:** add `sentinel/review/static/{index.html,app.js,style.css}` and package-data entries for those files. Three screens; keyboard-accessible decisions; clear accounting units/data status; actual action status separate from review status. Gate: direct local UI use creates correct reviewer metadata and brief; API concurrency/invalid-origin tests pass; stored data is rendered as text, not executable HTML. Depends: CWF301 and explicit UI amendment.
 
 Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy; package asset check; local browser acceptance against an isolated test database.
 
 ## Stage 4 — live evidence, user feedback and delivery
 
-**CWF401:** new live controlled review rehearsal and restart/replay evidence; runbook and 2–3 operator sessions. Proposed files: `docs/colosseum/REHEARSAL.md`, `USER_FEEDBACK.md`, `deployments/` sanitized records. Any signing rehearsal follows owner authorization; historical read-only evidence can establish the first spike but cannot be presented as a newly executed transaction. Depends: CWF302.
+Execution update, 2026-10-01: CWF101–302 passed their local gates and were
+committed. CWF401 is in progress; the owner chose to be the first operator.
+The first human session has started. Prepare CWF402 documents alongside that
+session, but do not mark delivery complete before its dependencies pass.
 
-**CWF402:** disclosure, current-HEAD verification/CI, English pitch/demo, source/contract links, Colosseum submission package and confirmation. Files: `docs/colosseum/SUBMISSION_PACK.md`, `DISCLOSURE.md`, `VERIFICATION.md`, `README.md`. Use actual evidence for assertions and list prior Sentinel development. Depends: CWF401.
+CWF401 evidence files: save sanitized live session JSON/text briefs and actual
+UI screenshots in `docs/colosseum/`. The first human acknowledgment is now
+verified at 18:32:58Z; resolution/export/qualitative feedback remain pending.
+
+CWF402 file-list extension and justification before editing: update
+`.github/workflows/ci.yml` only to include `feat/colosseum-review` in the
+existing push trigger, so a later authorized publication can run current-HEAD
+CI. Add the ready-to-review plan `docs/colosseum/PLAN_v0.4_UK.md` and its copy
+in `D:\1111`. Update this task list and acceptance matrix to reflect measured
+results. These changes add no product runtime or remote publication.
+
+**CWF401 / in progress:** new live controlled review rehearsal and restart/replay evidence; runbook and 2–3 operator sessions. Proposed files: `docs/colosseum/REHEARSAL.md`, `USER_FEEDBACK.md`, `deployments/` sanitized records. Any signing rehearsal follows owner authorization; historical read-only evidence can establish the first spike but cannot be presented as a newly executed transaction. Depends: CWF302.
+
+**CWF402 / preparation in progress:** disclosure, current-HEAD verification/CI, English pitch/demo, source/contract links, Colosseum submission package and confirmation. Files: `docs/colosseum/SUBMISSION_PACK.md`, `DISCLOSURE.md`, `VERIFICATION.md`, `README.md`. Use actual evidence for assertions and list prior Sentinel development. Depends: CWF401.
 
 Verification: required full suite/lint/types/contract/CI gates; anonymous repo/video/link checks; actual submission confirmation. Demo target: 8 October; internal submission target: 12 October 20:00 Kyiv.

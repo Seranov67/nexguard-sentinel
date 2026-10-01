@@ -1,0 +1,77 @@
+{
+  "captured_at": "2026-10-01T18:45:46.801513+00:00",
+  "implementation_commit": "4144eebde74b403f4d172b29f0225c98f7b19063",
+  "source_status": {
+    "chain_id": 84532,
+    "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+    "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+    "unit": "DemoVault accounting units (valueless)",
+    "health": {
+      "added": 0,
+      "block_age_seconds": -12,
+      "checked_at": "2026-10-01T18:45:31.736263Z",
+      "confirmed_through": 47556028,
+      "graph_snapshot": 47556029,
+      "guardian_paused": true,
+      "limits": [
+        "Bounded Graph pagination; provider omissions cannot be disproved.",
+        "Canonical replay covers the configured rewind window."
+      ],
+      "max_future_clock_skew_seconds": 30,
+      "next_after": "46474498000075",
+      "rpc_head": 47556031,
+      "scan_complete": true,
+      "snapshot_hash": "0xc383970ebc4d65515a385a03add00cd21accf2ceedd2fc314dc3f2ec78341c08",
+      "state_block": 47556029,
+      "status": "healthy",
+      "recorded_status": "healthy",
+      "age_since_check_seconds": 15
+    },
+    "scope": {
+      "chain_id": 84532,
+      "deployment": "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ",
+      "graph_url": "https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0",
+      "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+      "origin": "live_graph_rpc",
+      "rpc_origin": "sepolia.base.org",
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+    },
+    "counts": {
+      "observations": 5,
+      "review_cases": 4,
+      "conflicts": 0,
+      "evaluations": 5
+    },
+    "policy": {
+      "version": "single-withdrawal-v1",
+      "withdrawal_limit": "10000000000000000000",
+      "chain_id": 84532,
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+      "rule": "single_withdrawal_limit",
+      "comparison": ">",
+      "unit": "DemoVault accounting units (valueless)"
+    },
+    "mode": "local review / read-only chain observation"
+  },
+  "case_id": "bbbfdd578c1c38f2ce01726e57bd6d92943b651977ccd3614f1d256f642ccaf9",
+  "review_status": "acknowledged",
+  "revision": 1,
+  "history": [
+    {
+      "action": "acknowledge",
+      "at": "2026-10-01T18:32:58.037924Z",
+      "case_id": "bbbfdd578c1c38f2ce01726e57bd6d92943b651977ccd3614f1d256f642ccaf9",
+      "disposition": null,
+      "new_revision": 1,
+      "note": "1222",
+      "operator": "1222",
+      "operator_identity": "locally declared label",
+      "request_id": "9fe66715-e87c-47ba-8bb7-831d9b34266d",
+      "revision": 0,
+      "status": "acknowledged"
+    }
+  ],
+  "legacy_action_status": "not_configured",
+  "origin": "First human operator acknowledgment reported by owner and confirmed in live UI. Historical onchain event; no new transaction.",
+  "capture_author": "Codex read-only capture; this is not proof of a human brief download."
+}

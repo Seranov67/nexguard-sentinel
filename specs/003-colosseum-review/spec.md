@@ -6,7 +6,7 @@ Version: 0.1 approved. Status: owner approved 2026-10-01 ("так далі"). Ca
 
 Extend existing Sentinel with a durable read-only observation path and an operator review workflow. Surface source evidence, deterministic review-policy findings, persisted legacy action outcomes and operator decisions accurately. Use one Base Sepolia DemoVault with valueless accounting credits.
 
-## Proposed Constitution amendment for owner approval
+## Approved Constitution amendment — 1 October 2026
 
 Permit spec-003 to add **one local web review interface, a local API for reviewer metadata, and isolated SQLite review state**. Bind the service to 127.0.0.1; no remote/cloud exposure, authentication system, wallet signing, contract control, new autonomous action, mainnet or real-value custody. Keep existing gateway and Sentinel execution behavior, non-regression checks and fail-closed signing restrictions. Operator labels are declared local labels, not authenticated identities. This amendment was explicitly approved on 2026-10-01 and recorded in the Constitution.
 

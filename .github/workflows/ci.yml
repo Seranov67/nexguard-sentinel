@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master, feature/ethonline-sentinel]
+    branches: [main, master, feature/ethonline-sentinel, feat/colosseum-review]
   pull_request:
   workflow_dispatch:
 

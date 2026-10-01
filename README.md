@@ -1,4 +1,46 @@
-# NexGuard Sentinel — ETHOnline 2026
+# NexGuard Sentinel — Incident Review Desk
+
+Local withdrawal review on Base Sepolia: verified Graph/RPC evidence, a versioned
+integer policy, durable operator decisions and exportable incident briefs.
+DemoVault uses valueless accounting credits.
+
+## Colosseum work — 1 October 2026
+
+- Approved SPEC-003 implementation lives on `feat/colosseum-review`, from baseline
+  `7a2a509`. The new review service needs no keeper key or AI model.
+- Five historical live withdrawals were verified; four opened review cases.
+  Replay creates no duplicate observations/evaluations/cases.
+- Local Linux Python 3.12 suite: **302 PASS**, including 63 new review tests.
+  Ruff, strict MyPy, Compose and nine contract tests pass. See VERIFICATION.md
+  for the precise local revision and delivery checks.
+- The first human acknowledgment is recorded. Human resolution/feedback,
+  independent validation, current remote CI, videos and submission remain pending.
+- The review feature is currently local; the existing public repository is not
+  evidence that these new commits have been published.
+
+## Open the desk
+
+With Python 3.12 and the committed dependencies installed:
+
+```powershell
+# In the isolated implementation checkout D:\1111\sentinel-colosseum:
+.venv\Scripts\python.exe -m sentinel.review.cli serve
+```
+
+Open [127.0.0.1:8089](http://127.0.0.1:8089/). This reads public testnet sources
+and stores local review data in `.sentinel/review.sqlite3`. It loads no `.env`.
+For isolated synthetic fixtures use `python -m sentinel.review.cli demo --port 8090`;
+the desk explicitly labels them and uses a separate database.
+
+[Runbook](docs/colosseum/RUNBOOK.md) ·
+[Verification](docs/colosseum/VERIFICATION.md) ·
+[Disclosure](docs/colosseum/DISCLOSURE.md) ·
+[Operator feedback](docs/colosseum/USER_FEEDBACK.md) ·
+[Submission draft](docs/colosseum/SUBMISSION_PACK.md) ·
+[Plan v0.4](docs/colosseum/PLAN_v0.4_UK.md)
+
+## Historical Sentinel scope — ETHOnline 2026
+
 
 Testnet incident response using live The Graph data, structured AI classification,
 durable pause-only execution, and inspectable incident evidence. DemoVault uses

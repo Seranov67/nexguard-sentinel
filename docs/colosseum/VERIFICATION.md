@@ -65,3 +65,36 @@ automated fixture test. This is not a human user session or a live chain decisio
 Cross-origin/missing-origin/missing-header writes, hostile Host, oversized payload,
 invalid state/revision/fields and unknown paths are rejected. Old source health is
 projected as stale; its recorded facts remain intact.
+
+## CWF401–402 preparation — 1 October 2026
+
+Production implementation through `4144eeb`, plus the delivery documentation
+and CI push-trigger diff. No remote CI run is implied.
+
+- Full Linux Python 3.12 suite rerun: **302 PASS** in 11.46s, three dependency
+  deprecation warnings. Repository Ruff and all four strict MyPy targets PASS
+  (Sentinel 54, gateway 6, controller 19, deploy 1 files). Compose config PASS.
+- Pinned Foundry image: format PASS and **9/9 contract tests PASS**.
+- Node 22 container, committed Subgraph lock: codegen/build PASS. Local
+  Matchstick 0.6.0 container: **1/1 mapping test PASS**. Generated dependencies
+  and outputs remain in ignored `.venv/subgraph-gate`; source is unchanged.
+- Official Gitleaks 8.30.1 container, digest
+  `sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f`:
+  working-directory scan PASS, zero leaks; full local history with `--all` PASS,
+  **64 commits**, zero leaks. Existing config/default rules unchanged; generated
+  dependency/cache paths are allowlisted. Findings are redacted. These scans
+  precede the final delivery-document commit.
+- CI YAML comparison PASS: only the existing push branch list gained
+  `feat/colosseum-review`; jobs/permissions were unchanged.
+- Original `D:\NexGuard Sentinel` checkout remains clean. No shared legacy
+  runtime, contract semantics, source deployment or signing configuration changed.
+- First human acknowledgment confirmed in live UI and local API: case
+  `bbbfdd578c1c…ccaf9`, revision 1, 18:32:58.037924Z. Evidence:
+  `first-operator-live-2026-10-01.json`, `first-operator-brief.{json,txt}` and
+  `ui-first-operator-acknowledged.jpg`. Brief files were captured by the agent;
+  they do not prove a human download.
+
+Still pending: human resolution/export and qualitative feedback; a post-session
+service restart retaining human history; independent operators; current remote
+CI including Docker end-to-end scenarios; video recording/anonymous links and
+actual submission confirmation. CWF401/CWF402 and A09/A10 remain partial.
