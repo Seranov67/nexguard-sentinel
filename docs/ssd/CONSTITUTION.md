@@ -61,6 +61,19 @@ unpause, a web control panel, authentication, cloud infrastructure, or broad
 changes to the completed gateway MVP. The new specification and its gates take
 precedence only where this paragraph explicitly conflicts with the table above.
 
+The owner approved SPEC-003 on 2026-10-01 ("так далі" following the explicit
+scope/amendment approval request). It permits one local web review interface,
+an API for reviewer metadata, and an isolated SQLite review database. Bind to
+127.0.0.1. Operator labels are locally declared, not authenticated identities.
+Observation and review expose no signer, pause/unpause, latch reset or recovery.
+No remote/cloud exposure, mainnet, real-value custody or multi-user service is
+added. Existing gateway and execution invariants remain mandatory.
+
+Re-review of SPEC-001 acceptance: AC-001 through AC-025 remain applicable and
+unchanged. The new isolated package does not modify the gateway/controller,
+Compose, backup, recovery, metrics or Telegram behavior. Scope exception only;
+all existing non-regression checks still apply.
+
 ### 3.3 Architectural invariants
 - **ARCH-1** — The health-check loop runs **every 10 seconds** (configurable via env,
   but default must be 10 s).
@@ -159,3 +172,4 @@ Changes to this Constitution require:
 | 2026-07-14 | owner-approved amendment | Allow Docker-only gates to be deferred on an explicitly Docker-free development host |
 | 2026-07-15 | owner-requested completion audit | Record all MVP Definition of Done gates as verified |
 | 2026-09-04 | owner-approved ETHOnline amendment | Permit the isolated Sentinel event feature defined by `specs/002-ethonline-sentinel` |
+| 2026-10-01 | owner-approved Colosseum amendment | Permit isolated observe-only collection, review metadata and local UI defined by SPEC-003; re-reviewed SPEC-001 acceptance |

@@ -15,6 +15,15 @@ Cursor, etc.) working on **NexGuard Sentinel** and the pre-existing
   MVP retains its name and provenance.
 - See `docs/ethonline/PROJECT_IDENTITY.md` for the component map.
 
+### Colosseum work approved 2026-10-01
+
+- Isolated implementation checkout: `D:\1111\sentinel-colosseum`.
+- Branch: `feat/colosseum-review`, based on `7a2a5092498aeffd47efd8ae5eed5815624554f4`.
+- Read `specs/003-colosseum-review/` and `docs/colosseum/BASELINE.md` for this work.
+- The owner's "так далі" approves SPEC-003, its narrow local UI amendment and
+  progression through its listed stages after each applicable gate passes.
+- The original checkout and legacy execution behavior are preserved.
+
 ---
 
 ## Development Method
@@ -67,6 +76,8 @@ continue; deferred gates remain mandatory for the MVP Definition of Done.
   Base Sepolia contracts, live The Graph data, schema-validated AI classification,
   and local SQLite durability within `specs/002-ethonline-sentinel`. All other
   exclusions and the existing MVP non-regression requirements remain in force.
+  The owner-approved 2026-10-01 amendment additionally permits only the local
+  observation/review surface defined in SPEC-003; it exposes no signer or recovery.
 - **DOCKER**: Only restart containers with label `io.nexguard.managed=true` AND in allowlist.
 - **TELEGRAM**: Must be optional and non-blocking; tests pass without a token.
 - **ATOMICITY**: All file writes (backup, restore) must use `os.replace`.

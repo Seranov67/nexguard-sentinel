@@ -1,0 +1,83 @@
+{
+  "checked_at": "2026-10-01T17:32:28.403015+00:00",
+  "chain_id": 84532,
+  "graph_url": "https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0",
+  "rpc_origin": "https://sepolia.base.org",
+  "mode": "read-only",
+  "limitations": [
+    "Historical events may be reread; no new transaction was executed."
+  ],
+  "rpc_chain_id": 84532,
+  "rpc_head": 47553839,
+  "graph_response": {
+    "data": {
+      "withdrawals": [
+        {
+          "id": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000",
+          "sequence": "46428477000202",
+          "blockNumber": "46428477",
+          "blockHash": "0x92984f94f4c7bcd126f9f0b5a9b7bcf3f4c795173cc452b95a8f02858219581a",
+          "transactionHash": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed",
+          "logIndex": "202",
+          "timestamp": "1788625242",
+          "who": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+          "amount": "100"
+        },
+        {
+          "id": "0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f85238000000",
+          "sequence": "46433846000056",
+          "blockNumber": "46433846",
+          "blockHash": "0x8af2086a8591583f16b69235ed157c8a1dc0fc0628330deb438567f9f75a1481",
+          "transactionHash": "0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f852",
+          "logIndex": "56",
+          "timestamp": "1788635980",
+          "who": "0x2853f05f8cbaf92572ee8c811784be35efb8d8f2",
+          "amount": "25000000000000000000"
+        },
+        {
+          "id": "0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d03f000000",
+          "sequence": "46433891000063",
+          "blockNumber": "46433891",
+          "blockHash": "0x83e73158edb6dd6ab974d05b371fea579f7494bc1037f12c86e0fd6690c226b9",
+          "transactionHash": "0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d0",
+          "logIndex": "63",
+          "timestamp": "1788636070",
+          "who": "0xa03b8bd8daab7e3d7ffb658a9c7c5dabd2cd4ba6",
+          "amount": "25000000000000000000"
+        },
+        {
+          "id": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+          "sequence": "46433924000168",
+          "blockNumber": "46433924",
+          "blockHash": "0x5d4377cc8bec32312d864a7b1d6c73543e43debf6174ae992c4b23e2c4abc21c",
+          "transactionHash": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e",
+          "logIndex": "168",
+          "timestamp": "1788636136",
+          "who": "0x4ba3015e6ac76341a0dbdcaef17a283452beb6e7",
+          "amount": "25000000000000000000"
+        },
+        {
+          "id": "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe314b000000",
+          "sequence": "46474498000075",
+          "blockNumber": "46474498",
+          "blockHash": "0xacf1930dd4452b72d40ea5b72be149fb211044cca2792814174c9c1ec8b6d95d",
+          "transactionHash": "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe31",
+          "logIndex": "75",
+          "timestamp": "1788717284",
+          "who": "0x88fd17bd5588dbcc34126e633315b49aa32d9cc6",
+          "amount": "25000000000000000000"
+        }
+      ],
+      "_meta": {
+        "deployment": "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ",
+        "block": {
+          "number": 47553836,
+          "hash": "0x5de70780e6711cff79a7455898f2f1a59e8861a9d79b000eb186c3a644ae5861"
+        },
+        "hasIndexingErrors": false
+      }
+    }
+  },
+  "graph_rpc_hash_agreement": true,
+  "status": "reachable"
+}

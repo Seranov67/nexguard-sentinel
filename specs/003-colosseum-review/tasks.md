@@ -1,0 +1,50 @@
+# SPEC-003 — stages and tasks
+
+Status: approved 2026-10-01. Implementation checkout: `D:\1111\sentinel-colosseum`.
+No implementation task is marked complete based on the Node prototype.
+
+CWF001 verification repair justification (before editing): the tracked baseline
+Solidity files contain CRLF, so Foundry's format gate fails even from `git archive`.
+Add `.gitattributes` for Solidity LF and normalize line endings only in
+`contracts/src/Guardian.sol`, `contracts/src/DemoVault.sol`, and
+`contracts/test/Guardian.t.sol`. No Solidity semantics change. Verify byte-equivalence
+after CRLF normalization plus Foundry format/tests. POSIX controller tests run on
+Linux, their supported target; do not weaken tests or rewrite the controller.
+
+## Stage 0 — specification and baseline
+
+**CWF000 / complete:** spec, plan, audit, tasks, acceptance and proposed Constitution amendment exist in `D:\1111`. Gate: owner approves scope; document requirements match acceptance IDs.
+
+**CWF001 / complete:** record Colosseum baseline, prepare an isolated working branch/worktree from canonical Sentinel, run current quality gates and read-only live source checks. Proposed files: `docs/colosseum/BASELINE.md`, `DISCLOSURE.md`, `SOURCE_STATUS.md`, `docs/ssd/CONSTITUTION.md`, `AGENTS.md`, `specs/003-colosseum-review/`. Verify: Git status/diff/provenance; Python 3.12 pytest, Ruff, MyPy, required contract checks; Graph health and RPC chain/contract reads. Historical PASS is insufficient. Depends: CWF000 approval.
+
+## Stage 1 — observation and review persistence
+
+**CWF101:** add `sentinel/review/{__init__,models,store}.py` and `sentinel/tests/test_review_store.py`. Separate review-state file with replay-safe observation/rule bookkeeping, `review_cases`, `review_actions`, schema metadata and revisions. No legacy execution schema or source cursor is changed. Gate: restart, rollback, duplicate/conflicting source, competing updates and existing legacy-state isolation pass. Depends: CWF001.
+
+**CWF102:** add `sentinel/review/observer.py` and `sentinel/tests/test_review_observer.py`. Reuse public Graph/RPC validation through a read-only interface; persistent source health/gap state; no signer/model requirement and no action reservation. Minimal shared-module edits require explicit justification in the task before editing. Gate: captured source parsing, confirmation/canonical hash checks, degraded source, crash between ingest and rule evaluation, and tests where every sign/send method fails if called. Depends: CWF101.
+
+Verification: `python -m pytest -q sentinel/tests/test_review_store.py sentinel/tests/test_review_observer.py`; `python -m ruff check sentinel`; `python -m mypy sentinel`.
+
+## Stage 2 — policy findings and evidence
+
+**CWF201:** add `sentinel/review/rules.py`, `sentinel/tests/test_review_rules.py` and `config/review.example.yaml`. One integer withdrawal threshold; exact policy version/source IDs/evidence. Optional rolling window requires a separate completed first-rule gate. Verify threshold boundaries, unit labels, invalid input, duplicate source and deterministic identities. Depends: CWF102.
+
+**CWF202:** add `sentinel/review/evidence.py`, `brief.py` and their tests. Legacy evidence is read via a read-only connection/reader, with explicit status and gaps; never infer a successful pause from a review result. Verify golden exported payload, genuine versus fixture links, indeterminate/reverted/no-action outcomes and legacy DB immutability. Depends: CWF201.
+
+Verification: focused `python -m pytest -q sentinel/tests/test_review_rules.py sentinel/tests/test_review_evidence.py`; Ruff and strict MyPy.
+
+## Stage 3 — local operator workflow
+
+**CWF301:** add `sentinel/review/api.py`, `sentinel/review/cli.py`, `sentinel/tests/test_review_api.py`. Local list/detail/acknowledge/resolve/export; server timestamps, idempotency/revisions, input validation, allowed-origin write checks. No calls into execution/reset/recovery. Depends: CWF202.
+
+**CWF302:** add `sentinel/review/static/{index.html,app.js,style.css}` and package-data entries for those files. Three screens; keyboard-accessible decisions; clear accounting units/data status; actual action status separate from review status. Gate: direct local UI use creates correct reviewer metadata and brief; API concurrency/invalid-origin tests pass; stored data is rendered as text, not executable HTML. Depends: CWF301 and explicit UI amendment.
+
+Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy; package asset check; local browser acceptance against an isolated test database.
+
+## Stage 4 — live evidence, user feedback and delivery
+
+**CWF401:** new live controlled review rehearsal and restart/replay evidence; runbook and 2–3 operator sessions. Proposed files: `docs/colosseum/REHEARSAL.md`, `USER_FEEDBACK.md`, `deployments/` sanitized records. Any signing rehearsal follows owner authorization; historical read-only evidence can establish the first spike but cannot be presented as a newly executed transaction. Depends: CWF302.
+
+**CWF402:** disclosure, current-HEAD verification/CI, English pitch/demo, source/contract links, Colosseum submission package and confirmation. Files: `docs/colosseum/SUBMISSION_PACK.md`, `DISCLOSURE.md`, `VERIFICATION.md`, `README.md`. Use actual evidence for assertions and list prior Sentinel development. Depends: CWF401.
+
+Verification: required full suite/lint/types/contract/CI gates; anonymous repo/video/link checks; actual submission confirmation. Demo target: 8 October; internal submission target: 12 October 20:00 Kyiv.
