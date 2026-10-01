@@ -1,0 +1,47 @@
+{
+  "first_poll": {
+    "status": "healthy",
+    "checked_at": "2026-10-01T17:55:34.025683Z",
+    "rpc_head": 47554532,
+    "graph_snapshot": 47554530,
+    "block_age_seconds": -12,
+    "confirmed_through": 47554529,
+    "snapshot_hash": "0x91627f4bf60ccfcf24a0c5bfd18cb52d365733f3fe9c06a0daf769fdd1a44113",
+    "guardian_paused": true,
+    "state_block": 47554530,
+    "added": 5,
+    "scan_complete": true,
+    "next_after": "46474498000075",
+    "max_future_clock_skew_seconds": 30,
+    "limits": [
+      "Bounded Graph pagination; provider omissions cannot be disproved.",
+      "Canonical replay covers the configured rewind window."
+    ]
+  },
+  "replay": {
+    "status": "healthy",
+    "checked_at": "2026-10-01T17:55:38.107186Z",
+    "rpc_head": 47554534,
+    "graph_snapshot": 47554532,
+    "block_age_seconds": -12,
+    "confirmed_through": 47554531,
+    "snapshot_hash": "0xffe83f1b0c1aa2b13746a3d4bf92dfe59d30d716d39e06a7aeb592ed0b953454",
+    "guardian_paused": true,
+    "state_block": 47554532,
+    "added": 0,
+    "scan_complete": true,
+    "next_after": "46474498000075",
+    "max_future_clock_skew_seconds": 30,
+    "limits": [
+      "Bounded Graph pagination; provider omissions cannot be disproved.",
+      "Canonical replay covers the configured rewind window."
+    ]
+  },
+  "counts": {
+    "observations": 5,
+    "review_cases": 0,
+    "conflicts": 0,
+    "evaluations": 0
+  },
+  "transaction_activity": "No transaction created or sent. Historical withdrawals verified today."
+}
