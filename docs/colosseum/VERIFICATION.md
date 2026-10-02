@@ -247,3 +247,55 @@ the external artifact manifest; no old archive is presented as the current code.
 Foundry and Docker e2e were not rerun in this cycle; earlier Foundry evidence
 retains its date/revision. A09 human resolution/export/feedback and A10 remote CI,
 videos/submission remain partial. Immediate agent review does not fill human A09.
+
+## CWF406 — authorized publication and degraded/stale rehearsal, 2 October 2026
+
+The owner approved the preceding proposal with "роби". Pushed the exact verified
+`9932a6c65500ca8e9f4ed18d00fe22cc37ba11f0` to GitHub `feat/colosseum-review`;
+ls-remote confirmed the same SHA. First CI ran on 2 October, earlier than the
+planned 3–5 October window. Main and historical event branch were not changed.
+
+[Run 37035375293](https://github.com/Seranov67/nexguard-sentinel/actions/runs/37035375293)
+completed **success**, event=push, 16:39:10Z–16:41:42Z. REST run/job status and
+actual job logs were read. Sanitized evidence: `cwf406-first-ci.json`.
+
+- quality: **308 Python PASS**, three dependency deprecation warnings, Ruff,
+  strict MyPy all targets, Compose and source signature check PASS.
+- contracts: pinned Foundry format and **9 tests PASS**.
+- subgraph: pinned npm ci, codegen/build and **1 Matchstick test PASS**.
+- docker-e2e: healthy stack, stopped-container recovery, corrupt-config atomic
+  restore and final cleanup all PASS. These are GitHub-runner resources; local
+  trading/monitoring containers were not restarted or modified.
+
+The original workflow omitted local-review JS regressions. CWF406 adds Node 22,
+the actual app syntax check and existing eight-test command to quality CI.
+This adds verification tooling only; no Node dependency in the Python product.
+The CWF406 source commit requires a separate exact-SHA run; first-run results
+are not attributed to newer code. Its final CI receipt is stored with delivery
+artifacts in `D:\1111\artifacts` once that run actually finishes.
+
+Automated isolated live-data rehearsal: actual public polls initially/recovery;
+local stale-check timestamp, stale head and HTTP503 injections in between.
+Counts before failure: 5 observations/4 evaluations/3 cases/1 pending event.
+Stale offline UI/API retains facts and cases; an actual stale-head guard failure
+and HTTP503 poll both set degraded health and block processing. Existing case
+detail and exports remain available and unchanged. Actual public recovery
+evaluates exactly one pending event; final 5 observations/5 evaluations/4 cases.
+Reopen/replay returns zero. See `cwf406-rehearsal.json` and REHEARSAL.md.
+
+Text export previously exposed source health only in its JSON appendix. Two new
+summary regressions failed against old code; repaired summary exposes status,
+recorded status, checked_at and the explicit stale/failure gap before the appendix.
+Actual downloaded browser brief confirms it. JSON schema/version is unchanged.
+Browser ports 8094/8095 show stale/degraded and an accessible existing queue/case.
+Screenshots/brief are automated QA, not a human disposition or customer feedback.
+
+Current CWF406 diff: **310 Linux Python PASS** (11.50s), **71 Windows review PASS**,
+**8 JS PASS**, Ruff, strict MyPy all four targets and Compose PASS.
+Gitleaks directory/full-history scans clean (68 commits before CWF406 commit);
+post-commit scan is refreshed before the follow-up push. First CI already verified
+Foundry/Subgraph/Docker e2e on 9932a6c; the follow-up run checks its own SHA.
+No new runtime dependency, source deployment, signer or onchain transaction.
+
+A09 human resolution/export/qualitative feedback remains partial. A10 still needs
+video links, final public-access checks and actual submission confirmation.

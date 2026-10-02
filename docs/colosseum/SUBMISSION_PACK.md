@@ -1,7 +1,9 @@
 # NexGuard Sentinel — Crypto World's Fair submission draft
 
-Prepared 1 October 2026. Reviewable local draft; not submitted or published.
-Technical implementation through local commit `4144eeb` on `feat/colosseum-review`.
+Updated 2 October 2026. Submission draft; not submitted. Source through
+`9932a6c` is published on `feat/colosseum-review`; its first remote CI passed.
+CWF406 adds a readable source-health brief summary and the JS CI gate; local
+results below describe that diff, whose next push requires its own CI result.
 
 ## Product summary
 
@@ -44,9 +46,13 @@ disposition and export a brief. Revisions and idempotency protect the local hist
 Resolving the case records an assessment. The interface exposes no contract action.
 
 We verified five historical withdrawals and created four new review cases.
-Repeated ingestion and evaluation created no duplicates. The full local Python
-suite passes 302 tests, including 63 new review tests. Our first owner-operated
-session has started; independent user validation and a measured time-saving
+The fifth event has 100 valueless units, below the strict integer threshold,
+and retains its evaluation without opening a case. Replay creates no duplicates.
+We also tested source failures: stored cases remain accessible, failed verification
+blocks new evaluation, and recovery processes the outstanding event once.
+The latest local Python suite passes 310 tests, including 71 review tests. Our
+first GitHub CI passed contracts, Subgraph and Docker recovery scenarios.
+Our first owner-operated session has started; independent user validation and a measured time-saving
 comparison are still pending.
 
 We reused contracts, a Subgraph and an execution runtime developed before this
@@ -89,8 +95,10 @@ Synthetic mode must be announced and must not display invented chain links.
 
 ## Evidence and links
 
-- [Existing repository](https://github.com/Seranov67/nexguard-sentinel) — prior public
-  repository. SPEC-003 commits are local and need publication before judge review.
+- [Review source branch](https://github.com/Seranov67/nexguard-sentinel/tree/feat/colosseum-review)
+  — published SPEC-003 source, with preserved prior history.
+- [First exact-SHA CI](https://github.com/Seranov67/nexguard-sentinel/actions/runs/37035375293)
+  — success on `9932a6c`; subsequent candidates require their own CI.
 - [Guardian](https://sepolia.basescan.org/address/0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3)
 - [DemoVault](https://sepolia.basescan.org/address/0xf1683d32fef59bbb95483561aba62a1bda65cd13)
 - [Reviewed historical withdrawal](https://sepolia.basescan.org/tx/0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe31)
@@ -103,8 +111,8 @@ Synthetic mode must be announced and must not display invented chain links.
 | Item | Current state |
 |---|---|
 | Colosseum registration and roster | Owner confirmation pending |
-| Review feature repository/commit accessible to judges | Local only; publication pending |
-| Current remote CI | Pending after publication; local gates recorded separately |
+| Review feature repository/commit accessible to judges | Feature branch published; anonymous API reads verified |
+| Current remote CI | First run on 9932a6c success; next candidate requires its own exact-SHA run |
 | Presentation video | Script ready; recording/link pending |
 | Product-demo video | Storyboard ready; recording/link pending |
 | Logo | Existing NexGuard visual identity; final portal asset pending |

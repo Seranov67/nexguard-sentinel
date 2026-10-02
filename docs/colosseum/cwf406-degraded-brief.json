@@ -1,0 +1,131 @@
+{
+  "case": {
+    "conflicts": [],
+    "created_at": "2026-10-02T16:42:56.821222Z",
+    "disposition": null,
+    "event_id": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+    "finding": {
+      "authorization": "review_only",
+      "breached": true,
+      "case_id": "8fbc8d857e8bf0e42bd3bf5cf3cb8b244a62dc98893b762250e246f138440156",
+      "chain_id": 84532,
+      "comparison": ">",
+      "observed_amount": "25000000000000000000",
+      "origin": "live_graph_rpc",
+      "policy": "661cfa34fb2207e1eb76d8fe3f4f32c2b4308d2bc94c53c2f35e16e3c30199be",
+      "policy_version": "single-withdrawal-v1",
+      "reason": "Withdrawal exceeds configured limit",
+      "rule": "single_withdrawal_limit",
+      "source_ids": [
+        "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000"
+      ],
+      "synthetic": false,
+      "threshold": "10000000000000000000",
+      "unit": "DemoVault accounting units (valueless)",
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+    },
+    "history": [],
+    "id": "8fbc8d857e8bf0e42bd3bf5cf3cb8b244a62dc98893b762250e246f138440156",
+    "observation": {
+      "id": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+      "observed_at": "2026-10-02T16:42:56.486483Z",
+      "origin": "live_graph_rpc",
+      "payload_sha256": "d2fb25a63644e1e200740598dfd70e7f2bf571c08c0f070d967f2e4731b5c849",
+      "proof": {
+        "block_hash": "0x5d4377cc8bec32312d864a7b1d6c73543e43debf6174ae992c4b23e2c4abc21c",
+        "confirmations": 1161629,
+        "graph_snapshot": 47595549,
+        "log_index": 168,
+        "receipt_status": 1,
+        "recipient": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+        "remaining_credit": "25000000000000000000",
+        "rpc_head": 47595552,
+        "transaction_hash": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e",
+        "triggered_by": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+        "verified_at": "2026-10-02T16:42:52.420577Z"
+      },
+      "raw": {
+        "amount": "25000000000000000000",
+        "blockHash": "0x5d4377cc8bec32312d864a7b1d6c73543e43debf6174ae992c4b23e2c4abc21c",
+        "blockNumber": "46433924",
+        "id": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+        "logIndex": "168",
+        "recipient": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+        "remainingCredit": "25000000000000000000",
+        "sequence": "46433924000168",
+        "timestamp": "1788636136",
+        "transactionHash": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e",
+        "triggeredBy": "0x46c3a46efd54f928707f83d9e3f5f87f0d420172",
+        "who": "0x4ba3015e6ac76341a0dbdcaef17a283452beb6e7"
+      }
+    },
+    "policy": "661cfa34fb2207e1eb76d8fe3f4f32c2b4308d2bc94c53c2f35e16e3c30199be",
+    "policy_definition": {
+      "chain_id": 84532,
+      "comparison": ">",
+      "rule": "single_withdrawal_limit",
+      "unit": "DemoVault accounting units (valueless)",
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+      "version": "single-withdrawal-v1",
+      "withdrawal_limit": "10000000000000000000"
+    },
+    "revision": 0,
+    "status": "open"
+  },
+  "chain_id": 84532,
+  "exported_at": "2026-10-02T16:42:57.080941Z",
+  "finding_integrity": "recorded",
+  "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+  "legacy_action": {
+    "classification": null,
+    "gap": "Legacy action evidence was not connected.",
+    "outcomes": [],
+    "status": "not_configured"
+  },
+  "limits": [
+    "Payload SHA-256 proves consistency, not provider authenticity.",
+    "A review finding is not proof of an exploit or financial loss.",
+    "Resolution records a local decision and does not remediate chain state.",
+    "Operator labels are locally declared; no authenticated identity."
+  ],
+  "links": {
+    "guardian": "https://sepolia.basescan.org/address/0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+    "vault": "https://sepolia.basescan.org/address/0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+    "withdrawal": "https://sepolia.basescan.org/tx/0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e"
+  },
+  "schema_version": "nexguard.review-brief.v1",
+  "source": {
+    "chain_id": 84532,
+    "deployment": "QmNcPyyo2Ybz1M3Lmg1eAE8A6ATuhZ3RvqePiks18fTfcQ",
+    "graph_url": "https://api.studio.thegraph.com/query/1758726/nexguard-sentinel/v0.1.0",
+    "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+    "origin": "live_graph_rpc",
+    "rpc_origin": "sepolia.base.org",
+    "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+  },
+  "source_health": {
+    "added": 5,
+    "age_since_check_seconds": null,
+    "block_age_seconds": -11,
+    "checked_at": "2026-10-02T16:42:57.006961Z",
+    "confirmed_through": 47595548,
+    "error_type": "HTTPStatusError",
+    "gap": "Source verification failed; stored evidence may be stale.",
+    "graph_snapshot": 47595549,
+    "guardian_paused": true,
+    "limits": [
+      "Bounded Graph pagination; provider omissions cannot be disproved.",
+      "Canonical replay covers the configured rewind window."
+    ],
+    "max_future_clock_skew_seconds": 30,
+    "next_after": "46474498000075",
+    "recorded_status": "degraded",
+    "rpc_head": 47595552,
+    "scan_complete": false,
+    "snapshot_hash": "0x12d3681723c8ba23f4d30be06981b59d067d696520669f7a0657f963fdfb0772",
+    "state_block": 47595549,
+    "status": "degraded"
+  },
+  "synthetic": false,
+  "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+}

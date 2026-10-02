@@ -70,3 +70,36 @@ that the human downloaded it.
 A future controlled withdrawal rehearsal requires separate operational
 authorization and real transaction/receipt evidence. Existing historical
 observations already support the first read-only spike; they are not a new withdrawal.
+
+## CWF406 — degraded/stale and recovery, 2 October 2026
+
+Automated technical rehearsal on a new independent QA database; no source or
+human-session file was modified. Initial and recovery polls used actual public
+Graph/RPC, with no keeper/model or chain transaction. All five observations are
+historical withdrawals. Drain four evaluations first, leaving five observations,
+three cases and exactly one pending above-threshold event.
+
+1. Set the isolated health check timestamp 120 seconds in the past. Offline API
+   and UI show `stale` with `recorded_status=healthy`; original block/state facts,
+   three cases and pending event remain available. Offline serving does not poll
+   or drain evaluations. This is a controlled freshness projection.
+2. Exercise actual `Observer.poll` with a locally controlled 1000-second-old
+   source head. The freshness guard rejects it, stores degraded health and
+   blocks `process_pending`; evaluation/case counts remain unchanged.
+3. Exercise actual read RPC with a local HTTP503 transport. Poll rejects it,
+   recorded health becomes degraded/scan_complete=false with HTTPStatusError
+   and an explicit verification gap. Pending evaluation stays blocked; detail
+   and JSON/text exports of the existing case still work.
+4. Revalidate against actual public Graph/RPC. Source returns healthy; exactly
+   one outstanding event evaluates, reaching five evaluations/four cases.
+   Reopen/replay returns zero. Existing original case/evidence stays identical.
+
+Actual browser checks on loopback ports 8094/8095 confirmed stale/degraded notices,
+preserved block facts, accessible three-case queue and case detail. A text brief
+downloaded from the degraded case shows Source status/check time/gap in its
+readable summary. Temporary QA processes/tabs were closed after verification.
+
+Evidence: `cwf406-rehearsal.json`, `cwf406-{stale,degraded}-brief.{json,txt}`,
+`cwf406-browser-brief.txt`, `cwf406-{stale,degraded}.jpg`.
+Timestamp/stale-head/HTTP503 are local test injections, not real reported
+provider outages. Agent activity does not complete human feedback/A09.

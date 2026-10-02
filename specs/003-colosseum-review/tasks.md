@@ -48,6 +48,38 @@ Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy
 
 ## Stage 4 — live evidence, user feedback and delivery
 
+**CWF406 / complete — 2 October 2026:** owner approved the proposed next
+cycle with "роби": publish verified `9932a6c` to the separate GitHub feature
+branch and monitor/fix the resulting exact-SHA CI; complete an isolated
+degraded/stale source rehearsal. No merge/main push or chain transaction.
+Written justification before editing: the schedule still shows old unpublished
+status and stale quality counts; exercise provider-failure/freshness projections
+through actual API, UI and exports before recording readiness. Files: this task
+list, `specs/003-colosseum-review/acceptance.md`,
+`docs/colosseum/{PLAN_v0.5_UK,REHEARSAL,VERIFICATION,RUNBOOK,SUBMISSION_PACK}.md`,
+`docs/colosseum/cwf406-*` sanitized evidence, and the external plan copy.
+If a defect is reproduced, document the exact affected source/test/workflow files
+and extend this scope before editing. Gate: remote SHA/run evidence, provider
+failure blocks pending evaluations while preserved cases stay readable,
+stale metadata appears accurately in UI/brief, source recovery processes the
+pending event once; recorded original observations/decisions preserved.
+Existing source gates apply before each commit. Human A09 remains partial.
+Scope extension before editing: `sentinel/review/brief.py` and
+`sentinel/tests/test_review_evidence.py` — source health is currently present
+only deep in the full JSON appendix of the text export. Add status, recorded
+status, check time and explicit source gap to its readable summary, with
+stale/degraded export regressions. `.github/workflows/ci.yml` — the first push
+run includes Python/contract/Subgraph/Docker gates but omits the new actual-script
+JS regressions. Add Node 22 and the existing eight-test command to quality CI.
+Neither change adds a product runtime, signing capability or external message.
+Delivery evidence file-list extension: add a final exact-SHA CI receipt and
+refreshed source artifacts under `D:\1111\artifacts`; record the full published
+SHA, checksums, post-commit secret scan and actual CI result without changing
+historical archives. CWF406 local gates PASS: 310 Python/71 review/8 JS,
+Ruff/strict MyPy/Compose, real-public recovery and controlled failure/browser
+rehearsal. First published CI on 9932a6c is success in all four jobs. Follow-up
+source commit/run is verified before the final report; human A09 remains partial.
+
 **CWF405 / complete — 2 October 2026:** expose source conflict records in
 Source overview and the persistent notice even when no case exists. Written
 justification before editing: rejected conflicting evidence intentionally opens

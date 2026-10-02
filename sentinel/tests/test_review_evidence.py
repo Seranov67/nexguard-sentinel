@@ -85,3 +85,31 @@ def test_old_source_health_is_stale_with_recorded_facts_preserved(tmp_path: Path
     health = source_status(store)
     assert health["status"] == "stale" and health["recorded_status"] == "healthy"
     assert health["rpc_head"] == 100
+
+
+@pytest.mark.parametrize("status", ["stale", "degraded"])
+def test_text_brief_summary_exposes_source_freshness_and_failure(
+    tmp_path: Path, status: str
+) -> None:
+    store, case_id = review_case(tmp_path, live=True)
+    original = store.detail(case_id)
+    store.health(
+        {
+            "status": "healthy" if status == "stale" else "degraded",
+            "checked_at": "2026-09-06T12:00:00Z",
+            "rpc_head": 100,
+            **(
+                {"gap": "Source verification failed; stored evidence may be stale."}
+                if status == "degraded"
+                else {}
+            ),
+        }
+    )
+    value = bundle(store, case_id, LegacyEvidence())
+    summary = text_brief(value).split("Full evidence:")[0]
+    assert f"Source status: {status}" in summary
+    assert "Source checked at: 2026-09-06T12:00:00Z" in summary
+    expected_gap = "Source verification failed" if status == "degraded" else "Source check is stale"
+    assert expected_gap in summary
+    assert value["case"] == original
+    assert value["source_health"]["rpc_head"] == 100

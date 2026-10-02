@@ -24,6 +24,10 @@ Read once without the UI:
 ```
 
 `serve --offline` opens stored evidence without polling; old health is labelled stale.
+Stored healthy/catching-up checks older than 90 seconds are projected as stale;
+the recorded status/block facts remain visible. Offline serving does not ingest
+or evaluate pending work. A failed live poll (including an over-age source head)
+records degraded health and blocks evaluation until a complete verified scan.
 An optional `--legacy-state PATH` connects recorded prior action evidence using
 SQLite read-only mode. It does not reverify current chain outcomes or bypass the
 original evidence API's payment gate. Never use the same review and legacy file.
@@ -52,6 +56,10 @@ Do not reuse a live database for this command; source binding rejects mixing.
    this page. A successful decision clears its draft. Browser refresh, closing
    the tab or restarting the page clears unsaved drafts; saved history remains
    durable in SQLite. A resolved case cannot accept another decision.
+
+The text brief summary lists **Source status**, its recorded status,
+**Source checked at** and **Source gap** before the full JSON evidence appendix.
+Check these fields before treating a saved case as current source evidence.
 
 Source conflicts require reconciliation and are retained. Operator decisions cannot
 erase them. The local review feature has no reconciliation/reset/signing endpoints.
