@@ -10,7 +10,13 @@ function element() {
   return {
     value: '', textContent: '', hidden: false, disabled: false,
     listeners: {}, children: [],
-    classList: { add() {}, toggle() {} },
+    classList: {
+      values: new Set(),
+      add(name) { this.values.add(name); },
+      toggle(name, active) {
+        if (active) this.values.add(name); else this.values.delete(name);
+      },
+    },
     addEventListener(name, handler) { this.listeners[name] = handler; },
     replaceChildren() { this.children = []; },
     append(...children) { this.children.push(...children); },
@@ -33,7 +39,9 @@ function deferred() {
   const promise = new Promise((done) => { resolve = done; });
   return { promise, resolve };
 }
-function desk(detail, post = async () => response({})) {
+function desk(detail, post = async () => response({}), status = {
+  health: { status: 'synthetic' }, counts: {}, policy: {},
+}) {
   const elements = new Map();
   const get = (id) => {
     if (!elements.has(id)) elements.set(id, element());
@@ -50,9 +58,7 @@ function desk(detail, post = async () => response({})) {
         payloads.push(JSON.parse(options.body));
         return post(path, options);
       }
-      if (path === '/api/status') return response({
-        health: { status: 'synthetic' }, counts: {}, policy: {},
-      });
+      if (path === '/api/status') return response(status);
       if (path.startsWith('/api/cases?')) return response({ items: [], total: 0 });
       return response(await detail(path.split('/').at(-1)));
     },
@@ -78,6 +84,36 @@ test('stale revision reload retains the note and selected disposition', async ()
   assert.equal(ui.get('note').value, 'Evidence needs independent verification');
   assert.equal(ui.get('disposition').value, 'expected_activity');
   assert.match(ui.get('detail-meta').textContent, /Revision 2/);
+});
+
+for (const synthetic of [false, true]) {
+  test(`source conflicts remain visible with no cases (synthetic=${synthetic})`, async () => {
+    const ui = desk(() => { throw new Error('No case should be opened'); }, undefined, {
+      scope: { origin: synthetic ? 'synthetic_fixture' : 'graph_rpc' },
+      health: { status: 'reconciliation_required', recorded_status: 'healthy' },
+      counts: { observations: 1, review_cases: 0, conflicts: 2 }, policy: {},
+    });
+    // Let the initial refresh and all its fetch microtasks finish before reading DOM.
+    await new Promise(setImmediate);
+    assert.equal(ui.get('case-count').textContent, 0);
+    assert.equal(ui.get('source-facts').children[0].textContent, 'Source conflict records');
+    assert.equal(ui.get('source-facts').children[1].textContent, '2');
+    assert.match(ui.get('notice').textContent, /2 source conflict record\(s\) require reconciliation/);
+    assert.equal(ui.get('notice').classList.values.has('alert'), true);
+    assert.equal(ui.get('notice').textContent.includes('SYNTHETIC DEMO'), synthetic);
+    assert.match(ui.get('case-list').children[0].textContent, /No cases/);
+  });
+}
+
+test('a healthy source without conflicts retains its normal notice and zero counter', async () => {
+  const ui = desk(() => evidence('unused'), undefined, {
+    health: { status: 'healthy' }, counts: { conflicts: 0 }, policy: {},
+  });
+  await new Promise(setImmediate);
+  assert.equal(ui.get('source-facts').children[1].textContent, '0');
+  assert.match(ui.get('notice').textContent, /Live provider observations/);
+  assert.doesNotMatch(ui.get('notice').textContent, /require reconciliation/);
+  assert.equal(ui.get('notice').classList.values.has('alert'), false);
 });
 
 test('different cases retain separate drafts and default disposition', async () => {

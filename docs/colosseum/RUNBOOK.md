@@ -55,6 +55,11 @@ Do not reuse a live database for this command; source binding rejects mixing.
 
 Source conflicts require reconciliation and are retained. Operator decisions cannot
 erase them. The local review feature has no reconciliation/reset/signing endpoints.
+**Source overview → Source conflict records** and the persistent notice display
+the count even when Review queue contains zero cases. This counts durable conflict
+records, not unique events: several different replays of one event can contribute
+several records. The notice remains visible in Review queue; an empty queue does
+not establish that source evidence is conflict-free.
 Known conflicting observations are excluded before selecting the evaluation batch.
 If a conflict appears after selection, that event is skipped and the remaining
 verified events continue. Conflicting events get no new confirmed finding/case;

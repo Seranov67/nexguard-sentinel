@@ -222,11 +222,11 @@ def test_future_clock_skew_is_bounded(tmp_path: Path, skew: int, accepted: bool)
 
 
 def test_bounded_pages_continue_after_restart(tmp_path: Path) -> None:
-    observer, client, store = source(tmp_path)
     # Build 101 confirmed withdrawals in one block and a one-page work budget.
+    rows = [observation(index=i)["raw"] for i in range(101)]
+    observer, client, store = source(tmp_path, rows=rows)
     assert isinstance(observer.reader, FakeReader)
     now = observer.reader.now
-    rows = [observation(index=i)["raw"] for i in range(101)]
     for row in rows:
         row.update(
             timestamp=str(now - 8),
@@ -234,8 +234,6 @@ def test_bounded_pages_continue_after_restart(tmp_path: Path) -> None:
             triggeredBy=row["who"],
             remainingCredit="99",
         )
-    client.close()
-    observer, client, store = source(tmp_path, rows=rows)
     observer.config = ObserveConfig(max_pages=1)
     with client:
         assert observer.poll()["status"] == "catching_up"

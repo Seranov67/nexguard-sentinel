@@ -196,3 +196,54 @@ Official rules section 5, checked 2 October, specifies 12 October 2026 23:59 PT;
 Windows timezone rules convert this to 13 October 2026 09:59 Europe/Kyiv.
 Internal target remains 12 October 20:00 Kyiv. Personal-portal display is not
 verified. Source: https://colosseum.com/legal/Crypto%20World%27s%20Fair%20Hackathon%20Rules.pdf.
+
+## CWF405 independently inspectable candidate — 2 October 2026
+
+Starting revision: `1251c6a`; this records the CWF405 source diff. The previous
+archive predated the conflict repair, so fresh source/Git-history artifacts are
+prepared after committing this diff. Their full SHA and SHA-256 checksums are in
+the external artifact manifest; no old archive is presented as the current code.
+
+- Confirmed `test_conflicting_replay_does_not_block_next_event_or_restart` tests
+  event 0 at 101 replayed as 102, followed by event 1 at 500 with threshold 100.
+  It asserts the following event's case and original payload, durable conflict,
+  no rejected-event evaluation, and restart/replay. Both synthetic and live-origin
+  fixtures run. The separate LIMIT test covers 101 conflicts before a valid event.
+- `test_observe_loop_keeps_healthy_source_and_processes_after_conflict` runs the
+  actual API async loop against a healthy poll fixture and SQL conflicts. It
+  verifies the following case, recorded healthy/public reconciliation_required,
+  and no evaluation_error writes. This is automated fixture evidence.
+- Added a conflict-record count to Source overview and a persistent warning,
+  including when no case exists. Actual local browser on port 8093 confirmed
+  one synthetic observation, one conflict, zero cases; the warning remains visible
+  after navigating to the empty queue. Screenshot: `cwf405-empty-conflict.jpg`.
+  Temporary service/tab stopped after verification; original live DB untouched.
+- JS regressions: **8 PASS**, syntax PASS. Windows review subset: **69 PASS**.
+  Initial Windows rerun exposed a test-only timestamp race (68 PASS / 1 FAIL):
+  pagination fixtures used one reader's timestamp and then created a second reader.
+  The fixture now uses one reader/time snapshot; production source checks unchanged.
+- Final Linux Python 3.12 suite: **308 PASS**, three dependency deprecation warnings.
+  Ruff and strict MyPy Sentinel/gateway/controller/deploy targets PASS, Compose
+  configuration PASS. Source copied into a disposable network-disabled container.
+- Current wheel built with the standard isolated backend; all three packaged UI
+  assets match source byte-for-byte. Local no-isolation attempt lacked setuptools;
+  no runtime dependency change was needed.
+- Fresh Subgraph codegen/build PASS from current source and pinned lock in a
+  disposable Node 22 container. Native Windows invocation cannot use the existing
+  Linux dependency links; Linux succeeded. Matchstick **1 PASS** with
+  `--recompile`, explicitly rebuilding the test rather than reusing earlier wasm.
+  No Subgraph source/lock/dependency version change or provider deployment.
+- Gitleaks 8.30.1 directory and full-history `--all` scans: zero leaks,
+  **67 commits** before the CWF405 commit. A post-commit scan and artifact checksum
+  results are recorded in the artifact manifest. Existing generated-path allowlist
+  and redaction retained. Secret scans do not imply remote CI success.
+- Read-only remote preflight still finds main at `9ffdf26f09e4cfd1d9629c9d2d2d5cba84b09f76`
+  and historical event branch at `7a2a5092498aeffd47efd8ae5eed5815624554f4`;
+  `feat/colosseum-review` does not exist remotely. No push or remote CI run.
+- The five live observations/five evaluations/four cases are mapped explicitly in
+  `cwf405-evidence.json` and REHEARSAL.md. The negative event has amount 100 at
+  block 46428477/log 202 and a recorded below-threshold evaluation.
+
+Foundry and Docker e2e were not rerun in this cycle; earlier Foundry evidence
+retains its date/revision. A09 human resolution/export/feedback and A10 remote CI,
+videos/submission remain partial. Immediate agent review does not fill human A09.

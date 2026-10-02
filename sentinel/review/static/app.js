@@ -74,6 +74,7 @@ async function refresh() {
     const [status, page] = await Promise.all([api("/api/status"), api(`/api/cases?limit=${pageSize}&offset=${offset}`)]);
     const health = status.health;
     const synthetic = status.scope?.origin === "synthetic_fixture";
+    const conflicts = status.counts.conflicts ?? 0;
     text("health-label", health.status.replaceAll("_", " "));
     text("health-age", health.checked_at ? `Checked ${health.checked_at}` : "No source read recorded");
     text("observations", status.counts.observations); text("case-count", status.counts.review_cases);
@@ -82,11 +83,12 @@ async function refresh() {
     text("paused", typeof health.guardian_paused === "boolean" ? (health.guardian_paused ? "Paused" : "Unpaused") : "Unknown");
     text("state-block", health.state_block ? `Recorded at block ${health.state_block}` : "No state read");
     text("origin-tag", synthetic ? "SYNTHETIC FIXTURE" : "GRAPH + RPC");
-    facts("source-facts", [["RPC head", health.rpc_head], ["Graph snapshot", health.graph_snapshot], ["Confirmed through", health.confirmed_through], ["Block age (seconds)", health.block_age_seconds], ["Last checked (UTC)", health.checked_at], ["Vault", status.vault], ["Guardian", status.guardian]]);
+    facts("source-facts", [["Source conflict records", conflicts], ["RPC head", health.rpc_head], ["Graph snapshot", health.graph_snapshot], ["Confirmed through", health.confirmed_through], ["Block age (seconds)", health.block_age_seconds], ["Last checked (UTC)", health.checked_at], ["Vault", status.vault], ["Guardian", status.guardian]]);
     text("source-limits", health.gap || (health.limits || []).join(" "));
     text("policy-limit", status.policy.withdrawal_limit); text("policy-version", status.policy.version);
-    $("notice").classList.toggle("alert", synthetic || health.status !== "healthy");
-    text("notice", synthetic ? "SYNTHETIC DEMO · Fixture events only. No live contract or transaction evidence." : health.status === "healthy" ? "Live provider observations · Historical events may be present · Reviewer decisions are local" : `Source ${health.status.replaceAll("_", " ")} · Stored facts remain available; refresh and check verification times.`);
+    $("notice").classList.toggle("alert", synthetic || conflicts > 0 || health.status !== "healthy");
+    const sourceNotice = synthetic ? "SYNTHETIC DEMO · Fixture events only. No live contract or transaction evidence." : health.status === "healthy" ? "Live provider observations · Historical events may be present · Reviewer decisions are local" : `Source ${health.status.replaceAll("_", " ")} · Stored facts remain available; refresh and check verification times.`;
+    text("notice", sourceNotice + (conflicts > 0 ? ` ${conflicts} source conflict record(s) require reconciliation. Conflicting events receive no new case; verified events continue.` : ""));
     cases = page.items; total = page.total; renderCases();
   } catch (error) {
     $("notice").classList.add("alert"); text("notice", `Desk unavailable: ${error.message}`);

@@ -1,0 +1,94 @@
+{
+  "checked_at": "2026-10-02T16:21:45.111285Z",
+  "human_feedback": false,
+  "live_capture_date": "2026-10-02",
+  "live_events": [
+    {
+      "event_id": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000",
+      "block": 46428477,
+      "transaction_hash": "0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed",
+      "log_index": "202",
+      "amount": "100",
+      "threshold": "10000000000000000000",
+      "breached": false,
+      "case_id": null,
+      "reason": "Withdrawal is within configured limit"
+    },
+    {
+      "event_id": "0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f85238000000",
+      "block": 46433846,
+      "transaction_hash": "0x1643bdfcf7c4647208b45836db3ffbdb733c332afcbf535a825a7014c6f9f852",
+      "log_index": "56",
+      "amount": "25000000000000000000",
+      "threshold": "10000000000000000000",
+      "breached": true,
+      "case_id": "46c94012e8f2f9e81b4c7f9c233cbf8e3f4c58ed203ef6bbe55835da7b29d60a",
+      "reason": "Withdrawal exceeds configured limit"
+    },
+    {
+      "event_id": "0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d03f000000",
+      "block": 46433891,
+      "transaction_hash": "0x55f058fe3c11477584bebb4c88a47d59553a43a6701e363f4e2dc85843fd86d0",
+      "log_index": "63",
+      "amount": "25000000000000000000",
+      "threshold": "10000000000000000000",
+      "breached": true,
+      "case_id": "d416908785763d36dd9ae2f0e6ccaf60d19be621ec717c9ac1ecf2775551f39b",
+      "reason": "Withdrawal exceeds configured limit"
+    },
+    {
+      "event_id": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35ea8000000",
+      "block": 46433924,
+      "transaction_hash": "0x05e2c2fad8422867dc97587bb9f4fd8516f616ed41ecd30469738a221d1ae35e",
+      "log_index": "168",
+      "amount": "25000000000000000000",
+      "threshold": "10000000000000000000",
+      "breached": true,
+      "case_id": "8fbc8d857e8bf0e42bd3bf5cf3cb8b244a62dc98893b762250e246f138440156",
+      "reason": "Withdrawal exceeds configured limit"
+    },
+    {
+      "event_id": "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe314b000000",
+      "block": 46474498,
+      "transaction_hash": "0x0867c938ef6038749b4142c77beb1778e315ce180010a0ffbe39b464caafbe31",
+      "log_index": "75",
+      "amount": "25000000000000000000",
+      "threshold": "10000000000000000000",
+      "breached": true,
+      "case_id": "bbbfdd578c1c38f2ce01726e57bd6d92943b651977ccd3614f1d256f642ccaf9",
+      "reason": "Withdrawal exceeds configured limit"
+    }
+  ],
+  "empty_queue_fixture": {
+    "chain_id": 84532,
+    "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+    "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+    "unit": "DemoVault accounting units (valueless)",
+    "health": {
+      "checked_at": "2026-10-02T16:21:44.930283Z",
+      "status": "reconciliation_required",
+      "recorded_status": "synthetic",
+      "age_since_check_seconds": null
+    },
+    "scope": {
+      "fixture": "cwf405-empty-conflict",
+      "origin": "synthetic_fixture"
+    },
+    "counts": {
+      "observations": 1,
+      "review_cases": 0,
+      "conflicts": 1,
+      "evaluations": 0
+    },
+    "policy": {
+      "version": "cwf405-fixture-v1",
+      "withdrawal_limit": "100",
+      "chain_id": 84532,
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+      "rule": "single_withdrawal_limit",
+      "comparison": ">",
+      "unit": "DemoVault accounting units (valueless)"
+    },
+    "mode": "local review / read-only chain observation"
+  }
+}

@@ -48,6 +48,32 @@ Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy
 
 ## Stage 4 — live evidence, user feedback and delivery
 
+**CWF405 / complete — 2 October 2026:** expose source conflict records in
+Source overview and the persistent notice even when no case exists. Written
+justification before editing: rejected conflicting evidence intentionally opens
+no case, so the detail-only warning cannot inform the operator of reconciliation
+work. Reuse the existing status counter; label records rather than unique events.
+Files: `sentinel/review/static/app.js`, `sentinel/tests/review_ui.test.cjs`,
+this task list, `docs/colosseum/{REHEARSAL,VERIFICATION,RUNBOOK}.md`, and
+`docs/colosseum/cwf405-*` evidence. Gate: empty queue with source conflicts is
+visible, synthetic/source-health labels remain accurate; JS and Python source
+gates pass. Refresh Subgraph and secret-history checks, verify remote refs,
+identify the exact below-threshold live event, and prepare a source archive and
+Git bundle with SHA/checksums in `D:\1111\artifacts` for independent review.
+No remote publication or human-validation claim is included.
+Verification-driven scope extension before editing:
+`sentinel/tests/test_review_observer.py` builds event timestamps from one fake
+RPC reader, then replaces it with a second wall-clock snapshot. A second-boundary
+crossing caused a reproduced Windows failure (68 PASS / 1 FAIL). Construct rows
+and their reader once so the pagination/restart test uses one canonical timestamp.
+Production verification remains unchanged; repeat focused and Linux gates.
+PASS: 308 Linux tests, 69 Windows review tests, 8 JS tests, Ruff, all strict
+MyPy targets, Compose, wheel asset equality, actual empty-queue browser check,
+fresh Subgraph codegen/build and one forced-recompile Matchstick test. Source
+and history secret scans clean. Artifact manifest records post-commit scans,
+full SHA, archive byte verification, Git-bundle clone and reproduction results.
+Human A09 and remote publication/CI remain outside this completed local repair.
+
 **CWF404 / complete — 2 October 2026:** fix the owner-reproduced evaluation
 queue blockage within FR-002/004 and NFR-002. Justification before editing:
 `store.evaluated` rejects conflicted evidence but leaves it pending forever;

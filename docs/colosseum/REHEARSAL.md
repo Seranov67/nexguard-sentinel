@@ -19,6 +19,24 @@ Scope: public Base Sepolia/Graph reads and local review records.
 - Actual source records: observer-live-2026-10-01.json and review-live-2026-10-01.json.
   Historical event dates must remain visible in any recording.
 
+## Exact negative event in the 2 October capture
+
+The read-only capture in `.sentinel/cwf404-live.sqlite3` contains an evaluation
+for every one of the five historical observations. The event without a case is:
+
+- Source ID: `0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabedca000000`.
+- Transaction: `0xdbcd8310df34fcf5750f47948346791b0a0fe54ab2c08ed2e4a4e6efa20aabed`;
+  block **46428477**, log index **202**.
+- Amount **100**, threshold **10000000000000000000**, comparison strictly `>`.
+  Recorded `breached=false`, `case_id=null`, reason:
+  `Withdrawal is within configured limit`.
+
+This is 100 literal valueless accounting units, with no decimal/unit conversion.
+It was evaluated and retained; it was not dropped. All four remaining events are
+25000000000000000000 and have deterministic case IDs. The full five-row mapping
+is in `cwf405-evidence.json`; it was extracted using SQLite read-only mode, without
+changing the original human-session database or issuing another chain transaction.
+
 ## First human session
 
 The owner selected themselves as the first operator. The live case
