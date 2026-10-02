@@ -51,3 +51,15 @@ the operator's own wording. Obtain any later external participant's actual feedb
 
 If external sessions are unavailable before the demo, disclose that limitation.
 Do not count automated tests or the owner as independent customer validation.
+
+## 2 October — immediate agent-led technical review
+
+The owner answered the proposed human-slot question with “сам перевір і сьогодні
+зараз”. No human slot or backup participant was confirmed. The agent performed
+technical verification immediately on an isolated QA database using five freshly
+verified historical Graph/RPC observations. One case was acknowledged/resolved
+with the explicit label `Codex automated technical review`, disposition
+`insufficient_evidence`, revision 2, then exported and checked after reopening.
+Evidence: `cwf404-technical-review.{json,txt}` and `cwf404-rehearsal.json`.
+This is automated technical acceptance. Session 01 human resolution/export/time
+and qualitative feedback are not established by this separate run.

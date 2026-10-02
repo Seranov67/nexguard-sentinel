@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-02T16:05:26.257208Z",
+  "operator": "Codex automated technical review",
+  "human_feedback": false,
+  "chain_action_sent": false,
+  "source_health": {
+    "added": 0,
+    "block_age_seconds": -16,
+    "checked_at": "2026-10-02T16:05:17.472863Z",
+    "confirmed_through": 47594423,
+    "graph_snapshot": 47594424,
+    "guardian_paused": true,
+    "limits": [
+      "Bounded Graph pagination; provider omissions cannot be disproved.",
+      "Canonical replay covers the configured rewind window."
+    ],
+    "max_future_clock_skew_seconds": 30,
+    "next_after": "46474498000075",
+    "rpc_head": 47594424,
+    "scan_complete": true,
+    "snapshot_hash": "0xcaec41f3c76b19ccc483698ef40800dfb0874bec1c515a8051f7cce5492fa514",
+    "state_block": 47594424,
+    "status": "healthy"
+  },
+  "live_replay_counts": {
+    "observations": 5,
+    "review_cases": 4,
+    "conflicts": 0,
+    "evaluations": 5
+  },
+  "technical_review": {
+    "case_id": "bbbfdd578c1c38f2ce01726e57bd6d92943b651977ccd3614f1d256f642ccaf9",
+    "status": "resolved",
+    "revision": 2,
+    "disposition": "insufficient_evidence",
+    "restart_exact_history": "PASS"
+  },
+  "captured_data_conflict_rehearsal": {
+    "injection": "Local test only on an isolated copy; not an onchain event or observed provider disagreement",
+    "counts": {
+      "observations": 5,
+      "review_cases": 4,
+      "conflicts": 1,
+      "evaluations": 4
+    },
+    "following_events_evaluated": 4,
+    "restart_no_new_evaluations": "PASS"
+  }
+}

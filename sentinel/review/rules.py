@@ -86,6 +86,11 @@ def process_pending(store: ReviewStore, policy: ReviewPolicy, limit: int = 100) 
     processed = 0
     for observation in store.pending(fingerprint, limit):
         finding = policy.evaluate(observation)
-        store.evaluated(observation["id"], fingerprint, finding)
+        try:
+            store.evaluated(observation["id"], fingerprint, finding)
+        except ReviewConflictError:
+            # A replay can flag this event after pending() selected the batch.
+            # Preserve the conflict without blocking unrelated verified observations.
+            continue
         processed += 1
     return processed

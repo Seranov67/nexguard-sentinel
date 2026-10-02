@@ -1,13 +1,18 @@
 from pathlib import Path
+from threading import Event
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
 from sentinel.review.api import create_app
 from sentinel.review.cli import seed_demo
+from sentinel.review.models import utc_now
+from sentinel.review.observer import ObserveConfig, Observer
 from sentinel.review.rules import ReviewPolicy
-from sentinel.review.store import ReviewStore
+from sentinel.review.store import ReviewConflictError, ReviewStore
 from sentinel.tests.test_review_evidence import review_case
+from sentinel.tests.test_review_store import observation
 
 ORIGIN = "http://127.0.0.1:8089"
 HEADERS = {"Origin": ORIGIN, "X-NexGuard-Review": "1"}
@@ -146,3 +151,55 @@ def test_fixture_seed_is_distinct_replay_safe_and_negative_case_present(tmp_path
     seed_demo(ReviewStore(store.path))
     assert store.counts()["review_cases"] == 2
     assert (store.metadata("scope") or {})["origin"] == "synthetic_fixture"
+
+
+def test_observe_loop_keeps_healthy_source_and_processes_after_conflict(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = ReviewStore(tmp_path / "review.sqlite3")
+    rows = [observation("101"), observation("500", 1)]
+    for row in rows:
+        row["origin"] = "live_graph_rpc"
+        row["proof"]["confirmations"] = 2
+    store.ingest(rows)
+    changed = observation("102")
+    changed["origin"] = "live_graph_rpc"
+    with pytest.raises(ReviewConflictError):
+        store.ingest([changed])
+    finished = Event()
+    health_updates: list[dict[str, Any]] = []
+    write_health, evaluate = store.health, store.evaluated
+
+    def healthy_poll(_: Observer) -> dict[str, Any]:
+        health = {"status": "healthy", "checked_at": utc_now(), "scan_complete": True}
+        store.health(health)
+        return health
+
+    def record_health(value: dict[str, Any]) -> None:
+        write_health(value)
+        health_updates.append(value)
+        if value["status"] == "evaluation_error":
+            finished.set()
+
+    def record_evaluation(
+        event_id: str, fingerprint: str, finding: dict[str, Any]
+    ) -> str | None:
+        result = evaluate(event_id, fingerprint, finding)
+        finished.set()
+        return result
+
+    # Exercise the real async observe loop with a healthy poll fixture, no network.
+    monkeypatch.setattr(Observer, "poll", healthy_poll)
+    monkeypatch.setattr(store, "health", record_health)
+    monkeypatch.setattr(store, "evaluated", record_evaluation)
+    app = create_app(
+        store, ReviewPolicy(version="v1", withdrawal_limit="100"), observe=ObserveConfig()
+    )
+    with TestClient(app, base_url=ORIGIN) as client:
+        assert finished.wait(5), "Observer loop did not finish evaluation"
+        value = client.get("/api/status").json()
+        assert value["counts"]["review_cases"] == 1
+        assert value["health"]["status"] == "reconciliation_required"
+        assert value["health"]["recorded_status"] == "healthy"
+        assert all(update["status"] == "healthy" for update in health_updates)
+        assert client.get("/api/cases").json()["items"][0]["finding"]["observed_amount"] == "500"

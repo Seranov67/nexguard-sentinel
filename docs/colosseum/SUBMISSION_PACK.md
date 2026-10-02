@@ -113,7 +113,11 @@ Synthetic mode must be announced and must not display invented chain links.
 | Submission | Not submitted; confirmation/URL pending |
 
 Internal deadline: **12 October 2026, 20:00 Europe/Kyiv**. The campaign lists
-12 October as the submission date. Use the dashboard/rules for the final cutoff.
+12 October as the submission date. Checked 2 October: official rules section 5
+sets the end to 12 October 2026, 23:59 Pacific Time, corresponding to
+**13 October 2026, 09:59 Europe/Kyiv**. The internal target above is unchanged.
+Personal dashboard display/any later rule updates still require confirmation.
+[Official rules](https://colosseum.com/legal/Crypto%20World%27s%20Fair%20Hackathon%20Rules.pdf).
 The official FAQ requests a 2–3-minute presentation and a product-demo video
 no longer than three minutes; reused code must be disclosed.
 [Campaign](https://colosseum.com/worldsfair),

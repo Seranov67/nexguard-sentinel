@@ -180,6 +180,7 @@ class ReviewStore:
             rows = db.execute(
                 "SELECT o.* FROM observations o LEFT JOIN evaluations e "
                 "ON e.event_id=o.id AND e.policy=? WHERE e.event_id IS NULL "
+                "AND NOT EXISTS (SELECT 1 FROM conflicts c WHERE c.event_id=o.id) "
                 "ORDER BY o.block,CAST(o.sequence AS INTEGER) LIMIT ?",
                 (policy, limit),
             ).fetchall()

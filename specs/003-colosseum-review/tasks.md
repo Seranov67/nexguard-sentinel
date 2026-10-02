@@ -48,6 +48,38 @@ Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy
 
 ## Stage 4 — live evidence, user feedback and delivery
 
+**CWF404 / complete — 2 October 2026:** fix the owner-reproduced evaluation
+queue blockage within FR-002/004 and NFR-002. Justification before editing:
+`store.evaluated` rejects conflicted evidence but leaves it pending forever;
+`process_pending` aborts the batch, so unrelated verified events never progress.
+Exclude durable conflicts before applying the pending-query limit, and handle
+only a conflict raised during the individual evaluation write (including one
+recorded after selecting the batch). Retain conflicts and original evidence;
+do not record a successful evaluation/case for rejected evidence. Preserve source
+verification and policy-registration failures. No schema or signer change.
+Files: `sentinel/review/{store,rules}.py`,
+`sentinel/tests/{test_review_rules,test_review_api}.py`, this task list,
+`docs/colosseum/{PLAN_v0.5_UK.md,VERIFICATION.md,RUNBOOK.md}` and the `D:\1111`
+plan copy. Additional evidence/document files: `docs/colosseum/cwf404-*.{json,txt}`,
+`USER_FEEDBACK.md`, `SUBMISSION_PACK.md`. Justification: owner requested immediate
+agent-led verification; preserve separate live-data technical-review evidence and
+update the verified official cutoff without claiming human validation.
+Plan amendments: explicit conflict-plus-next-event rehearsal gate;
+first remote CI on 3–5 October; remote preflight, cutoff and reviewer-slot work
+on 2–3 October; fresh release Subgraph/secret scans remain mandatory.
+Gate: old-source regression failure; known conflicts do not consume LIMIT 100;
+an after-selection conflict cannot stop the next event; restart/replay keeps
+conflicts and produces no duplicates; healthy source remains healthy in recorded
+metadata while API reports reconciliation_required. Focused review tests, full
+Linux Python suite, Ruff, strict types and Compose before commit.
+Verification: `python -m pytest -q sentinel/tests/test_review_rules.py
+sentinel/tests/test_review_api.py`, followed by the existing global source gates.
+PASS: 308 Linux Python tests, 69 focused review tests, 5 JS tests, Ruff, all
+strict MyPy targets, Compose and Gitleaks directory/history scans. Live
+read-only poll/replay and a locally injected conflict in a separate captured-data
+copy passed. Immediate automated API review/export/reopen evidence is recorded
+in `cwf404-*`; human feedback and remote CI are still unverified.
+
 **CWF403 / complete — 2 October 2026:** repair a confirmed local UI defect
 within FR-005/007: `openCase` unconditionally clears the note after a stale-revision
 conflict, contradicting the retry message and runbook. Preserve per-case drafts

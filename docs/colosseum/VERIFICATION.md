@@ -137,3 +137,62 @@ Evidence: `ui-conflict-regression-2026-10-02.png`,
 This is automated synthetic acceptance, not human feedback or a live chain verdict.
 Human resolution/export/feedback, independent sessions, current remote CI, video
 publication and submission confirmation remain pending. A09/A10 remain partial.
+
+## CWF404 conflict queue repair and immediate technical review — 2 October 2026
+
+Starting revision: `adcd983`, `feat/colosseum-review`; results apply to the
+CWF404 source diff. The owner reproduced a conflicting observation preventing
+all later evaluations and requested immediate agent-led verification.
+
+Before repair, four new regressions failed: synthetic/live-origin known conflict,
+101 conflicts before a valid event, and a conflict recorded after selecting the
+batch. A policy-version conflict guard passed. Repair excludes durable conflicts
+with NOT EXISTS before LIMIT and catches the individual evaluation-write conflict
+so the rest of the selected batch continues. Source health/policy registration
+checks stay outside that handler. No schema change; original payload/conflicts and
+pre-existing cases/history remain intact.
+
+- **308 Python tests PASS** in Linux Python 3.12 (12.07s), including **69 review
+  tests** and six new regressions. Ruff PASS, strict MyPy all four targets PASS
+  (54/6/19/1 files). Disposable local container, network disabled, source read-only.
+- Windows focused review subset: **69 PASS**. JS regressions: **5 PASS**.
+  Whole Windows suite/Foundry/Subgraph/browser UI acceptance were not rerun in
+  this cycle; prior results above retain their original revision/date.
+- Real API background-loop regression uses a healthy poll fixture: unrelated
+  event opens its case; recorded_status=healthy, public status=
+  reconciliation_required; no evaluation_error metadata write. Tests exercise
+  actual SQL conflicts, not merely a mocked exception. The concurrent-conflict
+  regression injects the real conflict immediately before evaluated() writes.
+- Compose configuration PASS. Gitleaks 8.30.1 directory scan: zero leaks;
+  full-history scan with --all: **66 commits**, zero leaks, before this commit.
+  Generated paths use the existing allowlist; findings are redacted.
+- Real public read-only observer at 16:03:20Z: five historical withdrawals,
+  five evaluations, four cases. Repeat at 16:05:17Z: zero new observations and
+  evaluations; Graph/RPC healthy, canonical snapshot validated. Block clock was
+  16 seconds ahead, within the existing explicit 30-second bound. No key/model,
+  source deployment or onchain transaction was used.
+- The isolated QA case `bbbfdd578c1c…ccaf9` was acknowledged/resolved via the
+  actual API with operator `Codex automated technical review`. Exported JSON/text
+  show revision 2, two actions and insufficient_evidence. Reopening the same file
+  retained the exact history; rule replay created no additional evaluation.
+  The original human-session database was not changed.
+- An **isolated copy** of all five captured observations received a local injected
+  conflict for the first event. All four following events evaluated and opened
+  four cases; one conflict and zero evaluations for the rejected event remain.
+  Reopening/reprocessing produced zero new evaluations. The injected conflict
+  is a local test, not an observed provider discrepancy or a new chain event.
+
+Evidence: `cwf404-rehearsal.json`, `cwf404-technical-review.{json,txt}`.
+Technical review is automated and does not establish human feedback, independent
+validation, exploit/financial loss or successful remediation. A09/A10 stay partial.
+
+Delivery preflight: separate `github` remote configured; ls-remote found
+main=`9ffdf26f09e4cfd1d9629c9d2d2d5cba84b09f76`, historical event branch=
+`7a2a5092498aeffd47efd8ae5eed5815624554f4`, no remote feat/colosseum-review.
+No push occurred. First remote CI target moved to 3–5 October, before 8 October
+freeze. Fresh Subgraph/release-candidate scans remain mandatory before publication.
+
+Official rules section 5, checked 2 October, specifies 12 October 2026 23:59 PT;
+Windows timezone rules convert this to 13 October 2026 09:59 Europe/Kyiv.
+Internal target remains 12 October 20:00 Kyiv. Personal-portal display is not
+verified. Source: https://colosseum.com/legal/Crypto%20World%27s%20Fair%20Hackathon%20Rules.pdf.
