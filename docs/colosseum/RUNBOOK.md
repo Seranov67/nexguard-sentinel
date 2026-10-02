@@ -46,8 +46,12 @@ Do not reuse a live database for this command; source binding rejects mixing.
 3. Enter your local operator label and a note, then acknowledge the case.
 4. Enter a resolution note and choose policy_breach, expected_activity or
    insufficient_evidence. Resolving records your assessment; it changes no contract.
-5. Export JSON and text briefs. If another window updated the revision, retain your
-   note and reopen the case before retrying with the current revision.
+5. Export JSON and text briefs. If another window updated the revision, use
+   **Reload case** to inspect its new history before deciding whether to retry.
+   The note and selected disposition are retained separately for each case in
+   this page. A successful decision clears its draft. Browser refresh, closing
+   the tab or restarting the page clears unsaved drafts; saved history remains
+   durable in SQLite. A resolved case cannot accept another decision.
 
 Source conflicts require reconciliation and are retained. Operator decisions cannot
 erase them. The local review feature has no reconciliation/reset/signing endpoints.

@@ -1,0 +1,159 @@
+NexGuard Sentinel — Incident Review Brief
+nexguard.review-brief.v1
+SYNTHETIC FIXTURE
+Case: cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05
+Review status: resolved (revision 2)
+Disposition: insufficient_evidence
+Source integrity: recorded
+Policy: synthetic-v1 / single_withdrawal_limit
+Amount: 151 DemoVault accounting units (valueless)
+Threshold: 100 (>)
+Source entity: 0x000000000000000000000000000000000000000000000000000000000000000300000000
+Observed at: 2026-10-02T15:31:49.869028Z
+Payload SHA-256: 5c31da69317f21e3a2ab17ae71feef28b86a00e49aae454cb8af402c31dab8d6
+Legacy action evidence: synthetic_no_action
+
+Operator history:
+2026-10-02T15:33:35.369200Z — Automated fixture tester A — acknowledged
+Disposition: pending
+Window A inspected synthetic source facts.
+2026-10-02T15:33:59.138591Z — Automated fixture tester B — resolved
+Disposition: insufficient_evidence
+Retained draft B after competing acknowledgment.
+
+Links:
+
+Limits:
+Payload SHA-256 proves consistency, not provider authenticity.
+A review finding is not proof of an exploit or financial loss.
+Resolution records a local decision and does not remediate chain state.
+Operator labels are locally declared; no authenticated identity.
+
+Full evidence:
+{
+  "case": {
+    "conflicts": [],
+    "created_at": "2026-10-02T15:31:49.887542Z",
+    "disposition": "insufficient_evidence",
+    "event_id": "0x000000000000000000000000000000000000000000000000000000000000000300000000",
+    "finding": {
+      "authorization": "review_only",
+      "breached": true,
+      "case_id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+      "chain_id": 84532,
+      "comparison": ">",
+      "observed_amount": "151",
+      "origin": "synthetic_fixture",
+      "policy": "9c681f0900393113dcb3753cf923dae67d5dc9a8a1102f86a26dc974e4999b26",
+      "policy_version": "synthetic-v1",
+      "reason": "Withdrawal exceeds configured limit",
+      "rule": "single_withdrawal_limit",
+      "source_ids": [
+        "0x000000000000000000000000000000000000000000000000000000000000000300000000"
+      ],
+      "synthetic": true,
+      "threshold": "100",
+      "unit": "DemoVault accounting units (valueless)",
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+    },
+    "history": [
+      {
+        "action": "acknowledge",
+        "at": "2026-10-02T15:33:35.369200Z",
+        "case_id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+        "disposition": null,
+        "new_revision": 1,
+        "note": "Window A inspected synthetic source facts.",
+        "operator": "Automated fixture tester A",
+        "operator_identity": "locally declared label",
+        "request_id": "1c9f60d7-33bc-4963-b730-3ed319906df7",
+        "revision": 0,
+        "status": "acknowledged"
+      },
+      {
+        "action": "resolve",
+        "at": "2026-10-02T15:33:59.138591Z",
+        "case_id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+        "disposition": "insufficient_evidence",
+        "new_revision": 2,
+        "note": "Retained draft B after competing acknowledgment.",
+        "operator": "Automated fixture tester B",
+        "operator_identity": "locally declared label",
+        "request_id": "dbab4ef6-6ae5-47cc-8d78-e4133f9d9271",
+        "revision": 1,
+        "status": "resolved"
+      }
+    ],
+    "id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+    "observation": {
+      "id": "0x000000000000000000000000000000000000000000000000000000000000000300000000",
+      "observed_at": "2026-10-02T15:31:49.869028Z",
+      "origin": "synthetic_fixture",
+      "payload_sha256": "5c31da69317f21e3a2ab17ae71feef28b86a00e49aae454cb8af402c31dab8d6",
+      "proof": {
+        "verification": "synthetic"
+      },
+      "raw": {
+        "amount": "151",
+        "blockHash": "0x3434343434343434343434343434343434343434343434343434343434343434",
+        "blockNumber": "102",
+        "id": "0x000000000000000000000000000000000000000000000000000000000000000300000000",
+        "logIndex": "0",
+        "recipient": "0x5656565656565656565656565656565656565656",
+        "remainingCredit": "900",
+        "sequence": "102000000",
+        "timestamp": "1788625242",
+        "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000003",
+        "triggeredBy": "0x5656565656565656565656565656565656565656",
+        "who": "0x5656565656565656565656565656565656565656"
+      }
+    },
+    "policy": "9c681f0900393113dcb3753cf923dae67d5dc9a8a1102f86a26dc974e4999b26",
+    "policy_definition": {
+      "chain_id": 84532,
+      "comparison": ">",
+      "rule": "single_withdrawal_limit",
+      "unit": "DemoVault accounting units (valueless)",
+      "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13",
+      "version": "synthetic-v1",
+      "withdrawal_limit": "100"
+    },
+    "revision": 2,
+    "status": "resolved"
+  },
+  "chain_id": 84532,
+  "exported_at": "2026-10-02T15:34:27.208122Z",
+  "finding_integrity": "recorded",
+  "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+  "legacy_action": {
+    "classification": null,
+    "outcomes": [],
+    "status": "synthetic_no_action"
+  },
+  "limits": [
+    "Payload SHA-256 proves consistency, not provider authenticity.",
+    "A review finding is not proof of an exploit or financial loss.",
+    "Resolution records a local decision and does not remediate chain state.",
+    "Operator labels are locally declared; no authenticated identity."
+  ],
+  "links": {},
+  "schema_version": "nexguard.review-brief.v1",
+  "source": {
+    "chain_id": 84532,
+    "guardian": "0x8b7b1ee7e335fd00f35cc6272c113c8735cb8ed3",
+    "origin": "synthetic_fixture",
+    "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+  },
+  "source_health": {
+    "age_since_check_seconds": null,
+    "checked_at": "2026-10-02T15:31:49.870028Z",
+    "gap": "Synthetic fixtures; no chain state queried.",
+    "guardian_paused": null,
+    "recorded_status": "synthetic",
+    "scan_complete": true,
+    "status": "synthetic"
+  },
+  "synthetic": true,
+  "vault": "0xf1683d32fef59bbb95483561aba62a1bda65cd13"
+}
+

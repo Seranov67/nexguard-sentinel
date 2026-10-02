@@ -6,7 +6,20 @@ let offset = 0;
 let total = 0;
 let pendingDecision = null;
 let loading = false;
+let caseLoading = false;
+let decisionSaving = false;
+let caseRequest = 0;
+const drafts = new Map();
 const pageSize = 50;
+
+function rememberDraft() {
+  if (currentCase) drafts.set(currentCase.id, {note:$("note").value, disposition:$("disposition").value});
+}
+function decisionControls() {
+  $("decision-submit").disabled = caseLoading || decisionSaving || !currentCase || currentCase.status === "resolved";
+  $("reload-case").disabled = caseLoading || decisionSaving || !currentCase;
+  for (const id of ["operator", "note", "disposition"]) $(id).disabled = decisionSaving;
+}
 
 function text(id, value) { $(id).textContent = value ?? "Unknown"; }
 function node(tag, value, className) {
@@ -80,8 +93,14 @@ async function refresh() {
   } finally { loading = false; }
 }
 async function openCase(id) {
+  if (decisionSaving) return false;
+  rememberDraft();
+  const request = ++caseRequest;
+  caseLoading = true; decisionControls();
   try {
     const value = await api(`/api/cases/${encodeURIComponent(id)}`);
+    if (request !== caseRequest) return false;
+    rememberDraft();
     currentCase = value.case; pendingDecision = null;
     const c = currentCase, f = c.finding, raw = c.observation.raw;
     text("detail-title", `Case ${id.slice(0, 12)}`);
@@ -102,35 +121,46 @@ async function openCase(id) {
     text("source-evidence", JSON.stringify({observation:c.observation, policy:c.policy_definition, health:value.source_health, limits:value.limits}, null, 2));
     $("export-json").href = `/api/cases/${id}/export/json`; $("export-txt").href = `/api/cases/${id}/export/txt`;
     $("disposition-label").hidden = c.status !== "acknowledged";
-    $("decision-submit").disabled = c.status === "resolved";
     text("decision-submit", c.status === "open" ? "Acknowledge case" : c.status === "acknowledged" ? "Resolve with disposition" : "Decision recorded");
     text("decision-message", c.status === "resolved" ? "This review is resolved. The chain state is unchanged by this decision." : "");
-    $("note").value = "";
+    const draft = drafts.get(id);
+    $("note").value = draft?.note || "";
+    $("disposition").value = draft?.disposition || "insufficient_evidence";
     $("history").replaceChildren();
     for (const action of c.history) {
       const item = node("li"); item.append(node("strong", `${action.operator} · ${action.status}`), node("p", action.at), node("p", action.disposition || "Awaiting disposition"), node("p", action.note)); $("history").append(item);
     }
     if (!c.history.length) $("history").append(node("li", "No operator decision recorded."));
     view("detail");
-  } catch (error) { text("notice", error.message); $("notice").classList.add("alert"); }
+    return true;
+  } catch (error) {
+    if (request === caseRequest) { text("notice", error.message); $("notice").classList.add("alert"); }
+    return false;
+  } finally {
+    if (request === caseRequest) { caseLoading = false; decisionControls(); }
+  }
 }
 $("decision-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!currentCase || currentCase.status === "resolved") return;
+  if (!currentCase || currentCase.status === "resolved" || caseLoading || decisionSaving) return;
   const c = currentCase;
   const fields = {action:c.status === "open" ? "acknowledge" : "resolve", revision:c.revision, operator:$("operator").value.trim(), note:$("note").value.trim(), disposition:c.status === "acknowledged" ? $("disposition").value : null};
   if (!fields.operator || !fields.note) { text("decision-message", "Enter your operator label and a review note."); return; }
   const fingerprint = JSON.stringify(fields);
   if (!pendingDecision || pendingDecision.fingerprint !== fingerprint) pendingDecision = {fingerprint, payload:{...fields, request_id:crypto.randomUUID()}};
-  $("decision-submit").disabled = true;
+  decisionSaving = true; decisionControls();
   try {
     await api(`/api/cases/${c.id}/decisions`, {method:"POST", headers:{"Content-Type":"application/json", "X-NexGuard-Review":"1"}, body:JSON.stringify(pendingDecision.payload)});
-    await openCase(c.id); await refresh(); text("decision-message", "Decision saved locally.");
+    drafts.delete(c.id); $("note").value = ""; $("disposition").value = "insufficient_evidence";
+    pendingDecision = null; decisionSaving = false;
+    const reloaded = await openCase(c.id);
+    await refresh();
+    text("decision-message", reloaded ? "Decision saved locally." : "Decision saved locally. Reload case to see the current revision.");
   } catch (error) {
-    text("decision-message", `${error.message}. Your note is retained; retry or reopen the case to load its revision.`);
-    $("decision-submit").disabled = false;
-  }
+    text("decision-message", `${error.message}. Your draft is retained in this page; retry or use Reload case to load its revision.`);
+  } finally { decisionSaving = false; decisionControls(); }
 });
+$("reload-case").addEventListener("click", () => { if (currentCase) openCase(currentCase.id); });
 for (const button of document.querySelectorAll("[data-view]")) button.addEventListener("click", () => { view(button.dataset.view); if (button.dataset.view === "cases") refresh(); });
 $("refresh").addEventListener("click", refresh); $("case-filter").addEventListener("change", renderCases);
 $("previous").addEventListener("click", () => {offset = Math.max(0, offset - pageSize); refresh();});

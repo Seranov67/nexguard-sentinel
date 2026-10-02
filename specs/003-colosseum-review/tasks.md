@@ -48,6 +48,30 @@ Verification: `python -m pytest -q sentinel/tests/test_review_api.py`; Ruff/MyPy
 
 ## Stage 4 — live evidence, user feedback and delivery
 
+**CWF403 / complete — 2 October 2026:** repair a confirmed local UI defect
+within FR-005/007: `openCase` unconditionally clears the note after a stale-revision
+conflict, contradicting the retry message and runbook. Preserve per-case drafts
+in page memory, reset them only after a successful decision, offer an explicit
+reload control, and prevent overlapping case reads/saves from targeting stale
+screen state. Drafts are not persisted across page refresh or service restart.
+Files: `sentinel/review/static/{app.js,index.html}`,
+`sentinel/tests/review_ui.test.cjs`, `docs/colosseum/{RUNBOOK.md,VERIFICATION.md}`,
+this task list and `docs/colosseum/PLAN_v0.5_UK.md` (with its `D:\1111` copy).
+Justification before editing: retain operator work during the existing revision
+workflow; no new scope, dependencies or chain/action endpoints. Node's built-in
+test runner is verification tooling only, not a product runtime requirement.
+Gate: reproduce failure against the old JS; stale conflict/reload retains the
+draft, different cases keep separate drafts, delayed reads cannot replace the
+selected case, retry retains the idempotency key, successful save clears the
+draft; isolated browser check, Python non-regression, Ruff/MyPy and JS syntax.
+Verification: `node --test sentinel/tests/review_ui.test.cjs`, plus the existing
+Python/source gates. User authorized autonomous local work and verification.
+PASS: five JS regressions, isolated two-tab browser conflict/reload/export,
+synthetic fresh-process persistence/replay, 302 Linux Python tests, Ruff, all
+strict MyPy targets, Compose, nine Foundry tests and packaged assets.
+Evidence includes `docs/colosseum/ui-conflict-{brief,restart}-2026-10-02.*`
+and `ui-conflict-regression-2026-10-02.png`; automated synthetic only.
+
 Execution update, 2026-10-01: CWF101–302 passed their local gates and were
 committed. CWF401 is in progress; the owner chose to be the first operator.
 The first human session has started. Prepare CWF402 documents alongside that

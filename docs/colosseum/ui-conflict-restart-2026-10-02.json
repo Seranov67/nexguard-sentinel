@@ -1,0 +1,40 @@
+{
+  "origin": "automated_synthetic_regression",
+  "restart_same_database": "PASS",
+  "counts": {
+    "observations": 3,
+    "review_cases": 2,
+    "conflicts": 0,
+    "evaluations": 3
+  },
+  "case": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+  "revision": 2,
+  "history": [
+    {
+      "action": "acknowledge",
+      "at": "2026-10-02T15:33:35.369200Z",
+      "case_id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+      "disposition": null,
+      "new_revision": 1,
+      "note": "Window A inspected synthetic source facts.",
+      "operator": "Automated fixture tester A",
+      "operator_identity": "locally declared label",
+      "request_id": "1c9f60d7-33bc-4963-b730-3ed319906df7",
+      "revision": 0,
+      "status": "acknowledged"
+    },
+    {
+      "action": "resolve",
+      "at": "2026-10-02T15:33:59.138591Z",
+      "case_id": "cd5ba43c7d53a6f46194258eda723f7ca1ef14a625a52ca01c35882a31f31a05",
+      "disposition": "insufficient_evidence",
+      "new_revision": 2,
+      "note": "Retained draft B after competing acknowledgment.",
+      "operator": "Automated fixture tester B",
+      "operator_identity": "locally declared label",
+      "request_id": "dbab4ef6-6ae5-47cc-8d78-e4133f9d9271",
+      "revision": 1,
+      "status": "resolved"
+    }
+  ]
+}

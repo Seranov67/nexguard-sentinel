@@ -98,3 +98,42 @@ Still pending: human resolution/export and qualitative feedback; a post-session
 service restart retaining human history; independent operators; current remote
 CI including Docker end-to-end scenarios; video recording/anonymous links and
 actual submission confirmation. CWF401/CWF402 and A09/A10 remain partial.
+
+## CWF403 local UI repair — 2 October 2026
+
+Starting revision: `4608d44`, branch `feat/colosseum-review`; this section records
+the CWF403 source diff, not remote CI. The confirmed defect was unconditional
+draft loss when reopening a stale case. Regression tests against the old script
+also exposed disposition carryover and an older read replacing the selected case.
+Old JS: one passing test, three assertion failures and one cancelled pending test.
+Repaired JS: **5/5 PASS**, using Node 22's built-in test runner and controlled
+responses against the actual app script. JS syntax PASS.
+
+- Linux Python 3.12 full suite: **302 PASS**, three dependency deprecation warnings.
+  Source copied into a disposable verification container from the current diff;
+  no signing credentials, networking or writable source mount. Ruff PASS; strict
+  MyPy Sentinel/gateway/controller/deploy PASS (54/6/19/1 source files).
+- Windows supported Sentinel/contract/gateway subset: **260 PASS**, same three
+  warnings. The unchanged POSIX controller suite is covered by Linux.
+- Compose configuration PASS; no stack restart or Docker e2e run in this cycle.
+- Pinned Foundry format PASS, **9/9 tests PASS**. The first network-disabled run
+  could not fetch Solc 0.8.24; the subsequent run fetched the compiler and passed.
+  Source stayed read-only and compilation ran in temporary container storage.
+- Wheel build initially lacked local setuptools. Standard isolated build obtained
+  declared build dependencies and succeeded; all three packaged UI assets checked
+  byte-for-byte against source. No product dependency/lock change was needed.
+- Browser acceptance used only `.sentinel/qa-2026-10-02.sqlite3`, port 8091.
+  Two tabs loaded synthetic case `cd5ba43c7d53…31a05` at revision 0. Tab A
+  acknowledged it; tab B got HTTP 409. **Reload case retained tab B's exact note**
+  and loaded revision 1; its synthetic resolution produced revision 2 and two
+  history entries. Saved notes/history matched the downloaded text brief.
+  No browser JS error logs were observed. Drafts are in page memory, not durable.
+- A fresh service process on port 8092 read the same synthetic database and
+  retained the exact case/history. Re-seeding preserved 3 observations,
+  2 cases and 3 evaluations, with zero conflicts. The temporary process was stopped.
+
+Evidence: `ui-conflict-regression-2026-10-02.png`,
+`ui-conflict-brief-2026-10-02.txt`, `ui-conflict-restart-2026-10-02.json`.
+This is automated synthetic acceptance, not human feedback or a live chain verdict.
+Human resolution/export/feedback, independent sessions, current remote CI, video
+publication and submission confirmation remain pending. A09/A10 remain partial.
